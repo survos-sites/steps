@@ -13,6 +13,15 @@ use Symfony\Component\Console\Input\InputOption;
 use Castor\Event\FunctionsResolvedEvent;
 use Castor\Attribute\AsTask;
 
+use function Castor\PHPQa\phpstan;
+
+#[AsTask('phpstan', namespace: 'qa')]
+function qa_phpstan()
+{
+    phpstan(version: '1.11.0');
+}
+
+
 // Support CODE=basic (only one deck) or import all castor/*.castor.php
 if ($code = ($_SERVER['CODE'] ?? $_ENV['CODE'] ?? null)) {
     import(__DIR__."/castor/{$code}.castor.php");

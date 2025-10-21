@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "07cdb2cf3abbdc51ca50c58f6a3ee836",
+    "content-hash": "05526ee3424e7f3a8e7ef0a37c166d83",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1753,16 +1753,16 @@
         },
         {
             "name": "easycorp/easyadmin-bundle",
-            "version": "v4.26.3",
+            "version": "v4.26.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/EasyCorp/EasyAdminBundle.git",
-                "reference": "fed89754c7532ce5592fda43921d810b59e24c4c"
+                "reference": "330c2b85d8f8e840c01e873c818c4ab87a6b8684"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/EasyCorp/EasyAdminBundle/zipball/fed89754c7532ce5592fda43921d810b59e24c4c",
-                "reference": "fed89754c7532ce5592fda43921d810b59e24c4c",
+                "url": "https://api.github.com/repos/EasyCorp/EasyAdminBundle/zipball/330c2b85d8f8e840c01e873c818c4ab87a6b8684",
+                "reference": "330c2b85d8f8e840c01e873c818c4ab87a6b8684",
                 "shasum": ""
             },
             "require": {
@@ -1811,7 +1811,8 @@
                 "symfony/expression-language": "^5.4|^6.0|^7.0",
                 "symfony/phpunit-bridge": "^6.1|^7.0",
                 "symfony/process": "^5.4|^6.0|^7.0",
-                "symfony/web-link": "^5.4|^6.0|^7.0"
+                "symfony/web-link": "^5.4|^6.0|^7.0",
+                "vincentlanglet/twig-cs-fixer": "^3.10"
             },
             "type": "symfony-bundle",
             "extra": {
@@ -1843,7 +1844,7 @@
             ],
             "support": {
                 "issues": "https://github.com/EasyCorp/EasyAdminBundle/issues",
-                "source": "https://github.com/EasyCorp/EasyAdminBundle/tree/v4.26.3"
+                "source": "https://github.com/EasyCorp/EasyAdminBundle/tree/v4.26.5"
             },
             "funding": [
                 {
@@ -1851,7 +1852,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-08T18:21:48+00:00"
+            "time": "2025-10-19T11:16:17+00:00"
         },
         {
             "name": "egulias/email-validator",
@@ -3705,89 +3706,24 @@
             "time": "2024-12-23T10:27:18+00:00"
         },
         {
-            "name": "survos/installer",
-            "version": "2.1.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/survos/installer.git",
-                "reference": "aeb5a3dd3476a21e42e946d5ce18ed7e93b55983"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/survos/installer/zipball/aeb5a3dd3476a21e42e946d5ce18ed7e93b55983",
-                "reference": "aeb5a3dd3476a21e42e946d5ce18ed7e93b55983",
-                "shasum": ""
-            },
-            "require": {
-                "composer-plugin-api": "^2.0",
-                "php": "^8.3",
-                "symfony/finder": "^7.3",
-                "symfony/yaml": "^7.3"
-            },
-            "require-dev": {
-                "composer/composer": "^2.0"
-            },
-            "suggest": {
-                "roave/security-advisories": "Avoids installation of package versions with vulnerabilities"
-            },
-            "type": "composer-plugin",
-            "extra": {
-                "class": "Survos\\Installer\\Installer",
-                "symfony": {
-                    "require": "^7.3"
-                },
-                "branch-alias": {
-                    "dev-main": "1.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Survos\\Installer\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Tac Tacelosky",
-                    "email": "tacman@gmail.com"
-                }
-            ],
-            "description": "Composer plugin for installing configuration files and updating .env and .gitignore, based on survos/installer",
-            "support": {
-                "source": "https://github.com/survos/installer/tree/2.1.4"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/kbond",
-                    "type": "github"
-                }
-            ],
-            "time": "2025-07-14T14:06:29+00:00"
-        },
-        {
             "name": "survos/step-bundle",
             "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/step-bundle.git",
-                "reference": "5935976d6577e11401851e6ab25952439de0614e"
+                "reference": "4de50d1adc8ab2650b23bd5ff07769b798a249a2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/survos/step-bundle/zipball/5935976d6577e11401851e6ab25952439de0614e",
-                "reference": "5935976d6577e11401851e6ab25952439de0614e",
+                "url": "https://api.github.com/repos/survos/step-bundle/zipball/4de50d1adc8ab2650b23bd5ff07769b798a249a2",
+                "reference": "4de50d1adc8ab2650b23bd5ff07769b798a249a2",
                 "shasum": ""
             },
             "require": {
                 "php": "^8.4",
-                "survos/installer": "^2.1",
                 "symfony/config": "^7.3",
                 "symfony/dependency-injection": "^7.3",
-                "symfony/http-kernel": "^7.3",
-                "twig/twig": "^3.21"
+                "symfony/http-kernel": "^7.3"
             },
             "default-branch": true,
             "type": "symfony-bundle",
@@ -3797,6 +3733,9 @@
                 }
             },
             "autoload": {
+                "files": [
+                    "src/Runtime/functions.php"
+                ],
                 "psr-4": {
                     "Survos\\StepBundle\\": "src/"
                 }
@@ -3816,7 +3755,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-18T16:23:07+00:00"
+            "time": "2025-10-21T11:43:47+00:00"
         },
         {
             "name": "symfony/asset",
@@ -9945,28 +9884,28 @@
         },
         {
             "name": "webmozart/assert",
-            "version": "1.11.0",
+            "version": "1.12.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webmozarts/assert.git",
-                "reference": "11cb2199493b2f8a3b53e7f19068fc6aac760991"
+                "reference": "541057574806f942c94662b817a50f63f7345360"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozarts/assert/zipball/11cb2199493b2f8a3b53e7f19068fc6aac760991",
-                "reference": "11cb2199493b2f8a3b53e7f19068fc6aac760991",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/541057574806f942c94662b817a50f63f7345360",
+                "reference": "541057574806f942c94662b817a50f63f7345360",
                 "shasum": ""
             },
             "require": {
                 "ext-ctype": "*",
+                "ext-date": "*",
+                "ext-filter": "*",
                 "php": "^7.2 || ^8.0"
             },
-            "conflict": {
-                "phpstan/phpstan": "<0.12.20",
-                "vimeo/psalm": "<4.6.1 || 4.6.2"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^8.5.13"
+            "suggest": {
+                "ext-intl": "",
+                "ext-simplexml": "",
+                "ext-spl": ""
             },
             "type": "library",
             "extra": {
@@ -9997,9 +9936,9 @@
             ],
             "support": {
                 "issues": "https://github.com/webmozarts/assert/issues",
-                "source": "https://github.com/webmozarts/assert/tree/1.11.0"
+                "source": "https://github.com/webmozarts/assert/tree/1.12.0"
             },
-            "time": "2022-06-03T18:03:27+00:00"
+            "time": "2025-10-20T12:43:39+00:00"
         }
     ],
     "packages-dev": [
@@ -10088,20 +10027,20 @@
         },
         {
             "name": "doctrine/doctrine-fixtures-bundle",
-            "version": "4.2.0",
+            "version": "4.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/DoctrineFixturesBundle.git",
-                "reference": "cd58d7738fe1fea1dbfd3e3f3bb421ee92d45e10"
+                "reference": "11941deb6f2899b91e8b8680b07ffe63899d864b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/DoctrineFixturesBundle/zipball/cd58d7738fe1fea1dbfd3e3f3bb421ee92d45e10",
-                "reference": "cd58d7738fe1fea1dbfd3e3f3bb421ee92d45e10",
+                "url": "https://api.github.com/repos/doctrine/DoctrineFixturesBundle/zipball/11941deb6f2899b91e8b8680b07ffe63899d864b",
+                "reference": "11941deb6f2899b91e8b8680b07ffe63899d864b",
                 "shasum": ""
             },
             "require": {
-                "doctrine/data-fixtures": "^2.0",
+                "doctrine/data-fixtures": "^2.2",
                 "doctrine/doctrine-bundle": "^2.2 || ^3.0",
                 "doctrine/orm": "^2.14.0 || ^3.0",
                 "doctrine/persistence": "^2.4 || ^3.0 || ^4.0",
@@ -10154,7 +10093,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/DoctrineFixturesBundle/issues",
-                "source": "https://github.com/doctrine/DoctrineFixturesBundle/tree/4.2.0"
+                "source": "https://github.com/doctrine/DoctrineFixturesBundle/tree/4.3.0"
             },
             "funding": [
                 {
@@ -10170,7 +10109,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-10-12T16:50:54+00:00"
+            "time": "2025-10-20T06:18:40+00:00"
         },
         {
             "name": "masterminds/html5",
@@ -11804,6 +11743,66 @@
                 }
             ],
             "time": "2024-10-20T05:08:20+00:00"
+        },
+        {
+            "name": "survos/deployment-bundle",
+            "version": "2.0.25",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/survos/deployment-bundle.git",
+                "reference": "447e1a43bcdb7d8a3030061b9017958f870d5dc3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/survos/deployment-bundle/zipball/447e1a43bcdb7d8a3030061b9017958f870d5dc3",
+                "reference": "447e1a43bcdb7d8a3030061b9017958f870d5dc3",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.4",
+                "symfony/config": "^7.3",
+                "symfony/console": "^7.3",
+                "symfony/dependency-injection": "^7.3",
+                "symfony/form": "^7.3",
+                "symfony/http-kernel": "^7.3",
+                "symfony/process": "^7.3",
+                "twig/twig": "^3.4"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.0",
+                "symfony/browser-kit": "^7.3",
+                "symfony/framework-bundle": "^7.3",
+                "symfony/phpunit-bridge": "^7.3",
+                "symfony/twig-bundle": "^7.3",
+                "symfony/var-dumper": "^7.3"
+            },
+            "type": "symfony-bundle",
+            "autoload": {
+                "psr-4": {
+                    "Survos\\DeploymentBundle\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Tools for deploying Survos projects to dokku",
+            "keywords": [
+                "dev",
+                "symfony",
+                "symfony-ux"
+            ],
+            "support": {
+                "issues": "https://github.com/survos/deployment-bundle/issues",
+                "source": "https://github.com/survos/deployment-bundle/tree/2.0.25"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/kbond",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-10-03T11:59:35+00:00"
         },
         {
             "name": "symfony/browser-kit",

@@ -98,6 +98,9 @@
             "bin/phpunit"
         ]
     },
+    "survos/deployment-bundle": {
+        "version": "2.0.25"
+    },
     "survos/step-bundle": {
         "version": "dev-main"
     },
