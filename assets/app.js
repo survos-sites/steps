@@ -8,3 +8,8 @@ import './bootstrap.js';
 import './styles/app.css';
 
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
+
+import '@tabler/core';
+import '@tabler/core/dist/css/tabler.min.css';
+import 'reveal.js/plugin/highlight/highlight.js';
+import 'reveal.js';

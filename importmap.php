@@ -25,4 +25,17 @@ return [
     '@hotwired/turbo' => [
         'version' => '7.3.0',
     ],
+    '@tabler/core' => [
+        'version' => '1.4.0',
+    ],
+    '@tabler/core/dist/css/tabler.min.css' => [
+        'version' => '1.4.0',
+        'type' => 'css',
+    ],
+    'reveal.js' => [
+        'version' => '5.2.1',
+    ],
+    'reveal.js/plugin/highlight/highlight.js' => [
+        'version' => '5.2.1',
+    ],
 ];

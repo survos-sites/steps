@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Install & Use: example/bundle — Reveal.js talk</title>
+
+    <!-- Reveal.js (CDN) -->
+    <link rel="stylesheet" href="https://unpkg.com/reveal.js@4/dist/reveal.css">
+    <link rel="stylesheet" href="https://unpkg.com/reveal.js@4/dist/theme/black.css" id="theme">
+
+    <!-- Highlight.js (for syntax highlighting) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+    <style>
+        /* Small custom styles for readability */
+        pre code { font-size: 1.05rem; line-height: 1.35rem; }
+        .code-block { max-height: 62vh; overflow: auto; padding-right: 1rem; }
+        .hl-line { display: block; background: rgba(255,235,59,0.08); border-left: 3px solid #ffeb3b; padding-left: 0.5rem; }
+        .large-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace; font-size: 1.15rem; }
+        /* Make lists appear gradually with fragments that have a subtle fade-in */
+        .fragment { transition: opacity 0.35s ease; }
+        /* Responsive adjustments for printing */
+        @media print {
+            .reveal .controls, .reveal .progress, .reveal .overview, .reveal .slide-number { display: none !important; }
+            pre code { font-size: 10pt !important; }
+        }
+    </style>
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+
+        <!-- Title -->
+        <section>
+            <h1>Install & Use: <code>example/bundle</code></h1>
+            <p class="lead">A practical walkthrough — environment, install, config, maker commands, data</p>
+            <p class="fragment">Speaker: Your Name • <small>Symfony 7.3 / PHP 8.4</small></p>
+            <aside class="notes">
+                Quick opener: explain scope — "fake bundle" that provides an API client + CLI & services.
+            </aside>
+        </section>
+
+        <!-- Agenda -->
+        <section>
+            <h2>Agenda</h2>
+            <ul>
+                <li class="fragment">Environment & .env.local</li>
+                <li class="fragment">Install with Composer</li>
+                <li class="fragment">Configure YAML & API key</li>
+                <li class="fragment">Maker commands: controller, entity, migration</li>
+                <li class="fragment">Get data (wget) & use the bundle</li>
+                <li class="fragment">Best practices</li>
+            </ul>
+            <aside class="notes">Mention time estimates and demo plan.</aside>
+        </section>
+
+        <!-- .env.local -->
+        <section>
+            <h2>Step 1 — Local environment: <code>.env.local</code></h2>
+            <p class="fragment">Keep secrets out of repo. Use `.env.local` for machine-specific values.</p>
+
+            <div class="code-block fragment large-mono" data-fragment-index="1">
+<pre><code class="language-properties"># .env.local (gitignored)
+APP_ENV=dev
+DATABASE_URL="postgresql://db_user:db_pass@127.0.0.1:5432/my_db?serverVersion=17&charset=utf8"
+EXAMPLE_BUNDLE_API_KEY="put-your-api-key-here"
+# Optional overrides
+MAILER_DSN=smtp://localhost
+</code></pre>
+            </div>
+            <aside class="notes">
+                Stress: never commit real API keys. Use secrets vault or env vars in CI. Show how to add .env.local to .gitignore if needed.
+            </aside>
+        </section>
+
+        <!-- Composer install -->
+        <section>
+            <h2>Step 2 — Install the bundle</h2>
+            <p class="fragment">Use Composer to require the package (CDN or Packagist example)</p>
+
+            <div class="code-block fragment large-mono" data-fragment-index="1">
+<pre><code class="language-bash"># from project root
+composer require example/bundle
+
+# If package has recipe, symfony will auto-configure services.
+</code></pre>
+            </div>
+
+            <aside class="notes">
+                Mention: pin a specific version in production, e.g. composer require example/bundle:^1.2.0
+            </aside>
+        </section>
+
+        <!-- YAML config -->
+        <section>
+            <h2>Step 3 — Configure YAML (services / bundle config)</h2>
+            <p class="fragment">Place bundle config in <code>config/packages/example_bundle.yaml</code></p>
+
+            <div class="code-block fragment large-mono" data-fragment-index="1">
+<pre><code class="language-yaml"># config/packages/example_bundle.yaml
+example_bundle:
+  api_key: '%env(EXAMPLE_BUNDLE_API_KEY)%'
+  endpoint: 'https://api.example.org/v1'
+  options:
+    timeout: 10
+    retries: 2
+
+services:
+  Example\Integration\Client:
+    arguments:
+      $baseUri: '%example_bundle.endpoint%'
+      $apiKey: '%example_bundle.api_key%'
+</code></pre>
+            </div>
+            <aside class="notes">
+                Explain `%env()%` usage, DI autowiring, and where to document config.
+            </aside>
+        </section>
+
+        <!-- PHP constructor snippet -->
+        <section>
+            <h2>Step 4 — Example PHP usage: constructor & DI</h2>
+            <p class="fragment">Typical PHP 8.4 service that receives HttpClient + config</p>
+
+            <div class="code-block fragment large-mono" data-fragment-index="1">
+<pre><code class="language-php">// src/Service/ExampleClient.php
+namespace App\Service;
+
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+
+class ExampleClient
+{
+    private HttpClientInterface $http;
+    private string $baseUri;
+    private ?string $apiKey;
+
+    public function __construct(
+        HttpClientInterface $http,    // injected HttpClient
+        string $baseUri,              // injected from config
+        ?string $apiKey = null        // optional API key
+    ) {
+        $this->http = $http;
+        $this->baseUri = rtrim($baseUri, '/');
+        $this->apiKey = $apiKey;
+    }
+
+    // Simple example method
+    public function fetch(string $path): array
+    {
+        $response = $this->http->request('GET', $this->baseUri . '/' . ltrim($path, '/'), [
+            'headers' => $this->apiKey ? ['Authorization' => 'Bearer ' . $this->apiKey] : [],
+            'query' => []
+        ]);
+
+        return $response->toArray();
+    }
+}
+</code></pre>
+            </div>
+
+            <p class="fragment">Tip: prefer constructor injection, typed properties, and default `null` for optional values.</p>
+            <aside class="notes">
+                Call out: using HttpClientInterface from Symfony — more testable than curl directly.
+            </aside>
+        </section>
+
+        <!-- Maker commands -->
+        <section>
+            <h2>Step 5 — Use Maker: controllers, entities, migrations</h2>
+
+            <div class="code-block fragment large-mono" data-fragment-index="1">
+<pre><code class="language-bash"># Create a controller
+bin/console make:controller ExampleController
+
+# Create an entity (interactive)
+bin/console make:entity ExampleItem
+
+# Create a migration
+bin/console make:migration
+
+# Apply migration
+bin/console doctrine:migrations:migrate
+</code></pre>
+            </div>
+
+            <p class="fragment">If you create entities, keep your migrations small and review diffs before applying.</p>
+            <aside class="notes">
+                Mention `--regenerate` and `--format` flags if your project uses them. Recommend staging DB.
+            </aside>
+        </section>
+
+        <!-- Composer require dev tools & wget -->
+        <section>
+            <h2>Step 6 — Developer tools & data</h2>
+
+            <div class="code-block fragment large-mono" data-fragment-index="1">
+<pre><code class="language-bash"># Add maker & debugging tools (dev)
+composer require --dev symfony/maker-bundle symfony/debug-bundle
+
+# Example: download a sample dataset for local testing
+wget -O data/sample.json https://example.org/datasets/sample.json
+
+# Import or load the data via CLI or custom command:
+php bin/console app:import:data data/sample.json
+</code></pre>
+            </div>
+
+            <p class="fragment">Best practice: include a small sample dataset in the repo (fixtures) for reproducible demos.</p>
+            <aside class="notes">
+                Show where to add fixtures and how seeds live in tests/fixtures or data/seed.
+            </aside>
+        </section>
+
+        <!-- Adding an API key (notes & security) -->
+        <section>
+            <h2>Step 7 — Adding an API key safely</h2>
+            <ul>
+                <li class="fragment">Don't commit keys — use `.env.local` (gitignored) or secrets manager</li>
+                <li class="fragment">For CI, store secrets in CI settings and inject as env variables</li>
+                <li class="fragment">Rotate keys and give least privilege</li>
+            </ul>
+
+            <div class="fragment code-block large-mono" data-fragment-index="2">
+<pre><code class="language-bash"># Example: set env var on Linux/macOS
+export EXAMPLE_BUNDLE_API_KEY="xxxxxx"
+
+# Example: GitHub Actions (workflow secret)
+# env:
+#   EXAMPLE_BUNDLE_API_KEY: ${{ secrets.EXAMPLE_BUNDLE_API_KEY }}
+</code></pre>
+            </div>
+            <aside class="notes">
+                If using Docker, show how to pass build args or docker-compose env_file.
+            </aside>
+        </section>
+
+        <!-- Live usage example -->
+        <section>
+            <h2>Step 8 — Using the client in a controller</h2>
+
+            <div class="code-block large-mono fragment" data-fragment-index="1">
+<pre><code class="language-php">// src/Controller/ExampleController.php
+namespace App\Controller;
+
+use App\Service\ExampleClient;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+
+class ExampleController extends AbstractController
+{
+    #[Route('/example', name: 'example')]
+    public function index(ExampleClient $client): Response
+    {
+        $data = $client->fetch('items');
+        return $this->json($data);
+    }
+}
+</code></pre>
+            </div>
+            <aside class="notes">
+                Show small curl example to demo endpoint: `curl -s http://localhost:8000/example | jq .`
+            </aside>
+        </section>
+
+        <!-- Debugging tips -->
+        <section>
+            <h2>Quick debugging checklist</h2>
+            <ul>
+                <li class="fragment">1. Are env vars loaded? `bin/console debug:container --env=dev`</li>
+                <li class="fragment">2. Check service wiring: `bin/console debug:container Example\\Service\\ExampleClient`</li>
+                <li class="fragment">3. HTTP calls failing? Inspect logs & profiler</li>
+                <li class="fragment">4. Migration issues? Check SQL with `bin/console doctrine:migrations:diff`</li>
+            </ul>
+            <aside class="notes">Demonstrate `bin/console` debug tools during the talk if time permits.</aside>
+        </section>
+
+        <!-- Best practices -->
+        <section>
+            <h2>Best practices & tips</h2>
+            <ul>
+                <li class="fragment">Keep code snippets short and testable</li>
+                <li class="fragment">Provide a `README.md` with exact commands for reproducibility</li>
+                <li class="fragment">Add small sample dataset & automated tests</li>
+                <li class="fragment">Document config keys and defaults clearly</li>
+                <li class="fragment">Use feature flags or environment checks to avoid hitting production APIs in demos</li>
+            </ul>
+            <aside class="notes">Also mention semantic versioning for the bundle and changelog practices.</aside>
+        </section>
+
+        <!-- Summary -->
+        <section>
+            <h2>Summary</h2>
+            <ol>
+                <li class="fragment">Set `.env.local` and keep secrets out of repo</li>
+                <li class="fragment">composer require → configure YAML → DI</li>
+                <li class="fragment">Use maker commands to scaffold controllers/entities</li>
+                <li class="fragment">Load sample data and test endpoints</li>
+            </ol>
+
+            <p class="fragment">Thanks — questions?</p>
+            <aside class="notes">Open demo or Q&A. Provide repo link in chat or slide deck footer if you host it.</aside>
+        </section>
+
+        <!-- Footer / resources -->
+        <section>
+            <h3>Resources & Templates</h3>
+            <ul>
+                <li class="fragment">Reveal.js docs: https://revealjs.com</li>
+                <li class="fragment">Symfony Maker: https://symfony.com/doc/current/bundles/MakerBundle.html</li>
+                <li class="fragment">Symfony HttpClient: https://symfony.com/doc/current/http_client.html</li>
+            </ul>
+            <p class="fragment">Repo template available on request.</p>
+        </section>
+
+    </div>
+</div>
+
+<!-- Reveal.js scripts -->
+<script src="https://unpkg.com/reveal.js@4/dist/reveal.js"></script>
+
+<!-- highlight.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+<script>
+    // Initialize highlight.js
+    hljs.highlightAll();
+
+    // Initialize Reveal
+    Reveal.initialize({
+        hash: true,
+        width: 1200,
+        height: 800,
+        margin: 0.06,
+        minScale: 0.2,
+        maxScale: 1.2,
+        transition: 'slide',
+        dependencies: [
+            // highlight plugin is built-in; we still call highlightAll above
+            { src: 'https://unpkg.com/reveal.js@4/plugin/notes/notes.js', async: true },
+            { src: 'https://unpkg.com/reveal.js@4/plugin/markdown/markdown.js', async: true },
+            { src: 'https://unpkg.com/reveal.js@4/plugin/search/search.js', async: true }
+        ]
+    });
+
+    // Optional: make highlighted inline 'hl-line' visible if you want to programmatically add them
+    // (We used .hl-line as CSS helper — if you want dynamic line highlighting, add JS to wrap lines.)
+</script>
+</body>
+</html>
