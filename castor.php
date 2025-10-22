@@ -1,26 +1,21 @@
 <?php
 // File: castor.php (application root)
 
-require __DIR__.'/vendor/autoload.php';
+$autoloadCandidates = [
+    __DIR__ . '/../vendor/autoload.php',      // bundle-level
+    __DIR__ . '/../../vendor/autoload.php',   // one level up
+    __DIR__ . '/../../../vendor/autoload.php' // monorepo root
+];
 
-use function Castor\import;
-use function Castor\variable;
-use function Castor\io;
-use function Castor\context;
+use function Castor\{import,variable,io,context,http_download,open};
 use Castor\Attribute\AsListener;
 use Castor\Event\AfterBootEvent;
-use Symfony\Component\Console\Input\InputOption;
 use Castor\Event\FunctionsResolvedEvent;
 use Castor\Attribute\AsTask;
+use Symfony\Component\Console\Input\InputOption;
 
-use function Castor\PHPQa\phpstan;
-
-#[AsTask('phpstan', namespace: 'qa')]
-function qa_phpstan()
-{
-    phpstan(version: '1.11.0');
-}
-
+//import('.castor/vendor/castor-php/php-qa/castor.php');
+//import('composer://castor-php/php-qa', file: 'castor.php');
 
 // Support CODE=basic (only one deck) or import all castor/*.castor.php
 if ($code = ($_SERVER['CODE'] ?? $_ENV['CODE'] ?? null)) {
@@ -30,6 +25,21 @@ if ($code = ($_SERVER['CODE'] ?? $_ENV['CODE'] ?? null)) {
         import($f);
     }
 }
+
+#[AsTask('test:download')]
+function testDownload()
+{
+    $url = 'http://eu-central-1.linodeobjects.com/speedtest/100MB-speedtest';
+    $url = 'https://dummyjson.com/products';
+
+    open($url);
+
+    http_download($url, $local = pathinfo($url, PATHINFO_FILENAME), stream: true);
+    io()->writeln("download to $local completed. " . filesize($local));
+
+
+}
+
 
 #[AsListener(AfterBootEvent::class)]
 function add_option(AfterBootEvent $event)

@@ -98,6 +98,21 @@
             "bin/phpunit"
         ]
     },
+    "survos/barcode-bundle": {
+        "version": "2.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "1.0",
+            "ref": "19dfaed39754601b1ee9cc8e64cd0dee85a4ddfe"
+        },
+        "files": [
+            "config/packages/survos_barcode.yaml"
+        ]
+    },
+    "survos/core-bundle": {
+        "version": "2.0.25"
+    },
     "survos/deployment-bundle": {
         "version": "2.0.25"
     },

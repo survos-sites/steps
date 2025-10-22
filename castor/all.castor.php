@@ -1,6 +1,8 @@
 <?php
 // app/all.castor.php
 
+use function Castor\load_dot_env;
+use function Castor\io;
 use Castor\Attribute\AsTask;
 use Survos\StepBundle\Runtime\RunStep;
 use Survos\StepBundle\Metadata\Step;
@@ -159,3 +161,12 @@ function g_show_class(): void { RunStep::run(); }
     ]
 )]
 function h_browser(): void { RunStep::run(); }
+
+#[AsTask('show:db')]
+function show_database_url(): void
+{
+    $env = load_dot_env();
+
+    io()->writeln($_SERVER['DATABASE_URL'] ?? throw new \RuntimeException('DATABASE_URL is not defined'));
+}
+

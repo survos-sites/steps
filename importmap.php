@@ -33,7 +33,7 @@ return [
         'type' => 'css',
     ],
     'reveal.js' => [
-        'version' => '5.2.1',
+        'version' => '4.6.1',
     ],
     'reveal.js/plugin/highlight/highlight.js' => [
         'version' => '5.2.1',
