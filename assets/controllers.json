@@ -1,5 +1,11 @@
 {
     "controllers": {
+        "@survos/step-bundle": {
+            "reveal": {
+                "enabled": true,
+                "fetch": "lazy"
+            }
+        },
         "@symfony/ux-turbo": {
             "turbo-core": {
                 "enabled": true,

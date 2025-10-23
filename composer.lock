@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "33c6008c727133cadf68281532a0bea2",
+    "content-hash": "e8a64f25ba368ea5a8bdcc84b540ea96",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -4050,22 +4050,86 @@
             "time": "2025-10-13T12:21:57+00:00"
         },
         {
+            "name": "survos/installer",
+            "version": "2.1.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/survos/installer.git",
+                "reference": "aeb5a3dd3476a21e42e946d5ce18ed7e93b55983"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/survos/installer/zipball/aeb5a3dd3476a21e42e946d5ce18ed7e93b55983",
+                "reference": "aeb5a3dd3476a21e42e946d5ce18ed7e93b55983",
+                "shasum": ""
+            },
+            "require": {
+                "composer-plugin-api": "^2.0",
+                "php": "^8.3",
+                "symfony/finder": "^7.3",
+                "symfony/yaml": "^7.3"
+            },
+            "require-dev": {
+                "composer/composer": "^2.0"
+            },
+            "suggest": {
+                "roave/security-advisories": "Avoids installation of package versions with vulnerabilities"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "class": "Survos\\Installer\\Installer",
+                "symfony": {
+                    "require": "^7.3"
+                },
+                "branch-alias": {
+                    "dev-main": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Survos\\Installer\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Tac Tacelosky",
+                    "email": "tacman@gmail.com"
+                }
+            ],
+            "description": "Composer plugin for installing configuration files and updating .env and .gitignore, based on survos/installer",
+            "support": {
+                "source": "https://github.com/survos/installer/tree/2.1.4"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/kbond",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-07-14T14:06:29+00:00"
+        },
+        {
             "name": "survos/step-bundle",
             "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/step-bundle.git",
-                "reference": "1e892bdef0bbf48789cbd9fb662da8c1274d1c72"
+                "reference": "ac16aeec33258be16be3483ff3cdeb09b3846cd9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/survos/step-bundle/zipball/1e892bdef0bbf48789cbd9fb662da8c1274d1c72",
-                "reference": "1e892bdef0bbf48789cbd9fb662da8c1274d1c72",
+                "url": "https://api.github.com/repos/survos/step-bundle/zipball/ac16aeec33258be16be3483ff3cdeb09b3846cd9",
+                "reference": "ac16aeec33258be16be3483ff3cdeb09b3846cd9",
                 "shasum": ""
             },
             "require": {
                 "php": "^8.4",
                 "survos/core-bundle": "^2.0",
+                "survos/installer": "^2.1",
                 "symfony/asset-mapper": "^7.3",
                 "symfony/config": "^7.3",
                 "symfony/dependency-injection": "^7.3",
@@ -4073,11 +4137,6 @@
             },
             "default-branch": true,
             "type": "symfony-bundle",
-            "extra": {
-                "symfony": {
-                    "bundle": "Survos\\StepBundle\\SurvosStepBundle"
-                }
-            },
             "autoload": {
                 "files": [
                     "src/Runtime/functions.php"
@@ -4091,6 +4150,9 @@
                 "MIT"
             ],
             "description": "Author steps as typed actions (Bash/Console/OpenUrl/DisplayCode/etc.) and render to README/Reveal/JSON.",
+            "keywords": [
+                "symfony-ux"
+            ],
             "support": {
                 "issues": "https://github.com/survos/step-bundle/issues",
                 "source": "https://github.com/survos/step-bundle/tree/main"
@@ -4101,7 +4163,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-22T12:13:38+00:00"
+            "time": "2025-10-22T12:57:13+00:00"
         },
         {
             "name": "symfony/asset",

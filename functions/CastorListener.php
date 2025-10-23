@@ -5,7 +5,7 @@ use Castor\Attribute\AsListener;
 use Castor\Event\AfterExecuteTaskEvent;
 use Castor\Event\ContextCreatedEvent;
 
-if (!function_exists('my_event_listener')) {
+if (false && !function_exists('my_event_listener')) {
     #[AsListener(ContextCreatedEvent::class)]
     function my_event_listener(AfterExecuteTaskEvent|ContextCreatedEvent $event): void
     {

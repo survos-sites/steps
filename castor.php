@@ -14,8 +14,33 @@ use Castor\Event\FunctionsResolvedEvent;
 use Castor\Attribute\AsTask;
 use Symfony\Component\Console\Input\InputOption;
 
+/** Auto-import Survos StepBundle JSONL listeners once per process. */
+(function (): void {
+    $candidates = [
+        // vendor install
+        __DIR__ . '/vendor/survos/step-bundle/src/Castor/SlideshowJsonlListeners.php',
+        // monorepo layouts
+        __DIR__ . '/packages/step-bundle/src/Castor/SlideshowJsonlListeners.php',
+        __DIR__ . '/bundles/step-bundle/src/Castor/SlideshowJsonlListeners.php',
+    ];
+    foreach ($candidates as $path) {
+        if (is_file($path)) {
+            import($path);
+            break;
+        }
+    }
+})();
+
+
+
 //import('.castor/vendor/castor-php/php-qa/castor.php');
 //import('composer://castor-php/php-qa', file: 'castor.php');
+$listenerFilename = __DIR__ . '/functions/CastorListener.php';
+assert(file_exists($listenerFilename), "Missing $listenerFilename");
+import($listenerFilename);
+
+import(__DIR__ . '/vendor/survos/step-bundle/src/Castor/CastorTaskLogger.php');
+
 
 // Support CODE=basic (only one deck) or import all castor/*.castor.php
 if ($code = ($_SERVER['CODE'] ?? $_ENV['CODE'] ?? null)) {

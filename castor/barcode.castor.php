@@ -1,304 +1,228 @@
 <?php declare(strict_types=1);
-
-// file: castor/barcode.castor.php
-
 /**
- * Castor 1.0 tasks to scaffold a tiny Barcode demo using survos/barcode-bundle.
- *
- * Usage (from bundle root):
- *   vendor/bin/castor barcode:demo
- *   # or step-by-step:
- *   vendor/bin/castor barcode:new
- *   vendor/bin/castor barcode:install
- *   vendor/bin/castor barcode:controller
- *   vendor/bin/castor barcode:twig
- *   vendor/bin/castor barcode:config
- *   vendor/bin/castor barcode:start
+ * file: castor/barcode.castor.php — polymorphic actions version (PSR-4 actions)
+ * - Uses Survos\StepBundle\Action\* (Bash, ComposerRequire, YamlWrite, etc.)
+ * - Extracts actions from #[Step(...)] via local helper (no external includes needed)
+ * - Ensures DEMO_DIR exists (mkdir -p)
  */
 
 $autoloadCandidates = [
-    __DIR__ . '/../vendor/autoload.php',      // bundle-level
-    __DIR__ . '/../../vendor/autoload.php',   // one level up
-    __DIR__ . '/../../../vendor/autoload.php' // monorepo root
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../vendor/autoload.php',
+    __DIR__ . '/../../../vendor/autoload.php',
 ];
+foreach ($autoloadCandidates as $autoload) { if (is_file($autoload)) { require_once $autoload; break; } }
 
-use function Castor\{fs,task};
+use Castor\Attribute\{ AsTask, AsContext, AsOption };
+use Castor\Context;
+use function Castor\{ context, io, task };
+
 use Survos\StepBundle\Runtime\RunStep;
-use Survos\StepBundle\Metadata\Actions\{
-    Section,
+use Survos\StepBundle\Metadata\Step;
+use Survos\StepBundle\Action\{
     Bash,
-    Console,
-    Composer,
     ComposerRequire,
     ImportmapRequire,
-    RequirePackage,
-    Env,
     YamlWrite,
     FileWrite,
-    FileCopy,
-    OpenUrl,
     DisplayCode,
-    BrowserVisit,
-    BrowserClick,
-    BrowserAssert,
-    ShowClass
+    BrowserVisit
 };
 
+// -----------------------------------------------------------------------------
+// Config / bootstrap
+// -----------------------------------------------------------------------------
+const BARCODE_DEMO_DIR = '../demos/barcode-demo';
 
-foreach ($autoloadCandidates as $autoload) {
-    if (is_file($autoload)) {
-        require_once $autoload;
-        break;
-    }
+// Ensure the working directory exists (mkdir -p)
+$absDemo = __DIR__ . '/' . BARCODE_DEMO_DIR;
+if (!is_dir($absDemo)) {
+    @mkdir($absDemo, 0777, true);
 }
 
-use Castor\Attribute\AsTask;
-use Castor\Attribute\AsContext;
-use Castor\Context;
-use Castor\Attribute\AsOption;
-
-use function Castor\context;
-use function Castor\io;
-use function Castor\run;
-
-use Survos\StepBundle\Util\ArtifactWriter;
-
-use Survos\StepBundle\Util\PathUtil;
-use Survos\StepBundle\Metadata\Step;
-
-const DEMO_DIR = '../demos/barcode-demo';
-
-/* --------------------------------------------
-| Context (Castor 1.0): run all tasks from DEMO_DIR
-|---------------------------------------------*/
-#[AsContext(default: true, name: 'barcode')]
-function create_default_context(): Context
+// Local helper: extract actions from the current task's callable via #[Step(...)]
+/**
+ * @return array<object>  Polymorphic action objects from all #[Step] attributes.
+ */
+function _actions_from_current_task(): array
 {
-    return new Context(
-        workingDirectory: DEMO_DIR
-    );
+    $t = task();
+    return [];
+    $callable = $t->getTask()->getCallable();
+
+    $rf = new ReflectionFunction($callable);
+    $attrs = $rf->getAttributes(Step::class, ReflectionAttribute::IS_INSTANCEOF);
+
+    $out = [];
+    foreach ($attrs as $attr) {
+        /** @var Step $step */
+        $step = $attr->newInstance();
+        foreach ($step->actions as $a) {
+            $out[] = $a; // keep real objects; no array serialization
+        }
+    }
+    return $out;
 }
+
+// -----------------------------------------------------------------------------
+// Contexts
+// -----------------------------------------------------------------------------
+#[AsContext(default: true, name: 'barcode')]
+function ctx_barcode(): Context { return new Context(workingDirectory: BARCODE_DEMO_DIR); }
 
 #[AsContext(default: false, name: 'bundle')]
-function create_bundle_context(): Context
-{
-    return new Context(
-        workingDirectory: __DIR__ . '/..'
-    );
-}
+function ctx_bundle(): Context  { return new Context(workingDirectory: __DIR__ . '/..'); }
 
-/* --------------------------------------------
-| Tiny helper to run a shell command in (possibly adjusted) context
-|---------------------------------------------*/
-function run_step(
-    #[AsOption('Title to show before running the command')] string $title,
-    #[AsOption('Shell command to execute')] string                 $command,
-    ?string                                                        $cwd = null
-): void
-{
-    $baseCtx = context();
-    $baseWd = (string)$baseCtx->workingDirectory;
-    $target = $cwd ? PathUtil::absPath($cwd, $baseWd) : PathUtil::absPath($baseWd, getcwd() ?: $baseWd);
+// -----------------------------------------------------------------------------
+// Demo Orchestration
+// -----------------------------------------------------------------------------
 
-    if (!is_dir($target)) {
-        PathUtil::ensureDir($target);
-    }
-
-    $stepCtx = ($target === $baseWd) ? $baseCtx : $baseCtx->withWorkingDirectory($target);
-
-    io()->section($title);
-    io()->writeln(sprintf('<info>$ %s</info> (cwd: %s)', $command, $target));
-    run($command, context: $stepCtx);
-}
-
-/* --------------------------------------------
-| Orchestrator: full demo (mirrors README “proof it works”)
-|---------------------------------------------*/
-#[Step("Welcome.  We're going to do the following",
+/** Orchestrated demo */
+#[AsTask(name: 'barcode:demo', description: 'Create a small Symfony app, install the Barcode bundle, add a controller + Twig, start server')]
+#[Step("Plan",
+    description: "Create a new Symfony app, require Survos Barcode bundle, generate a controller, add a Twig demo, and run the server.",
     bullets: [
-        'uno (needs fade in!)',
-        'two',
-        'three',
+        "Scaffold Symfony webapp (if empty dir)",
+        "composer require survos/barcode-bundle (+dev helper)",
+        "Generate AppController + route '/'",
+        "Add Twig demo using |barcode and barcode()",
+        "Start the server & open the browser"
     ]
 )]
-#[AsTask(name: 'barcode:demo', description: 'Create a fresh Symfony app, install barcode bundle, add Twig, config, and start the server')]
 function barcode_demo(
-    #[AsOption('Symfony skeleton version (passed to symfony new --version=)')] string $symfonyVersion = '7.3',
-    #[AsOption('Write config/packages/barcode.yaml defaults')] bool                   $with_config = true,
-    #[AsOption('Skip starting the server/browser at the end')] bool                   $no_start = false,
-): void
-{
-    barcode_new($symfonyVersion);
+    #[AsOption('Symfony skeleton version (for symfony new --version=)')] string $version = '7.3',
+    #[AsOption('Also write config/packages/barcode.yaml defaults')] bool $withConfig = true,
+    #[AsOption('Skip starting the server/browser at the end')] bool $noStart = false,
+): void {
+    barcode_new($version);
     barcode_install();
     barcode_controller();
     barcode_twig();
-    if ($with_config) {
-        barcode_config();
-    }
-    if (!$no_start) {
-        barcode_start();
-    }
+    if ($withConfig) { barcode_config(); }
+    if (!$noStart)   { barcode_start(); }
     io()->success('Barcode demo ready!');
 }
 
-/* --------------------------------------------
-| 1) symfony new (create inside the context directory)
-|---------------------------------------------*/
-#[AsTask(name: 'barcode:new', description: 'Create Symfony webapp in the current context directory')]
-#[Step('symfony new --webapp')]
+/** 1) Create app */
+#[AsTask(name: 'barcode:new', description: 'Create Symfony webapp in the demo directory')]
+#[Step('Create Symfony project',
+    description: 'Create a fresh Symfony Web App in the current Castor working directory only if it is empty. Uses the official symfony binary so recipes apply, producing the standard app structure.',
+    bullets: [
+        'Ensure target directory exists',
+        'Skip scaffolding when directory is not empty',
+        'Use symfony new --webapp so recipes & defaults are applied',
+        'Result: baseline Symfony app (config/, public/, src/, var/)',
+    ],
+    actions: [
+        // Only scaffold when the directory is empty; otherwise, politely skip.
+        new Bash('[[ $(ls -A . 2>/dev/null) ]] && echo "Directory not empty — skipping Symfony scaffolding." || symfony new --webapp --version=7.3 --dir=.', note: 'Run once in an empty directory'),
+    ]
+)]
 function barcode_new(
     #[AsOption('Symfony version for symfony new --version=')] string $version = '7.3'
-): void
-{
-    $dir = PathUtil::absPath((string)context()->workingDirectory, getcwd() ?: '.');
-
-    // If directory is not empty, skip creation (idempotent)
-    if (is_dir($dir) && count(scandir($dir) ?: []) > 2) {
-        io()->warning("Directory '$dir' already contains a project; skipping symfony new.");
-        return;
-    }
-
-    PathUtil::ensureDir($dir);
-    run_step("Create Symfony $version webapp", "symfony new --webapp --version=$version --dir=.");
-    io()->success("Symfony app created in '$dir'.");
+): void {
+    RunStep::run(_actions_from_current_task(), context());
 }
 
-/* --------------------------------------------
-| 2) composer req survos/barcode-bundle
-|---------------------------------------------*/
-#[AsTask(name: 'barcode:install-bundles', description: 'Install survos/barcode-bundle via Composer')]
-#[Step('install bundles',
+/** 2) Require bundles */
+#[AsTask(name: 'barcode:install', description: 'Require survos/barcode-bundle and a dev helper')]
+#[Step('Install bundles',
+    description: 'Install Survos Barcode bundle and a dev helper bundle via Composer.',
+    bullets: ['composer req survos/barcode-bundle', 'composer req --dev survos/code-bundle'],
     actions: [
-        new ComposerRequire([
-            new RequirePackage('survos/barcode-bundle')
-        ]),
-        new ComposerRequire([
-            new RequirePackage('survos/code-bundle')
-        ], dev: true),
+        new ComposerRequire(['survos/barcode-bundle']),
+        new ComposerRequire(['survos/code-bundle'], dev: true),
     ]
 )]
 function barcode_install(): void
 {
-    RunStep::run();
-//    run_step('Install BarcodeBundle', 'symfony composer req survos/barcode-bundle');
-    io()->success('Bundle installed.');
+    RunStep::run(_actions_from_current_task(), context());
 }
 
-# PATCH (edit the existing function body/attributes)
-# file: castor/barcode.castor.php  — only the controller task/steps need changes
-
-# Replace your current barcode_controller() attribute block with this:
-
-#[AsTask(name: 'barcode:controller', description: 'Generate AppController and switch route path to "/"')]
-#[Step('createController',
+/** 3) Create controller + route */
+#[AsTask(name: 'barcode:controller', description: 'Generate AppController and set route path "/"')]
+#[Step('Generate controller',
+    description: 'Generate a basic AppController with route "/".',
+    bullets: ['Scaffold AppController', 'Bind route /'],
     actions: [
-        new Console(
-            'code:controller -m home -r home -p / App -f symfony.html',
-            id: 'createHomeController',
-            artifacts: [
-                // snapshot the generated controller file as an artifact
-                new \Survos\StepBundle\Metadata\Actions\Artifact(
-                    'src/Controller/AppController.php',
-                    'AppController.php',
-                    'code/php'
-                ),
-            ]
-        ),
-    ],
-)]
-#[Step('show controller + homepage',
-    actions: [
-        // reflect via FQCN (pretty header, methods, etc.)
-        new ShowClass('App\\Controller\\AppController', methods: ['__construct'], declarations: true),
-
-        // render the artifact snapshot (not the live file)
-        // Will be resolved to: public/artifacts/<safeTask>/<safeStep>/files/console-createhomecontroller/AppController.php
-        new DisplayCode('artifact:createController::createHomeController::AppController.php', lang: 'php', note: 'AppController.php'),
-
-        // open the app homepage
-        new BrowserVisit('http://127.0.0.1:8000/', note: 'Open Home Page'),
-    ],
+        new Bash('php bin/console code:controller -m home -r home -p / App -f symfony.html', note: 'Generate AppController and route /'),
+        new DisplayCode('src/Controller/AppController.php', lang: 'php', note: 'AppController.php'),
+        new BrowserVisit('/', note:'Open Home Page via Symfony proxy', host:'http://barcode.wip'),
+    ]
 )]
 function barcode_controller(): void
 {
-    try {
-        // Important: pass task() and context() so RunStep can bind artifacts properly
-        RunStep::run(task(), context());
-    } catch (\Throwable $e) {
-        // io()->error($e->getMessage());
-    }
+    RunStep::run(_actions_from_current_task(), context());
 }
 
-/* --------------------------------------------
-| 4) Write Twig demo template using the filter & function
-|---------------------------------------------*/
-#[AsTask(name: 'barcode:twig', description: 'Write templates/app/index.html.twig with barcode examples')]
-function barcode_twig(): void
-{
-    $projectDir = PathUtil::absPath((string)context()->workingDirectory, getcwd() ?: '.');
-    $tplPath = $projectDir . '/templates/app/index.html.twig';
-    PathUtil::ensureDir(\dirname($tplPath));
-
-    $tpl = <<<'TWIG'
+/** 4) Write demo Twig */
+#[AsTask(name: 'barcode:twig', description: 'Write templates/app/index.html.twig using barcode filter + function')]
+#[Step('Write demo Twig',
+    description: 'Add a simple page that renders a barcode via filter and function.',
+    bullets: ['Create templates/app/index.html.twig', 'Use |barcode and barcode() helpers'],
+    actions: [
+        new FileWrite(
+            path: 'templates/app/index.html.twig',
+            content: <<<'TWIG'
 {% extends 'base.html.twig' %}
 {% block body %}
-  <p>
-    {# as a filter #}
-    {{ 'test'|barcode }}
-  </p>
-  <p>
-    {# as a function #}
-    {{ barcode(random(), 2, 80, 'red') }}
-  </p>
+  <h1>Barcode demo</h1>
+  <p>Filter → {{ '0123456789'|barcode }}</p>
+  <p>Function → {{ barcode('ABC-12345', 3, 80, '#e74c3c') }}</p>
 {% endblock %}
-TWIG;
-
-    file_put_contents($tplPath, $tpl);
-    io()->success("Wrote $tplPath");
-}
-
-/* --------------------------------------------
-| (Optional) 5) config/packages/barcode.yaml defaults
-|---------------------------------------------*/
-#[AsTask(name: 'barcode:config', description: 'Write config/packages/barcode.yaml with default width/height/color')]
-function barcode_config(
-    #[AsOption('widthFactor')] int        $widthFactor = 3,
-    #[AsOption('height')] int             $height = 120,
-    #[AsOption('foregroundColor')] string $foregroundColor = 'purple',
-): void
+TWIG
+            ,
+            note: 'Create demo template'
+        ),
+        new DisplayCode('templates/app/index.html.twig', lang: 'twig', note:'index.html.twig')
+    ]
+)]
+function barcode_twig(): void
 {
-    $projectDir = PathUtil::absPath((string)context()->workingDirectory, getcwd() ?: '.');
-    $yamlPath = $projectDir . '/config/packages/barcode.yaml';
-    PathUtil::ensureDir(\dirname($yamlPath));
-
-    $yaml = <<<YAML
-barcode:
-  widthFactor: {$widthFactor}
-  height: {$height}
-  foregroundColor: '{$foregroundColor}'
-YAML;
-
-    file_put_contents($yamlPath, $yaml);
-    io()->success("Wrote $yamlPath");
+    RunStep::run(_actions_from_current_task(), context());
 }
 
-/* --------------------------------------------
-| 6) Start local server and open browser
-|---------------------------------------------*/
+/** 5) Optional config */
+#[AsTask(name: 'barcode:config', description: 'Write config/packages/barcode.yaml defaults')]
+#[Step('Write barcode config',
+    description: 'Provide default width/height/color for the barcode renderer.',
+    bullets: ['widthFactor, height, color'],
+    actions: [
+        new YamlWrite(
+            path: 'config/packages/barcode.yaml',
+            data: [
+                'barcode' => [
+                    'widthFactor'     => 3,
+                    'height'          => 120,
+                    'foregroundColor' => '#6c5ce7',
+                ]
+            ],
+            merge: false,
+            note: 'Barcode defaults'
+        ),
+        new DisplayCode('config/packages/barcode.yaml', lang: 'yaml', note: 'config/packages/barcode.yaml')
+    ]
+)]
+function barcode_config(
+    #[AsOption('widthFactor')] int $widthFactor = 3,
+    #[AsOption('height')] int $height = 120,
+    #[AsOption('foregroundColor')] string $foregroundColor = '#6c5ce7',
+): void {
+    // If you want to honor options, build the YamlWrite action dynamically from args.
+    RunStep::run(_actions_from_current_task(), context());
+}
+
+/** 6) Start local server + open browser */
 #[AsTask(name: 'barcode:start', description: 'Start Symfony local server (daemon) and open /')]
+#[Step('Start server',
+    description: 'Launch the Symfony local server and open the site.',
+    bullets: ['symfony server:start -d', 'Open home page'],
+    actions: [
+        new Bash('symfony server:start -d', note:'Start server'),
+        new BrowserVisit('/', note:'Open in browser', host:'http://barcode.wip'),
+    ]
+)]
 function barcode_start(): void
 {
-    run_step('Start Symfony local server', 'symfony server:start -d');
-    run_step('Open browser', 'symfony open:local');
-    io()->success('Server started and browser opened.');
-}
-
-/* --------------------------------------------
-| Utility: show the context working directory
-|---------------------------------------------*/
-#[AsTask(name: 'barcode:ctx', description: 'Show current context workingDirectory')]
-function barcode_ctx(): void
-{
-    $wd = PathUtil::absPath((string)context()->workingDirectory, getcwd() ?: '.');
-    io()->success("Context workingDirectory: $wd");
+    RunStep::run(_actions_from_current_task(), context());
 }

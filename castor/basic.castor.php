@@ -15,7 +15,6 @@ use Survos\StepBundle\Metadata\Actions\{
 
 #[AsTask(name: '0-install', description: 'Install PHP and front-end dependencies')]
 #[Step(
-    options: 'a,c,b',
     title: 'Install dependencies',
     description: 'Add Step authoring + EasyAdmin (PHP) and Tabler (front-end).',
     bullets: ['composer packages (left-justified bash block)','importmap packages'],
