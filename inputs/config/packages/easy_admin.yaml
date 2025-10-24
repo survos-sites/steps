@@ -1,0 +1,8 @@
+# Default EasyAdmin configuration
+easy_admin:
+  design:
+    brand_color: '#6f42c1'
+  site_name: 'EasyAdmin Demo'
+  dashboard:
+    title: 'EA Demo'
+    favicon_path: 'favicon.ico'

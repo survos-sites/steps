@@ -1,0 +1,4 @@
+# Meilisearch configuration
+meili:
+  url: 'http://127.0.0.1:7700'
+  api_key: 'YOUR_MEILI_MASTER_KEY'
