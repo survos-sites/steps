@@ -116,6 +116,9 @@
     "survos/deployment-bundle": {
         "version": "2.0.25"
     },
+    "survos/jsonl-bundle": {
+        "version": "dev-main"
+    },
     "survos/step-bundle": {
         "version": "dev-main"
     },

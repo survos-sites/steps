@@ -2,18 +2,21 @@
 // File: castor/bunny.castor.php
 
 use Castor\Attribute\AsTask;
-use Survos\StepBundle\Runtime\RunStep; // call the runner class directly
+use Survos\StepBundle\Runtime\RunStep;
+
+// call the runner class directly
 
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Metadata\Actions\{
-    Section,
-    Bash,
-    Console,
-    ComposerRequire,
     RequirePackage,
     Env,
     OpenUrl,
-    YamlWrite
+};
+use Survos\StepBundle\Action\{
+    YamlWrite,
+    Bash,
+    Console,
+    ComposerRequire
 };
 
 /**
@@ -52,7 +55,7 @@ function step0_new(): void
     ],
     actions: [
         new ComposerRequire(
-            requires: [
+            packages: [
                 new RequirePackage('survos/bunny-bundle', 'Bunny CDN integration'),
                 new RequirePackage('survos/simple-datatables-bundle', 'Simple Datatables helper (optional)'),
             ],
@@ -103,7 +106,6 @@ function step2_config(): void
     actions: [
         new YamlWrite(
             path: 'config/packages/survos_bunny.yaml',
-            cwd: 'bunny-demo',
             content: <<<YAML
 survos_bunny:
   # Main (read-only) API key, typically used for listing zones etc.

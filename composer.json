@@ -22,6 +22,7 @@
         "survos/barcode-bundle": "^2.0.25",
         "survos/core-bundle": "^2.0.25",
         "survos/installer": "^2.1.4",
+        "survos/jsonl-bundle": "dev-main",
         "survos/step-bundle": "dev-main",
         "symfony/asset": "^7.3",
         "symfony/asset-mapper": "^7.3.4",

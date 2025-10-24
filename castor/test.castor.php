@@ -30,7 +30,7 @@ const DEMO_DIR = '../demos/barcode-demo';
 #[AsContext(name: 'test-artifacts')]
 function ctx(): Context
 {
-    return new Context(workingDirectory: DEMO_DIR);
+    return new Context(workingDirectory: MEILI_DEMO_DIR);
 }
 
 /**

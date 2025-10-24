@@ -29,6 +29,30 @@
 <div class="reveal">
     <div class="slides">
 
+        <section>
+            <h2>h2 <code>title</code></h2>
+            <p class="fragment">paragraph fragment</p>
+
+            <div class="code-block fragment large-mono" data-fragment-index="1">
+<pre><code class="language-properties"># .env.local (gitignored)
+MAILER_DSN=smtp://localhost
+</code></pre>
+            </div>
+            <aside class="notes">
+                Stress: never commit real API keys. Use secrets vault or env vars in CI. Show how to add .env.local to .gitignore if needed.
+            </aside>
+        </section>
+
+
+        <section>
+            <h2>h2 title</h2>
+            <ul>
+                <li class="fragment">ls class=fragment</li>
+                <li class="fragment">ls class=fragment</li>
+            </ul>
+            <aside class="notes">Aside notes</aside>
+        </section>
+
         <!-- Title -->
         <section>
             <h1>Install & Use: <code>example/bundle</code></h1>
@@ -68,7 +92,7 @@ MAILER_DSN=smtp://localhost
 </code></pre>
             </div>
             <aside class="notes">
-                Stress: never commit real API keys. Use secrets vault or env vars in CI. Show how to add .env.local to .gitignore if needed.
+                Speaker note: you can also use Symfony value
             </aside>
         </section>
 
@@ -80,7 +104,6 @@ MAILER_DSN=smtp://localhost
             <div class="code-block fragment large-mono" data-fragment-index="1">
 <pre><code class="language-bash"># from project root
 composer require example/bundle
-
 # If package has recipe, symfony will auto-configure services.
 </code></pre>
             </div>

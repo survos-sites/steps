@@ -34,14 +34,15 @@ use Survos\StepBundle\Action\{
     IfFileExists
 };
 
+
 // -----------------------------------------------------------------------------
 // Config & Context
 // -----------------------------------------------------------------------------
-const DEMO_DIR = '../demos/sf-fast';
-if (!is_dir(__DIR__ . '/' . DEMO_DIR)) { @mkdir(__DIR__ . '/' . DEMO_DIR, 0777, true); }
+const FAST_DEMO_DIR = '../demos/sf-fast';
+if (!is_dir(__DIR__ . '/' . FAST_DEMO_DIR)) { @mkdir(__DIR__ . '/' . FAST_DEMO_DIR, 0777, true); }
 
 #[AsContext(default: true, name: 'sf')]
-function ctx_sf(): Context { return new Context(workingDirectory: DEMO_DIR); }
+function ctx_sf(): Context { return new Context(workingDirectory: FAST_DEMO_DIR); }
 
 // -----------------------------------------------------------------------------
 // Orchestrator
@@ -60,9 +61,9 @@ function sf_demo(
     #[AsOption('Symfony skeleton version (for symfony new --version=)')] string $version = '7.3',
     #[AsOption('Skip browser open at the end')] bool $noOpen = false,
 ): void {
-    sf_new($version);
+    md_new($version);
     sf_install_bundles();
-    sf_make_controller();
+    md_make_controller();
     sf_make_entity();
     if (!$noOpen) { sf_open(); }
     io()->success('Symfony fast demo completed.');
@@ -94,13 +95,21 @@ function sf_new(string $version = '7.3'): void
 // -----------------------------------------------------------------------------
 #[AsTask(name: 'sf:install-bundles', description: 'Install helper/demo bundles')]
 #[Step(
-    'Install bundles',
+    'Install Production Bundles',
     description: 'Require useful bundles; Composer skips or is fast if already present.',
-    bullets: ['symfony/maker-bundle (dev)', 'symfony/asset-mapper', 'survos/barcode-bundle'],
+    bullets: ['install production'],
     actions: [
-        new ComposerRequire(['symfony/maker-bundle'], dev: true),
-        new ComposerRequire(['symfony/asset-mapper']),
-        new ComposerRequire(['survos/barcode-bundle']),
+        new ComposerRequire(['easycore/easyadmin', 'survos/meili-bundle']),
+    ]
+)]
+#[Step(
+    'Install Development Tools',
+    description: 'testing and code generation',
+    bullets: ['only used in dev/test env'],
+    actions: [
+        new ComposerRequire([
+            'symfony/maker-bundle',
+            'survos/code-bundle'], dev: true),
     ]
 )]
 function sf_install_bundles(): void

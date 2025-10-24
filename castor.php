@@ -1,116 +1,130 @@
 <?php
-// File: castor.php (application root)
+// file: castor.php (application root)
 
+declare(strict_types=1);
+
+// -----------------------------------------------------------------------------
+// Autoload
+// -----------------------------------------------------------------------------
 $autoloadCandidates = [
-    __DIR__ . '/../vendor/autoload.php',      // bundle-level
-    __DIR__ . '/../../vendor/autoload.php',   // one level up
-    __DIR__ . '/../../../vendor/autoload.php' // monorepo root
+    __DIR__ . '/vendor/autoload.php',
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../vendor/autoload.php',
 ];
+foreach ($autoloadCandidates as $autoload) {
+    if (is_file($autoload)) { require_once $autoload; break; }
+}
 
-use function Castor\{import,variable,io,context,http_download,open};
+use function Castor\{ run, import, variable, io, context };
 use Castor\Attribute\AsListener;
+use Castor\Attribute\AsTask;
 use Castor\Event\AfterBootEvent;
 use Castor\Event\FunctionsResolvedEvent;
-use Castor\Attribute\AsTask;
 use Symfony\Component\Console\Input\InputOption;
 
-/** Auto-import Survos StepBundle JSONL listeners once per process. */
+// -----------------------------------------------------------------------------
+// Import Survos StepBundle castor utilities (listeners + helpers) once
+// -----------------------------------------------------------------------------
 (function (): void {
     $candidates = [
-        // vendor install
+        // JSONL listeners (logger)
         __DIR__ . '/vendor/survos/step-bundle/src/Castor/SlideshowJsonlListeners.php',
-        // monorepo layouts
         __DIR__ . '/packages/step-bundle/src/Castor/SlideshowJsonlListeners.php',
         __DIR__ . '/bundles/step-bundle/src/Castor/SlideshowJsonlListeners.php',
+
+        // Step helpers (global functions, e.g., _actions_from_current_task)
+        __DIR__ . '/vendor/survos/step-bundle/src/Castor/StepHelpers.php',
+        __DIR__ . '/packages/step-bundle/src/Castor/StepHelpers.php',
+        __DIR__ . '/bundles/step-bundle/src/Castor/StepHelpers.php',
     ];
+
+    $loaded = [];
     foreach ($candidates as $path) {
         if (is_file($path)) {
-            import($path);
-            break;
+            // Avoid re-importing the same file twice
+            if (!in_array($path, $loaded, true)) {
+                import($path);
+                $loaded[] = $path;
+            }
         }
     }
 })();
 
-
-
-//import('.castor/vendor/castor-php/php-qa/castor.php');
-//import('composer://castor-php/php-qa', file: 'castor.php');
+// -----------------------------------------------------------------------------
+// Your local listeners (optional)
+// -----------------------------------------------------------------------------
 $listenerFilename = __DIR__ . '/functions/CastorListener.php';
-assert(file_exists($listenerFilename), "Missing $listenerFilename");
-import($listenerFilename);
+if (is_file($listenerFilename)) {
+    import($listenerFilename);
+}
 
-import(__DIR__ . '/vendor/survos/step-bundle/src/Castor/CastorTaskLogger.php');
-
-
-// Support CODE=basic (only one deck) or import all castor/*.castor.php
+// -----------------------------------------------------------------------------
+// Load castor decks
+//   - Support CODE=barcode to import a single deck
+//   - Otherwise load all castor/*.castor.php
+// -----------------------------------------------------------------------------
 if ($code = ($_SERVER['CODE'] ?? $_ENV['CODE'] ?? null)) {
-    import(__DIR__."/castor/{$code}.castor.php");
+    $file = __DIR__ . "/castor/{$code}.castor.php";
+    if (!is_file($file)) {
+        fwrite(STDERR, "Missing deck: {$file}\n");
+        exit(1);
+    }
+    import($file);
 } else {
-    foreach (glob(__DIR__.'/castor/*.castor.php') as $f) {
+    foreach (glob(__DIR__ . '/castor/*.castor.php') ?: [] as $f) {
         import($f);
     }
 }
 
-#[AsTask('test:download')]
-function testDownload()
+// -----------------------------------------------------------------------------
+// Sample tasks & global listeners (unchanged, tidied)
+// -----------------------------------------------------------------------------
+#[AsTask('sanity', description: 'Sanity: can Castor run() spawn a process?')]
+function sanity(): void
 {
-    $url = 'http://eu-central-1.linodeobjects.com/speedtest/100MB-speedtest';
-    $url = 'https://dummyjson.com/products';
+    io()->writeln('About to run ls (tokenized array)…');
+    run(['ls', '-lh'], context());
 
-    open($url);
+    io()->writeln('About to run bash -lc "echo …" (string)…');
+    run('bash -lc "echo HI_FROM_CASTOR && sleep 1 && echo DONE"', context());
 
-    http_download($url, $local = pathinfo($url, PATHINFO_FILENAME), stream: true);
-    io()->writeln("download to $local completed. " . filesize($local));
-
-
+    io()->success('Completed spawn test.');
 }
 
-
 #[AsListener(AfterBootEvent::class)]
-function add_option(AfterBootEvent $event)
+function add_option(AfterBootEvent $event): void
 {
     $definition = $event->application->getDefinition();
-    $definition->addOption(new InputOption('foobar', description: "a global option set in " . __FILE__));
-//    dd($definition);
+    $definition->addOption(new InputOption('foobar', description: "A global option added in " . basename(__FILE__)));
     $event->application->setDefinition($definition);
 }
 
 #[AsListener(FunctionsResolvedEvent::class)]
-function scope_tasks(FunctionsResolvedEvent $e)
+function scope_tasks(FunctionsResolvedEvent $e): void
 {
     $deployTask = [];
     $regularTasks = [];
-    foreach ($e->taskDescriptors as $taskDescriptor) {
-        if ($taskDescriptor->taskAttribute instanceof AsDeployTask) {
-            $deployTask[] = $taskDescriptor;
+    foreach ($e->taskDescriptors as $td) {
+        if ($td->taskAttribute instanceof AsDeployTask) {
+            $deployTask[] = $td;
         } else {
-            $regularTasks[] = $taskDescriptor;
+            $regularTasks[] = $td;
         }
     }
-
     $deploy = variable('deploy', false);
-    $e->taskDescriptors = $deploy ? $deployTask : $regularTasks;
-    $e->symfonyTaskDescriptors = $deploy ? [] : $e->symfonyTaskDescriptors;
+    $e->taskDescriptors        = $deploy ? $deployTask : $regularTasks;
+    $e->symfonyTaskDescriptors = $deploy ? []         : $e->symfonyTaskDescriptors;
 }
 
 #[\Attribute(\Attribute::TARGET_FUNCTION)]
-class AsDeployTask extends Castor\Attribute\AsTask
-{
-}
+class AsDeployTask extends Castor\Attribute\AsTask {}
 
-#[AsTask(name: 'bar', namespace: 'foo', description: 'Output foo bar')]
-function a_very_long_function_name_that_is_very_painful_to_write(): void
-{
-    io()->writeln('Foo bar');
-}
-
-#[AsTask()]
+// Small example tasks
+#[AsTask(name: 'foo', description: 'Show CWD juggling')]
 function foo(): void
 {
-    $context = context();
-
-    io()->writeln($context->workingDirectory); // will print the directory of the castor.php file
-
-    $context = $context->withWorkingDirectory('/tmp'); // will create a new context where the current directory is /tmp
-    run('pwd', context: $context); // will print "/tmp"
+    $ctx = context();
+    io()->writeln($ctx->workingDirectory);
+    $ctx = $ctx->withWorkingDirectory('/tmp');
+    run('pwd', context: $ctx);
 }

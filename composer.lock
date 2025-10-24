@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e8a64f25ba368ea5a8bdcc84b540ea96",
+    "content-hash": "ce3d14479b37eb860410c9cd6c10d6a6",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -4111,6 +4111,59 @@
                 }
             ],
             "time": "2025-07-14T14:06:29+00:00"
+        },
+        {
+            "name": "survos/jsonl-bundle",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/survos/jsonl-bundle.git",
+                "reference": "604ce9c1616193de9ecad8c4cd6e250de5e862fe"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/survos/jsonl-bundle/zipball/604ce9c1616193de9ecad8c4cd6e250de5e862fe",
+                "reference": "604ce9c1616193de9ecad8c4cd6e250de5e862fe",
+                "shasum": ""
+            },
+            "require": {
+                "ext-zlib": "*",
+                "php": "^8.4",
+                "psr/log": "^3.0",
+                "symfony/console": "^7.0",
+                "symfony/http-client": "^7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^12"
+            },
+            "default-branch": true,
+            "type": "symfony-bundle",
+            "extra": {
+                "symfony": {
+                    "bundle": "Survos\\JsonlBundle\\SurvosJsonlBundle"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Survos\\JsonlBundle\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Fast, concurrent, resumable, strictly-ordered JSONL ingestion utilities for Symfony 7.3 / PHP 8.4",
+            "support": {
+                "issues": "https://github.com/survos/jsonl-bundle/issues",
+                "source": "https://github.com/survos/jsonl-bundle/tree/main"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/kbond",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-10-13T12:18:35+00:00"
         },
         {
             "name": "survos/step-bundle",
@@ -12731,6 +12784,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "survos/jsonl-bundle": 20,
         "survos/step-bundle": 20
     },
     "prefer-stable": true,

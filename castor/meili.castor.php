@@ -1,12 +1,10 @@
 <?php declare(strict_types=1);
 /**
- * file: castor/sf-fast.castor.php
+ * file: castor/meili.castor.php
  *
- * A short, fast, re-runnable Symfony demo that leans on generators:
+ * A short, fast, re-runnable Symfony demo using meili that leans on generators:
  *  - Create project (only if directory is empty)
  *  - Install bundles
- *  - make:controller App
- *  - make:entity Task  (+ make:migration + migrate)
  *
  * Every step is slideshow-ready via #[Step] and guarded for re-runs.
  */
@@ -20,7 +18,7 @@ foreach ($autoloadCandidates as $autoload) { if (is_file($autoload)) { require_o
 
 use Castor\Attribute\{AsTask, AsContext, AsOption};
 use Castor\Context;
-use function Castor\{context, io};
+use function Castor\{context, io, fs};
 
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Step\RunStep;
@@ -29,6 +27,7 @@ use Survos\StepBundle\Action\{
     DisplayCode,
     BrowserVisit,
     Console,
+    Bash,
     IfDirEmpty,
     IfFileMissing,
     IfFileExists
@@ -37,32 +36,43 @@ use Survos\StepBundle\Action\{
 // -----------------------------------------------------------------------------
 // Config & Context
 // -----------------------------------------------------------------------------
-const DEMO_DIR = '../demos/sf-fast';
-if (!is_dir(__DIR__ . '/' . DEMO_DIR)) { @mkdir(__DIR__ . '/' . DEMO_DIR, 0777, true); }
+const MEILI_DEMO_DIR = '../demos/meili';
+if (!is_dir(__DIR__ . '/' . MEILI_DEMO_DIR)) { @mkdir(__DIR__ . '/' . MEILI_DEMO_DIR, 0777, true); }
 
 #[AsContext(default: true, name: 'sf')]
-function ctx_sf(): Context { return new Context(workingDirectory: DEMO_DIR); }
+function ctx_meili(): Context { return new Context(workingDirectory: MEILI_DEMO_DIR); }
 
 // -----------------------------------------------------------------------------
 // Orchestrator
 // -----------------------------------------------------------------------------
-#[AsTask(name: 'sf:demo', description: 'Symfony fast demo using generators')]
+#[AsTask(name: 'md:demo', description: 'Symfony Amsterdam Conference')]
 #[Step(
-    'Plan',
-    description: 'Create/reuse a Symfony app, add bundles, generate a controller and entity, and run migrations.',
+    'Symfony + Meilisearch',
+    description: 'Create a Symfony application using Meilisearch',
     bullets: [
-        'Re-run safe: guarded per step',
-        'All code uses makers & console generators',
-        'Slideshow-friendly output'
+        'makers & console generators',
+        'leverage easyadmin',
+        'fast, beautiful UI',
     ]
 )]
-function sf_demo(
+#[Step(
+    'Pre-requisites',
+    bullets: [
+        'Symfony CLI',
+        'PHP 8.4+',
+        'Symfony ^7.3|^8.0',
+        'meilisearch',
+        'OpenAI Api Key',
+        'database extensions (sqlite for demo)',
+    ]
+)]
+function md_demo(
     #[AsOption('Symfony skeleton version (for symfony new --version=)')] string $version = '7.3',
     #[AsOption('Skip browser open at the end')] bool $noOpen = false,
 ): void {
-    sf_new($version);
-    sf_install_bundles();
-    sf_make_controller();
+    md_new($version);
+    md_install_bundles();
+    md_make_controller();
     sf_make_entity();
     if (!$noOpen) { sf_open(); }
     io()->success('Symfony fast demo completed.');
@@ -71,7 +81,7 @@ function sf_demo(
 // -----------------------------------------------------------------------------
 // 1) Create Symfony project (only if directory empty)
 // -----------------------------------------------------------------------------
-#[AsTask(name: 'sf:new', description: 'Create Symfony webapp if directory is empty')]
+#[AsTask(name: 'md:new', description: 'Create Symfony webapp if directory is empty')]
 #[Step(
     'Create Symfony project',
     description: 'Scaffold a Symfony Web App ONLY when the working directory is empty.',
@@ -80,11 +90,14 @@ function sf_demo(
         'Skips when directory is not empty'
     ],
     actions: [
-        new Console('new', ['--webapp', '--version=7.3', '--dir=.'], prefer: 'symfony')
+        new Bash('symfony new --webapp --dir=.')
     ]
 )]
-function sf_new(string $version = '7.3'): void
+function md_new(string $version = '7.3'): void
 {
+    if (!fs()->exists(context()->workingDirectory)) {
+        fs()->mkdir(context()->workingDirectory);
+    }
     // (If you want to honor $version dynamically, build the args with it.)
     RunStep::run(_actions_from_current_task(), context());
 }
@@ -92,13 +105,13 @@ function sf_new(string $version = '7.3'): void
 // -----------------------------------------------------------------------------
 // 2) Install bundles (Composer will no-op quickly if already present)
 // -----------------------------------------------------------------------------
-#[AsTask(name: 'sf:install-bundles', description: 'Install helper/demo bundles')]
+#[AsTask(name: 'md:bundles', description: 'Install helper/demo bundles')]
 #[Step(
     'Install Production Bundles',
     description: 'Require useful bundles; Composer skips or is fast if already present.',
     bullets: ['install production'],
     actions: [
-        new ComposerRequire(['easycore/easyadmin', 'survos/meili-bundle']),
+        new ComposerRequire(['easycorp/easyadmin-bundle', 'survos/meili-bundle']),
     ]
 )]
 #[Step(
@@ -111,15 +124,24 @@ function sf_new(string $version = '7.3'): void
             'survos/code-bundle'], dev: true),
     ]
 )]
-function sf_install_bundles(): void
+function md_install_bundles(): void
 {
     RunStep::run(_actions_from_current_task(), context());
 }
 
-// -----------------------------------------------------------------------------
-// 3) make:controller App (skip when it already exists)
-// -----------------------------------------------------------------------------
-#[AsTask(name: 'sf:make-controller', description: 'Generate AppController (skips if exists)')]
+#[AsTask(name: 'md:data', description: 'Download data files')]
+#[Step(
+    'fetch and load csv files',
+    bullets: ['fetch from github', 'create draft entity from headers'],
+    actions: [
+        new Bash('wget https://raw.githubusercontent.com/sanjeevai/Investigate_a_dataset/master/tmdb-movies.csv -O movies.csv'),
+        new Console('code:entity Movie --file movies.csv'),
+        new DisplayCode('src/Entity/Movie.php', lang: 'php', note: 'doctrine entity')
+    ]
+)]
+function md_make_controller(): void { RunStep::run(_actions_from_current_task(), context()); }
+
+#[AsTask(name: 'md:controller', description: 'Generate AppController (skips if exists)')]
 #[Step(
     'Generate controller',
     description: 'Use maker to scaffold AppController + Twig view.',
@@ -127,17 +149,15 @@ function sf_install_bundles(): void
     actions: [
             new Console('make:controller', ['App']),
             new DisplayCode('src/Controller/AppController.php', lang: 'php', note: 'AppController.php')
+            new DisplayCode('src/Controller/AppController.php', lang: 'php', note: 'AppController.php')
     ]
 )]
-function sf_make_controller(): void
-{
-    RunStep::run(_actions_from_current_task(), context());
-}
+function md_make_controller(): void { RunStep::run(_actions_from_current_task(), context()); }
 
 // -----------------------------------------------------------------------------
 // 4) make:entity Task + make:migration + migrate
 // -----------------------------------------------------------------------------
-#[AsTask(name: 'sf:make-entity', description: 'Create Task entity then migrate')]
+#[AsTask(name: 'md:make-entity', description: 'Create Task entity then migrate')]
 #[Step(
     'Create Task entity + migrate',
     description: 'Generate a Task entity, then create and run a migration (non-interactive).',
@@ -157,7 +177,7 @@ function sf_make_entity(): void
 // -----------------------------------------------------------------------------
 // 5) Open in browser (optional)
 // -----------------------------------------------------------------------------
-#[AsTask(name: 'sf:open', description: 'Open the home page')]
+#[AsTask(name: 'md:open', description: 'Open the home page')]
 #[Step(
     'Open in browser',
     description: 'Visit the app via the local proxy (adjust domain as needed).',

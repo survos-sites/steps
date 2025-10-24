@@ -1,3 +1,13 @@
-body {
-    background-color: skyblue;
+/* Small custom styles for readability */
+pre code { font-size: 1.05rem; line-height: 1.35rem; }
+.code-block { max-height: 62vh; overflow: auto; padding-right: 1rem; }
+.hl-line { display: block; background: rgba(255,235,59,0.08); border-left: 3px solid #ffeb3b; padding-left: 0.5rem; }
+.large-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace; font-size: 1.15rem; }
+/* Make lists appear gradually with fragments that have a subtle fade-in */
+.fragment { transition: opacity 0.35s ease; }
+/* Responsive adjustments for printing */
+@media print {
+    .reveal .controls, .reveal .progress, .reveal .overview, .reveal .slide-number { display: none !important; }
+    pre code { font-size: 10pt !important; }
 }
+
