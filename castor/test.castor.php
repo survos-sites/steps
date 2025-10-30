@@ -18,19 +18,16 @@ use function Castor\{context, io, task};
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Runtime\RunStep;
 use Survos\StepBundle\Util\PathUtil;
-use Survos\StepBundle\Metadata\Actions\{
-    FileWrite,
-    Console,
-    DisplayCode
-};
+use Survos\StepBundle\Action\{Console,DisplayCode,FileWrite};
+//use Survos\StepBundle\Metadata\Actions\{};
 
-const DEMO_DIR = '../demos/barcode-demo';
+const TEST_DEMO_DIR = '../demos/test-demo';
 
 /** Run all steps inside a sandbox dir */
 #[AsContext(name: 'test-artifacts')]
 function ctx(): Context
 {
-    return new Context(workingDirectory: MEILI_DEMO_DIR);
+    return new Context(workingDirectory: TEST_DEMO_DIR);
 }
 
 /**

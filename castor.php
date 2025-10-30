@@ -71,6 +71,7 @@ if ($code = ($_SERVER['CODE'] ?? $_ENV['CODE'] ?? null)) {
     }
     import($file);
 } else {
+
     foreach (glob(__DIR__ . '/castor/*.castor.php') ?: [] as $f) {
         import($f);
     }

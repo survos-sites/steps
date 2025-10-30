@@ -16,9 +16,11 @@ use Castor\Attribute\{AsTask, AsContext};
 use Castor\Context;
 use function Castor\{context, io};
 use Survos\StepBundle\Metadata\Step;
-use Survos\StepBundle\Step\RunStep;
+use Survos\StepBundle\Runtime\RunStep;
 use Survos\StepBundle\Action\{
+    Artifact,
     ComposerRequire,
+    Env,
     Console,
     Bash,
     CopyFile,
@@ -26,80 +28,152 @@ use Survos\StepBundle\Action\{
     BrowserVisit
 };
 
-const INPUT_DIR = __DIR__ . '/../inputs';
-const DEMO_DIR  = '../demos/easyadmin';
+const INPUT_DIR = __DIR__ . '/../inputs'; // known config, php, images, etc.  urls?
+const DEMO_DIR  = '../demos/easyadmin'; // where the demo will be built
 
-#[AsContext(default: true, name: 'sf')]
-function ctx_ea(): Context { return new Context(workingDirectory: DEMO_DIR); }
+#[AsContext(name: 'easyadmin')]
+function ctx_easyadmin(): Context { return new Context(workingDirectory: DEMO_DIR); }
 
-#[AsTask(name: 'ea:demo', description: 'EasyAdmin 20-minute Symfony demo')]
-#[Step(
-    'EasyAdmin Demo',
-    description: 'Create a Symfony app with EasyAdmin',
-    bullets: [
-        'Create project',
-        'Install EasyAdmin',
-        'Generate Task entity + dashboard',
-        'Configure YAML files'
-    ]
-)]
-function ea_demo(): void
-{
-    ea_new();
-    ea_install();
-    ea_make_entity();
-    ea_configure();
-    ea_dashboard();
-    ea_open();
-    io()->success('EasyAdmin demo completed.');
-}
+//#[AsTask(name: 'ea:demo', description: 'EasyAdmin 20-minute Symfony demo')]
+//#[Step(
+//    'EasyAdmin Demo',
+//    description: 'Create a Slideshow for easyadmin',
+//    bullets: [
+//        'We are in ' . __METHOD__,
+//        'Create demo project',
+//        'Install EasyAdmin',
+//        'Generate Task entity + dashboard',
+//        'Configure YAML files'
+//    ]
+//)]
+//function ea_demo(): void
+//{
+//    ea_new();
+//    ea_install();
+//    ea_make_entity();
+//    ea_configure();
+//    ea_dashboard();
+//    ea_open();
+//    io()->success('EasyAdmin demo completed.');
+//}
 
 #[AsTask(name: 'ea:new')]
 #[Step(
     'Create Symfony project',
-    actions: [ new Bash('symfony new --webapp --dir=.') ]
+    bullets: [
+        '--webapp install common packages'
+    ],
+    actions: [
+        new Bash('symfony new --webapp --dir=' . DEMO_DIR)
+    ]
 )]
 function ea_new(): void { RunStep::run(_actions_from_current_task(), context()); }
 
 #[AsTask(name: 'ea:install')]
 #[Step(
     'Install EasyAdmin bundle',
-    actions: [ new ComposerRequire(['easycorp/easyadmin-bundle']) ]
+    actions: [ new ComposerRequire([
+        'survos/meili-bundle',
+        'survos/import-bundle',
+        'survos/ez-bundle',
+        'symfony/ux-icons',
+        'league/csv',
+        'easycorp/easyadmin-bundle',
+    ]) ]
 )]
 function ea_install(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask(name: 'ea:make-entity')]
+#[AsTask(name: 'ea:install-dev')]
 #[Step(
-    'Generate Task entity + migrate',
+    'Install dev bundle',
+    actions: [ new ComposerRequire(
+        [
+        'survos/code-bundle'
+    ], dev: true) ]
+)]
+function ea_install_dev(): void { RunStep::run(_actions_from_current_task(), context()); }
+
+#[AsTask(name: 'ea:download')]
+#[Step(
+    'Download movie data',
     actions: [
-//        new Console('make:entity', ['Task']),
-//        new Console('make:migration'),
-//        new Console('doctrine:migrations:migrate'),
-        new CopyFile(INPUT_DIR . '/src/Entity/Task.php', 'src/Entity/Task.php'),
-        new DisplayCode('src/Entity/Task.php', lang: 'php')
+        new Bash('mkdir -p data'),
+        new Bash('wget -O data/movies.csv.gz https://github.com/metarank/msrd/raw/master/dataset/movies.csv.gz'),
+        new Bash('gunzip data/movies.csv.gz'),
+        new Bash('head -n 3 data/movies.csv'),
     ]
 )]
+function ea_download(): void { RunStep::run(_actions_from_current_task(), context()); }
+
+#[AsTask(name: 'ea:make-entity')]
+#[Step(
+    'Generate Movie entity',
+    actions: [
+        new Console('make:entity', ['Movie', '-n']), // to create the repo!
+        new Console('code:entity', ['Movie', '--meili', '--file',  'data/movies.csv']),
+        new DisplayCode('/src/Entity/Movie.php', lang: 'php'),
+        new Artifact('src/Entity/Movie.php', "Movie.php")
+    ]
+)]
+//#[Step(
+//    'migrate',
+//    actions: [
+//        new Console('make:migration'),
+//        new Console('doctrine:migrations:migrate'),
+//        new CopyFile(INPUT_DIR . '/src/Entity/Task.php', 'src/Entity/Task.php'),
+//    ]
+//)]
 function ea_make_entity(): void { RunStep::run(_actions_from_current_task(), context()); }
 
 #[AsTask(name: 'ea:configure')]
 #[Step(
     'Configure EasyAdmin & Meili',
     actions: [
-        new CopyFile(INPUT_DIR . '/config/packages/easy_admin.yaml', 'config/packages/easy_admin.yaml'),
-        new CopyFile(INPUT_DIR . '/config/packages/meili.yaml', 'config/packages/meili.yaml'),
+        new Env('DATABASE_URL', [
+            'default' => "sqlite:///%kernel.project_dir%/var/data_%kernel.environment%.db"
+        ],'.env.local'),
+        new Env('OPEN_AI_KEY', ['hidden' => true], '.env.local'),
+//        new CopyFile(INPUT_DIR . '/config/packages/easy_admin.yaml', 'config/packages/easy_admin.yaml'),
+//        new CopyFile(INPUT_DIR . '/config/packages/survos_meili.yaml', 'config/packages/survos_meili.yaml'),
         new DisplayCode('config/packages/easy_admin.yaml', lang: 'yaml'),
-        new DisplayCode('config/packages/meili.yaml', lang: 'yaml')
+        new DisplayCode('config/packages/survos_meili.yaml', lang: 'yaml'),
+        new DisplayCode('.env.local', lang: 'env'),
     ]
 )]
 function ea_configure(): void { RunStep::run(_actions_from_current_task(), context()); }
+
+#[AsTask(name: 'ea:create:database')]
+#[Step(
+    'Create the database',
+    bullets: [
+        'during dev and the demo, sqlite is easy to use'
+    ],
+    actions: [
+        new Console('doctrine:schema:update', ['--force' ]),
+    ]
+)]
+function ea_create_database(): void { RunStep::run(_actions_from_current_task(), context()); }
+
+#[AsTask(name: 'ea:load:database')]
+#[Step(
+    'Load the database',
+    bullets: [
+        'import:entities is a simple way to get flat(easy) data from csv->doctrine'
+    ],
+    actions: [
+        new Console('import:entities', ['Movie', '--file', 'data/movies.csv' ]),
+    ]
+)]
+function ea_load_database(): void { RunStep::run(_actions_from_current_task(), context()); }
 
 #[AsTask(name: 'ea:dashboard')]
 #[Step(
     'Generate Dashboard + CRUD',
     actions: [
-        new CopyFile(INPUT_DIR . '/src/Controller/Admin/DashboardController.php', 'src/Controller/Admin/DashboardController.php'),
-        new DisplayCode('src/Controller/Admin/DashboardController.php', lang: 'php'),
-        new Console('make:admin:crud', ['Task'])
+        new Console('code:meili:admin'),
+        new Console('cache:clear'),
+//        new Console('make:admin:dashboard'),
+//        new Console('make:admin:crud', ['Movie']),
     ]
 )]
 function ea_dashboard(): void { RunStep::run(_actions_from_current_task(), context()); }
@@ -109,6 +183,7 @@ function ea_dashboard(): void { RunStep::run(_actions_from_current_task(), conte
     'Open Dashboard in browser',
     actions: [
         new Bash('symfony server:start -d'),
+        new Bash('symfony open:local --path=/admin'),
         new BrowserVisit('/admin', host: 'http://127.0.0.1:8000')
     ]
 )]

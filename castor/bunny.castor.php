@@ -8,7 +8,6 @@ use Survos\StepBundle\Runtime\RunStep;
 
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Metadata\Actions\{
-    RequirePackage,
     Env,
     OpenUrl,
 };
@@ -55,10 +54,7 @@ function step0_new(): void
     ],
     actions: [
         new ComposerRequire(
-            packages: [
-                new RequirePackage('survos/bunny-bundle', 'Bunny CDN integration'),
-                new RequirePackage('survos/simple-datatables-bundle', 'Simple Datatables helper (optional)'),
-            ],
+            packages: ['survos/bunny-bundle','survos/simple-datatables-bundle'],
             dev: false,
         ),
     ]

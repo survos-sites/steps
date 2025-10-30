@@ -39,7 +39,7 @@ use Survos\StepBundle\Action\{
 const MEILI_DEMO_DIR = '../demos/meili';
 if (!is_dir(__DIR__ . '/' . MEILI_DEMO_DIR)) { @mkdir(__DIR__ . '/' . MEILI_DEMO_DIR, 0777, true); }
 
-#[AsContext(default: true, name: 'sf')]
+#[AsContext( name: 'meili')]
 function ctx_meili(): Context { return new Context(workingDirectory: MEILI_DEMO_DIR); }
 
 // -----------------------------------------------------------------------------
@@ -73,8 +73,8 @@ function md_demo(
     md_new($version);
     md_install_bundles();
     md_make_controller();
-    sf_make_entity();
-    if (!$noOpen) { sf_open(); }
+    md_make_entity();
+    if (!$noOpen) { md_open(); }
     io()->success('Symfony fast demo completed.');
 }
 
@@ -139,7 +139,7 @@ function md_install_bundles(): void
         new DisplayCode('src/Entity/Movie.php', lang: 'php', note: 'doctrine entity')
     ]
 )]
-function md_make_controller(): void { RunStep::run(_actions_from_current_task(), context()); }
+function md_data(): void { RunStep::run(_actions_from_current_task(), context()); }
 
 #[AsTask(name: 'md:controller', description: 'Generate AppController (skips if exists)')]
 #[Step(
@@ -148,7 +148,6 @@ function md_make_controller(): void { RunStep::run(_actions_from_current_task(),
     bullets: ['make:controller App', 'Skip when src/Controller/AppController.php exists'],
     actions: [
             new Console('make:controller', ['App']),
-            new DisplayCode('src/Controller/AppController.php', lang: 'php', note: 'AppController.php')
             new DisplayCode('src/Controller/AppController.php', lang: 'php', note: 'AppController.php')
     ]
 )]
@@ -169,7 +168,7 @@ function md_make_controller(): void { RunStep::run(_actions_from_current_task(),
         new DisplayCode('src/Entity/Task.php', lang: 'php', note: 'Task entity')
     ]
 )]
-function sf_make_entity(): void
+function md_make_entity(): void
 {
     RunStep::run(_actions_from_current_task(), context());
 }
@@ -186,7 +185,7 @@ function sf_make_entity(): void
         new BrowserVisit('/', note: 'Open Home Page', host: 'http://sf-fast.wip'),
     ]
 )]
-function sf_open(): void
+function md_open(): void
 {
     RunStep::run(_actions_from_current_task(), context());
 }

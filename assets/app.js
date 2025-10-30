@@ -11,3 +11,18 @@ console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
 
 import '@tabler/core';
 import '@tabler/core/dist/css/tabler.min.css';
+
+import 'highlight.js/styles/github.min.css';
+
+import hljs from 'highlight.js';
+
+// Initialize highlight.js when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    // Highlight all code blocks
+    hljs.highlightAll();
+
+    // Or highlight specific elements
+    // document.querySelectorAll('pre code').forEach((block) => {
+    //     hljs.highlightElement(block);
+    // });
+});

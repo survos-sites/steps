@@ -22,4 +22,5 @@ return [
     Survos\CoreBundle\SurvosCoreBundle::class => ['all' => true],
     Survos\StepBundle\SurvosStepBundle::class => ['all' => true],
     Survos\JsonlBundle\SurvosJsonlBundle::class => ['all' => true],
+    Survos\ImportBundle\SurvosImportBundle::class => ['all' => true],
 ];

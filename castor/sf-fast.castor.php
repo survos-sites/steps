@@ -41,7 +41,7 @@ use Survos\StepBundle\Action\{
 const FAST_DEMO_DIR = '../demos/sf-fast';
 if (!is_dir(__DIR__ . '/' . FAST_DEMO_DIR)) { @mkdir(__DIR__ . '/' . FAST_DEMO_DIR, 0777, true); }
 
-#[AsContext(default: true, name: 'sf')]
+#[AsContext(name: 'sf')]
 function ctx_sf(): Context { return new Context(workingDirectory: FAST_DEMO_DIR); }
 
 // -----------------------------------------------------------------------------

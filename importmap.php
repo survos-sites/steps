@@ -251,4 +251,11 @@ return [
     'has-property-descriptors' => [
         'version' => '1.0.2',
     ],
+    'highlight.js' => [
+        'version' => '11.11.1',
+    ],
+    'highlight.js/styles/github.min.css' => [
+        'version' => '11.11.1',
+        'type' => 'css',
+    ],
 ];
