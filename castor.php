@@ -15,6 +15,8 @@ foreach ($autoloadCandidates as $autoload) {
     if (is_file($autoload)) { require_once $autoload; break; }
 }
 
+use Castor\Attribute\AsArgument;
+use Survos\StepBundle\Renderer\DebugActionRenderer;
 use function Castor\{ run, import, variable, io, context };
 use Castor\Attribute\AsListener;
 use Castor\Attribute\AsTask;
@@ -31,6 +33,7 @@ use Symfony\Component\Console\Input\InputOption;
         __DIR__ . '/vendor/survos/step-bundle/src/Castor/SlideshowJsonlListeners.php',
         __DIR__ . '/packages/step-bundle/src/Castor/SlideshowJsonlListeners.php',
         __DIR__ . '/bundles/step-bundle/src/Castor/SlideshowJsonlListeners.php',
+        __DIR__ . '/bundles/step-bundle/src/Castor/Renderer/DebugActionRenderer.php',
 
         // Step helpers (global functions, e.g., _actions_from_current_task)
         __DIR__ . '/vendor/survos/step-bundle/src/Castor/StepHelpers.php',
@@ -96,7 +99,7 @@ function sanity(): void
 function add_option(AfterBootEvent $event): void
 {
     $definition = $event->application->getDefinition();
-    $definition->addOption(new InputOption('foobar', description: "A global option added in " . basename(__FILE__)));
+    $definition->addOption(new InputOption('dry', description: "Dry run " . basename(__FILE__)));
     $event->application->setDefinition($definition);
 }
 
@@ -129,3 +132,84 @@ function foo(): void
     $ctx = $ctx->withWorkingDirectory('/tmp');
     run('pwd', context: $ctx);
 }
+
+#[AsTask(name: 'tasks', namespace: '', description: 'Ordered list of tasks from a .castor file')]
+function tasks(
+    #[AsArgument(description: 'The .castor file')] string $castorFile
+): int
+{
+    if (!file_exists($castorFile)) {
+        $castorFile = __DIR__ . "/castor/{$castorFile}.castor.php";
+    }
+    if (!file_exists($castorFile)) {
+        io()->error("Missing castor file: {$castorFile}");
+        return \Symfony\Component\Console\Command\Command::FAILURE;
+    }
+    // Include the castor file and detect only the functions it declares, then walk through those.
+    $before = get_defined_functions()['user'] ?? [];
+    $targetFile = realpath($castorFile); // Calculate once instead of in loop
+    $tasks = [];
+    foreach ($before as $fnName) {
+        $rf = new \ReflectionFunction($fnName);
+        $functionFile = $rf->getFileName();
+
+        if ($functionFile && realpath($functionFile) === $targetFile) {
+            $attributes = $rf->getAttributes(AsTask::class);
+
+            // Only process functions with AsTask attribute
+            if (!empty($attributes)) {
+                $asTaskAttr = $attributes[0]->newInstance();
+
+                // Get Step attributes
+                $stepAttrs = $rf->getAttributes(\Survos\StepBundle\Metadata\Step::class);
+                $steps = [];
+
+                foreach ($stepAttrs as $stepAttr) {
+                    $step = $stepAttr->newInstance();
+                    $steps[] = [
+                        'description' => $step->description ?? 'No description',
+                        'actions' => $step->actions ?? []
+                    ];
+                }
+
+                $tasks[] = [
+                    'name' => $asTaskAttr->name ?? $fnName,
+                    'description' => $asTaskAttr->description ?? 'No description',
+                    'steps' => $steps
+                ];
+            }
+        }
+    }
+
+// Display the results
+    foreach ($tasks as $task) {
+        io()->writeln("{$task['name']} {$task['description']}");
+        foreach ($task['steps'] as $index => $step) {
+            if ($description = $step['description']) {
+
+            }
+
+            foreach ($step['actions'] as $action) {
+                dump($action->toCommand()??$action::class);
+//                // we do all this already in DebugActionRenderer
+//
+//                $display = match (get_class($action)) {
+//                    \Survos\StepBundle\Action\Console::class => $action->consolePath . ' ' . $action->command,
+//                    \Survos\StepBundle\Action\Bash::class => $action->command,
+//                    \Survos\StepBundle\Action\ComposerRequire::class => function(\Survos\StepBundle\Action\ComposerRequire $action)  {
+//                        dd($action->packages);
+//                },
+//
+//                    \Survos\StepBundle\Action\BrowserVisit::class => "open " . $action->path,
+//                    default => get_class($action),
+//                };
+//                io()->writeln("    - {$display}");
+
+            }
+        }
+        echo "\n";
+    }
+
+    return \Symfony\Component\Console\Command\Command::SUCCESS;
+}
+

@@ -57,9 +57,8 @@ function ctx_easyadmin(): Context { return new Context(workingDirectory: DEMO_DI
 //    io()->success('EasyAdmin demo completed.');
 //}
 
-#[AsTask(name: 'ea:new')]
+#[AsTask('ea:new', 'Create Symfony project using the Symfony CLI')]
 #[Step(
-    'Create Symfony project',
     bullets: [
         '--webapp install common packages'
     ],
@@ -109,7 +108,7 @@ function ea_download(): void { RunStep::run(_actions_from_current_task(), contex
 #[Step(
     'Generate Movie entity',
     actions: [
-        new Console('make:entity', ['Movie', '-n']), // to create the repo!
+//        new Console('make:entity', ['Movie', '-n']), // to create the repo!
         new Console('code:entity', ['Movie', '--meili', '--file',  'data/movies.csv']),
         new DisplayCode('/src/Entity/Movie.php', lang: 'php'),
         new Artifact('src/Entity/Movie.php', "Movie.php")

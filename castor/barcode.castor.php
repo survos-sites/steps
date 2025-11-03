@@ -28,7 +28,7 @@ const BARCODE_DEMO_DIR = '../demos/barcode-demo';
 (function () {
     $absDemo = __DIR__ . '/' . BARCODE_DEMO_DIR;
     if (!is_dir($absDemo)) {
-        @mkdir($absDemo, 0777, true);
+        mkdir($absDemo, 0777, true);
     }
 })();
 
@@ -85,11 +85,12 @@ function barcode_demo(
         'Use "symfony new --webapp" (recipes enabled)',
     ],
     actions: [
-        new Bash('[[ $(ls -A . 2>/dev/null) ]] && echo "Directory not empty — skipping Symfony scaffolding." || symfony new --webapp --version=7.3 --dir=.', note: 'Run once in an empty directory'),
+        new Bash('mkdir -p ' . BARCODE_DEMO_DIR),
+        new Bash('symfony new --webapp --version=next --dir=' . BARCODE_DEMO_DIR, note: 'Run once in an empty directory'),
     ]
 )]
 function barcode_new(
-    #[AsOption('Symfony version for symfony new --version=')] string $version = '7.3'
+    #[AsOption('Symfony version for symfony new --version=')] string $version = 'next'
 ): void {
     RunStep::run(_actions_from_current_task(), context());
 }

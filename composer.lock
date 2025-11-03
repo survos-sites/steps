@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6e492fb5b810615d8f09ff796384d52a",
+    "content-hash": "5f135511801f50e0c1921c8bc9caeb88",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -2017,12 +2017,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/jolicode/castor.git",
-                "reference": "20e0d26b77602f2697e6dda583b3298ed2bf4949"
+                "reference": "c2ad9ad5bc61f3ac814d96f083e47df0e7b8f347"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jolicode/castor/zipball/20e0d26b77602f2697e6dda583b3298ed2bf4949",
-                "reference": "20e0d26b77602f2697e6dda583b3298ed2bf4949",
+                "url": "https://api.github.com/repos/jolicode/castor/zipball/c2ad9ad5bc61f3ac814d96f083e47df0e7b8f347",
+                "reference": "c2ad9ad5bc61f3ac814d96f083e47df0e7b8f347",
                 "shasum": ""
             },
             "require": {
@@ -2101,7 +2101,7 @@
                 "issues": "https://github.com/jolicode/castor/issues",
                 "source": "https://github.com/jolicode/castor/tree/main"
             },
-            "time": "2025-10-28T13:33:19+00:00"
+            "time": "2025-10-31T21:07:50+00:00"
         },
         {
             "name": "jolicode/jolinotif",
@@ -3885,7 +3885,7 @@
         },
         {
             "name": "survos/barcode-bundle",
-            "version": "2.0.36",
+            "version": "2.0.37",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/barcode-bundle.git",
@@ -3954,7 +3954,7 @@
             "description": "Integrates picqer/php-barcode-generator in a Symfony application",
             "support": {
                 "issues": "https://github.com/survos/barcode-bundle/issues",
-                "source": "https://github.com/survos/barcode-bundle/tree/2.0.36"
+                "source": "https://github.com/survos/barcode-bundle/tree/2.0.37"
             },
             "funding": [
                 {
@@ -3966,7 +3966,7 @@
         },
         {
             "name": "survos/core-bundle",
-            "version": "2.0.36",
+            "version": "2.0.37",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/core-bundle.git",
@@ -4046,7 +4046,7 @@
             ],
             "support": {
                 "issues": "https://github.com/survos/core-bundle/issues",
-                "source": "https://github.com/survos/core-bundle/tree/2.0.36"
+                "source": "https://github.com/survos/core-bundle/tree/2.0.37"
             },
             "funding": [
                 {
@@ -4058,7 +4058,7 @@
         },
         {
             "name": "survos/import-bundle",
-            "version": "2.0.36",
+            "version": "2.0.37",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/import-bundle.git",
@@ -4106,7 +4106,7 @@
             ],
             "support": {
                 "issues": "https://github.com/survos/import-bundle/issues",
-                "source": "https://github.com/survos/import-bundle/tree/2.0.36"
+                "source": "https://github.com/survos/import-bundle/tree/2.0.37"
             },
             "funding": [
                 {
@@ -4238,12 +4238,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/step-bundle.git",
-                "reference": "3f8a13c5e848d8a068f26c95cc26e4088c70d43e"
+                "reference": "01c3744100fbbcb9ed2fd75ce69f2654af113c21"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/survos/step-bundle/zipball/3f8a13c5e848d8a068f26c95cc26e4088c70d43e",
-                "reference": "3f8a13c5e848d8a068f26c95cc26e4088c70d43e",
+                "url": "https://api.github.com/repos/survos/step-bundle/zipball/01c3744100fbbcb9ed2fd75ce69f2654af113c21",
+                "reference": "01c3744100fbbcb9ed2fd75ce69f2654af113c21",
                 "shasum": ""
             },
             "require": {
@@ -4254,6 +4254,7 @@
                 "symfony/asset-mapper": "^7.3||^8.0",
                 "symfony/config": "^7.3||^8.0",
                 "symfony/dependency-injection": "^7.3||^8.0",
+                "symfony/framework-bundle": "^7.3",
                 "symfony/http-kernel": "^7.3||^8.0"
             },
             "default-branch": true,
@@ -4284,7 +4285,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-27T13:03:19+00:00"
+            "time": "2025-11-01T13:32:39+00:00"
         },
         {
             "name": "symfony/asset",
@@ -5735,31 +5736,31 @@
         },
         {
             "name": "symfony/flex",
-            "version": "v2.8.2",
+            "version": "v2.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/flex.git",
-                "reference": "f356aa35f3cf3d2f46c31d344c1098eb2d260426"
+                "reference": "94b37978c9982dc41c5b6a4147892d2d3d1b9ce6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/flex/zipball/f356aa35f3cf3d2f46c31d344c1098eb2d260426",
-                "reference": "f356aa35f3cf3d2f46c31d344c1098eb2d260426",
+                "url": "https://api.github.com/repos/symfony/flex/zipball/94b37978c9982dc41c5b6a4147892d2d3d1b9ce6",
+                "reference": "94b37978c9982dc41c5b6a4147892d2d3d1b9ce6",
                 "shasum": ""
             },
             "require": {
                 "composer-plugin-api": "^2.1",
-                "php": ">=8.0"
+                "php": ">=8.1"
             },
             "conflict": {
                 "composer/semver": "<1.7.2"
             },
             "require-dev": {
                 "composer/composer": "^2.1",
-                "symfony/dotenv": "^5.4|^6.0",
-                "symfony/filesystem": "^5.4|^6.0",
-                "symfony/phpunit-bridge": "^5.4|^6.0",
-                "symfony/process": "^5.4|^6.0"
+                "symfony/dotenv": "^6.4|^7.4|^8.0",
+                "symfony/filesystem": "^6.4|^7.4|^8.0",
+                "symfony/phpunit-bridge": "^6.4|^7.4|^8.0",
+                "symfony/process": "^6.4|^7.4|^8.0"
             },
             "type": "composer-plugin",
             "extra": {
@@ -5783,7 +5784,7 @@
             "description": "Composer plugin for Symfony",
             "support": {
                 "issues": "https://github.com/symfony/flex/issues",
-                "source": "https://github.com/symfony/flex/tree/v2.8.2"
+                "source": "https://github.com/symfony/flex/tree/v2.9.0"
             },
             "funding": [
                 {
@@ -5803,7 +5804,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-08-22T07:17:23+00:00"
+            "time": "2025-10-31T15:22:50+00:00"
         },
         {
             "name": "symfony/form",
@@ -10334,16 +10335,16 @@
         },
         {
             "name": "twig/twig",
-            "version": "v3.21.1",
+            "version": "v3.22.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "285123877d4dd97dd7c11842ac5fb7e86e60d81d"
+                "reference": "4509984193026de413baf4ba80f68590a7f2c51d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/285123877d4dd97dd7c11842ac5fb7e86e60d81d",
-                "reference": "285123877d4dd97dd7c11842ac5fb7e86e60d81d",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/4509984193026de413baf4ba80f68590a7f2c51d",
+                "reference": "4509984193026de413baf4ba80f68590a7f2c51d",
                 "shasum": ""
             },
             "require": {
@@ -10397,7 +10398,7 @@
             ],
             "support": {
                 "issues": "https://github.com/twigphp/Twig/issues",
-                "source": "https://github.com/twigphp/Twig/tree/v3.21.1"
+                "source": "https://github.com/twigphp/Twig/tree/v3.22.0"
             },
             "funding": [
                 {
@@ -10409,7 +10410,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-05-03T07:21:55+00:00"
+            "time": "2025-10-29T15:56:47+00:00"
         },
         {
             "name": "webmozart/assert",
@@ -11221,16 +11222,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "12.4.1",
+            "version": "12.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "fc5413a2e6d240d2f6d9317bdf7f0a24e73de194"
+                "reference": "a94ea4d26d865875803b23aaf78c3c2c670ea2ea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/fc5413a2e6d240d2f6d9317bdf7f0a24e73de194",
-                "reference": "fc5413a2e6d240d2f6d9317bdf7f0a24e73de194",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/a94ea4d26d865875803b23aaf78c3c2c670ea2ea",
+                "reference": "a94ea4d26d865875803b23aaf78c3c2c670ea2ea",
                 "shasum": ""
             },
             "require": {
@@ -11298,7 +11299,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.4.1"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.4.2"
             },
             "funding": [
                 {
@@ -11322,7 +11323,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-10-09T14:08:29+00:00"
+            "time": "2025-10-30T08:41:39+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -12275,7 +12276,7 @@
         },
         {
             "name": "survos/deployment-bundle",
-            "version": "2.0.36",
+            "version": "2.0.37",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/deployment-bundle.git",
@@ -12323,7 +12324,7 @@
             ],
             "support": {
                 "issues": "https://github.com/survos/deployment-bundle/issues",
-                "source": "https://github.com/survos/deployment-bundle/tree/2.0.36"
+                "source": "https://github.com/survos/deployment-bundle/tree/2.0.37"
             },
             "funding": [
                 {
