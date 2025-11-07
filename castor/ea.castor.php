@@ -1,5 +1,8 @@
 <?php declare(strict_types=1);
 
+const INPUT_DIR = __DIR__ . '/../inputs'; // known config, php, images, etc.  urls?
+
+
 /**
  * file: castor/easyadmin.castor.php
  * Demo orchestration for "EasyAdmin in 20 Minutes"
@@ -18,7 +21,8 @@ use function Castor\{context, io};
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Runtime\RunStep;
 use Survos\StepBundle\Action\{
-    Artifact,
+    Artifact, // writer, when adding an artifactId to bash or console isn't enough
+    DisplayArtifact, // reader
     ComposerRequire,
     Env,
     Console,
@@ -28,11 +32,6 @@ use Survos\StepBundle\Action\{
     BrowserVisit
 };
 
-const INPUT_DIR = __DIR__ . '/../inputs'; // known config, php, images, etc.  urls?
-const DEMO_DIR  = '../demos/easyadmin'; // where the demo will be built
-
-#[AsContext(name: 'easyadmin')]
-function ctx_easyadmin(): Context { return new Context(workingDirectory: DEMO_DIR); }
 
 //#[AsTask(name: 'ea:demo', description: 'EasyAdmin 20-minute Symfony demo')]
 //#[Step(
@@ -57,18 +56,33 @@ function ctx_easyadmin(): Context { return new Context(workingDirectory: DEMO_DI
 //    io()->success('EasyAdmin demo completed.');
 //}
 
+#[AsTask('create', namespace: 'ea', description: 'test artifact')]
+#[Step(
+    actions: [
+        new Bash('ls -lh', a: 'easy-artifacts/ls.terminal'),
+        new Bash('tree --gitignore', a: 'easy-artifacts/tree.terminal'),
+        new DisplayArtifact('easy-artifacts/tree.terminal'),
+    ]
+)]
+function ea_artifact(): void { RunStep::run(_actions_from_current_task(), context()); }
+
+#[AsTask('display', namespace: 'ea', description: 'test artifact')]
+#[Step(
+    actions: [
+        new DisplayArtifact('easy-artifacts/ls.terminal'),
+    ]
+)]
+function display_artifact(): void { RunStep::run(_actions_from_current_task(), context()); }
+
 #[AsTask('ea:new', 'Create Symfony project using the Symfony CLI')]
 #[Step(
     bullets: [
-        '--webapp install common packages'
+        '--webapp install common packages (sy:new!), this is just for the slide'
     ],
-    actions: [
-        new Bash('symfony new --webapp --dir=' . DEMO_DIR)
-    ]
 )]
 function ea_new(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask(name: 'ea:install')]
+#[AsTask(name: 'install')]
 #[Step(
     'Install EasyAdmin bundle',
     actions: [ new ComposerRequire([
@@ -80,7 +94,7 @@ function ea_new(): void { RunStep::run(_actions_from_current_task(), context());
         'easycorp/easyadmin-bundle',
     ]) ]
 )]
-function ea_install(): void { RunStep::run(_actions_from_current_task(), context()); }
+function install(): void { RunStep::run(_actions_from_current_task(), context()); }
 
 #[AsTask(name: 'ea:install-dev')]
 #[Step(
@@ -99,7 +113,8 @@ function ea_install_dev(): void { RunStep::run(_actions_from_current_task(), con
         new Bash('mkdir -p data'),
         new Bash('wget -O data/movies.csv.gz https://github.com/metarank/msrd/raw/master/dataset/movies.csv.gz'),
         new Bash('gunzip data/movies.csv.gz'),
-        new Bash('head -n 3 data/movies.csv'),
+        new Bash('head -n 3 data/movies.csv', a: 'download/3movies.csv'),
+        new DisplayArtifact('download/3movies.csv'),
     ]
 )]
 function ea_download(): void { RunStep::run(_actions_from_current_task(), context()); }
@@ -108,7 +123,6 @@ function ea_download(): void { RunStep::run(_actions_from_current_task(), contex
 #[Step(
     'Generate Movie entity',
     actions: [
-//        new Console('make:entity', ['Movie', '-n']), // to create the repo!
         new Console('code:entity', ['Movie', '--meili', '--file',  'data/movies.csv']),
         new DisplayCode('/src/Entity/Movie.php', lang: 'php'),
         new Artifact('src/Entity/Movie.php', "Movie.php")

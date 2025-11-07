@@ -1,50 +1,48 @@
 <?php
 // File: castor/bunny.castor.php
 
-use Castor\Attribute\AsTask;
+use Castor\Attribute\{AsTask, AsContext};
+use Castor\Context;
 use Survos\StepBundle\Runtime\RunStep;
+use function Castor\{variable, context};
 
 // call the runner class directly
 
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Metadata\Actions\{
-    Env,
     OpenUrl,
 };
 use Survos\StepBundle\Action\{
     YamlWrite,
+    Env,
     Bash,
     Console,
     ComposerRequire
 };
 
-/**
- * 0) Create a fresh Symfony demo app
- *
- * This creates a new project folder `bunny-demo` next to your current working dir.
- * Subsequent steps use `cwd: 'bunny-demo'`.
- */
-#[AsTask(name: '0-new', description: 'Create a new Symfony app: bunny-demo')]
-#[Step(
-    title: 'Create Symfony project',
-    description: 'Scaffold the Bunny demo application.',
-    bullets: [
-        'Uses Symfony CLI to create a full webapp',
-        'Subsequent steps will run in ./bunny-demo'
-    ],
-    actions: [
-        new Bash('symfony new bunny-demo --webapp'),
-    ]
-)]
-function step0_new(): void
-{
-    RunStep::run();
-}
 
 /**
  * 1) Install bundles and libraries
  */
-#[AsTask(name: '1-install', description: 'Install Bunny bundle (and optional admin table helper)')]
+#[AsTask(name: 'create', description: 'Symfony new with webapp')]
+#[Step(
+    title: 'symfony new --webapp',
+    bullets: [
+        'Symfony new',
+        'tweak docker-compose.yml',
+    ],
+)]
+function create(): void {
+    // let's require that the project be created separately, using castor symfony:new
+    // this is just for the slide
+    RunStep::run(_actions_from_current_task(), context());
+}
+
+
+/**
+ * 1) Install bundles and libraries
+ */
+#[AsTask(name: 'install', description: 'Install Bunny bundle (and optional admin table helper)')]
 #[Step(
     title: 'Install bundles & libraries',
     description: 'Add Survos Bunny bundle (and optional Datatables helper).',
@@ -59,10 +57,7 @@ function step0_new(): void
         ),
     ]
 )]
-function step1_install(): void
-{
-    RunStep::run();
-}
+function install(): void { RunStep::run(_actions_from_current_task(), context()); }
 
 /**
  * 2) Configure API key (env)
@@ -71,7 +66,7 @@ function step1_install(): void
  *  - run `bin/console bunny:config <api-key> >> .env.local`, or
  *  - write BUNNY_API_KEY to .env.local and run `bin/console bunny:config` (it will read from env).
  */
-#[AsTask(name: '2-config', description: 'Capture API key and dump Bunny config')]
+#[AsTask(name: 'config', description: 'Capture API key and dump Bunny config')]
 #[Step(
     title: 'Configure Bunny API key',
     description: 'Write the main API key to .env.local and dump zone config.',
@@ -82,15 +77,13 @@ function step1_install(): void
     ],
     actions: [
         // Write a placeholder key; edit .env.local later to set the real one.
-        new Env('BUNNY_API_KEY', 'REPLACE_ME', file: '.env.local', cwd: 'bunny-demo'),
+        // @todo: prompt
+        new Env('BUNNY_API_KEY', ['hidden' => true], '.env.local'),
         // Dump config (reads BUNNY_API_KEY from env/local)
-        new Console('bunny:config >> .env.local', cwd: 'bunny-demo', note: 'Append env var suggestions to .env.local'),
+        new Console('bunny:config',postfix: ' >> .env.local',  note: 'Append env var suggestions to .env.local'),
     ]
 )]
-function step2_config(): void
-{
-    RunStep::run();
-}
+function config(): void { RunStep::run(_actions_from_current_task(), context()); }
 
 /**
  * 3) Optional: write example bundle config (if you want a starting file immediately)
@@ -146,7 +139,7 @@ function step4_cli(): void
 /**
  * 5) Start server & open admin
  */
-#[AsTask(name: '5-admin', description: 'Start Symfony server and open Bunny admin')]
+#[AsTask(name: 'browse', description: 'Start Symfony server and open Bunny admin')]
 #[Step(
     title: 'Browse admin',
     description: 'Start local server and open the Bunny admin routes.',
@@ -155,11 +148,8 @@ function step4_cli(): void
         'Admin route may vary by version; adjust below if necessary'
     ],
     actions: [
-        new Bash('symfony server:start -d', cwd: 'bunny-demo', note: 'Start local server in background'),
+//        new Bash('symfony server:start -d', cwd: 'bunny-demo', note: 'Start local server in background'),
         new OpenUrl('/bunny/zones', note: 'Open zones browser'),
     ]
 )]
-function step5_admin(): void
-{
-    RunStep::run();
-}
+function browse(): void { RunStep::run(_actions_from_current_task(), context()); }

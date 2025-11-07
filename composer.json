@@ -19,6 +19,7 @@
         "meilisearch/search-bundle": "^0.15.9",
         "phpdocumentor/reflection-docblock": "^5.6.3",
         "phpstan/phpdoc-parser": "^2.3",
+        "sensiolabs/ansi-to-html": "^2.0",
         "survos/barcode-bundle": "^2.0.37",
         "survos/core-bundle": "^2.0.37",
         "survos/import-bundle": "^2.0.37",

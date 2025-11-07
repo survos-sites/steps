@@ -69,34 +69,24 @@ PHPX
     actions: [
         // Snapshot the freshly-written file as a DISPLAY artifact via a Console action
         // The id "emitDemo" gives us a predictable actionKey => "console-emitdemo"
-        new Console(
-            cmd: 'echo ok',
-            id: 'emitDemo',
-            artifacts: [
-                new \Survos\StepBundle\Metadata\Actions\Artifact(
-                    'src/Controller/DemoController.php',
-                    'DemoController.php',
-                    'code/php'
-                ),
-            ]
-        ),
+//        new Console(
+//            id: 'emitDemo',
+//            artifacts: [
+//                new \Survos\StepBundle\Metadata\Actions\Artifact(
+//                    'src/Controller/DemoController.php',
+//                    'DemoController.php',
+//                    'code/php'
+//                ),
+//            ]
+//        ),
 
         // Render the artifact snapshot (NOT the live file) using the artifact: locator
         // Resolved to: /artifacts/<safeTask>/<safeStep>/files/console-emitdemo/DemoController.php
         new DisplayCode(
-            target: 'artifact:snapshot + render::emitDemo::DemoController.php',
+            path: '',
             lang: 'php',
             note: 'Artifact snapshot of DemoController.php'
         ),
     ]
 )]
-function test_artifacts(): void
-{
-    try {
-        // Important: pass task() and context() so RunStep binds artifacts to the correct slide/task
-        RunStep::run(task(), context(), options: ['mode' => getenv('CASTOR_MODE') ?: 'run']);
-    } catch (\Throwable $e) {
-        io()->error('Artifact test failed: ' . $e->getMessage());
-        throw $e; // abort aggressively so we notice failures
-    }
-}
+function test_artifacts(): void { RunStep::run(_actions_from_current_task(), context()); }

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5f135511801f50e0c1921c8bc9caeb88",
+    "content-hash": "232511813f2e01191712e9e445e45576",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -2017,12 +2017,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/jolicode/castor.git",
-                "reference": "c2ad9ad5bc61f3ac814d96f083e47df0e7b8f347"
+                "reference": "94ad1996d2eba1ffb851f40e98a5da58e8c88054"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jolicode/castor/zipball/c2ad9ad5bc61f3ac814d96f083e47df0e7b8f347",
-                "reference": "c2ad9ad5bc61f3ac814d96f083e47df0e7b8f347",
+                "url": "https://api.github.com/repos/jolicode/castor/zipball/94ad1996d2eba1ffb851f40e98a5da58e8c88054",
+                "reference": "94ad1996d2eba1ffb851f40e98a5da58e8c88054",
                 "shasum": ""
             },
             "require": {
@@ -2101,7 +2101,7 @@
                 "issues": "https://github.com/jolicode/castor/issues",
                 "source": "https://github.com/jolicode/castor/tree/main"
             },
-            "time": "2025-10-31T21:07:50+00:00"
+            "time": "2025-11-05T13:49:08+00:00"
         },
         {
             "name": "jolicode/jolinotif",
@@ -3823,6 +3823,51 @@
                 "source": "https://github.com/Seldaek/signal-handler/tree/2.0.2"
             },
             "time": "2023-09-03T09:24:00+00:00"
+        },
+        {
+            "name": "sensiolabs/ansi-to-html",
+            "version": "v2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sensiolabs/ansi-to-html.git",
+                "reference": "44f73c0e8cc24dd4e8555cac356d2331d9400c59"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/sensiolabs/ansi-to-html/zipball/44f73c0e8cc24dd4e8555cac356d2331d9400c59",
+                "reference": "44f73c0e8cc24dd4e8555cac356d2331d9400c59",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.0",
+                "phpunit/phpunit": "^11.4",
+                "twig/twig": "^3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SensioLabs\\AnsiConverter\\": "SensioLabs/AnsiConverter"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                }
+            ],
+            "description": "A library to convert a text with ANSI codes to HTML",
+            "support": {
+                "issues": "https://github.com/sensiolabs/ansi-to-html/issues",
+                "source": "https://github.com/sensiolabs/ansi-to-html/tree/v2.0.0"
+            },
+            "time": "2025-03-15T17:19:40+00:00"
         },
         {
             "name": "spatie/ssh",
