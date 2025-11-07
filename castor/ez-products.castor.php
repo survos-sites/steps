@@ -196,7 +196,14 @@ function open(#[AsArgument] string $path = '/'): void { RunStep::run(_actions_fr
         new Console('castor open'),
     ]
 )]
-function build(): void { RunStep::run(_actions_from_current_task(), context()); }
+function build(): void {
+    setup();
+    copy_files();
+    easyadmin();
+    database();
+    load_data();
+//    RunStep::run(_actions_from_current_task(), context());
+}
 
 /**
  * clean — remove generated files and reset

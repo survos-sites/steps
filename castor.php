@@ -178,11 +178,14 @@ function symfony_local(
 }
 #[AsTask('slideshow', description: 'Open a slideshow in the browser')]
 function symfony_slideshow(
-//    #[\Castor\Attribute\AsArgument("path relative to server, default to /")] string $path='/'
+      #[AsArgument(null, "path relative to server, default to /")] ?string $path=null,
+      #[AsOption(null, "list the slides instead of navigating through them")] bool $list = false
 ): void
 {
-    // the context must be _this_ repo, not the created symfony project
-    $path = '/steps/step/slides/' . project_name();
+    if (!$path) {
+        // the context must be _this_ repo, not the created symfony project
+        $path = sprintf('/steps/step/slides%s/%s', $list ? '-overview' : '',  project_name());
+    }
     run($cmd = 'symfony open:local --path '. $path, new Context()->withWorkingDirectory(__DIR__));
 //    run($cmd = 'symfony open:local --path '. $path, new Context()->withWorkingDirectory(__DIR__));
 }
