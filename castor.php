@@ -100,7 +100,7 @@ if (project_name()) {
 
 
 
-function project_name(): ?string { return $_SERVER['CODE']??null; }
+function project_name(): ?string { return $_SERVER['CODE']??assert(false, "run\n\nexport CODE=xx\n\nfirst"); }
 function demo_name(): string { return project_name() . '-demo'; }
 #[AsContext(default: true)] function ctx(): Context { return new Context(workingDirectory: '../demo/' . demo_name()); }
 
