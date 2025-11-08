@@ -36,7 +36,7 @@ use Survos\StepBundle\Action\{
 #[Step(
     actions: [
         new Bash('wget nectar.zip -O nectar.zip'),
-        new Bash('unzip demo/nectar.zip'),
+        new Bash('unzip nectar.zip'),
     ]
 )]
 function install(): void { RunStep::run(_actions_from_current_task(), context()); }
