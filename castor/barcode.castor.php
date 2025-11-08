@@ -35,10 +35,10 @@ const BARCODE_DEMO_DIR = '../demos/barcode-demo';
 // -----------------------------------------------------------------------------
 // Contexts
 // -----------------------------------------------------------------------------
-#[AsContext(default: true, name: 'barcode')]
+#[AsContext(name: 'barcode')]
 function ctx_barcode(): Context { return new Context(workingDirectory: BARCODE_DEMO_DIR); }
 
-#[AsContext(default: false, name: 'bundle')]
+#[AsContext(name: 'bundle')]
 function ctx_bundle(): Context  { return new Context(workingDirectory: __DIR__ . '/..'); }
 
 // -----------------------------------------------------------------------------
@@ -62,7 +62,7 @@ function barcode_demo(
     #[AsOption('Also write config/packages/barcode.yaml defaults')] bool $withConfig = true,
     #[AsOption('Skip starting the server/browser at the end')] bool $noStart = false,
 ): void {
-    barcode_new($version);
+//    barcode_new($version);
     barcode_install();
     barcode_controller();
     barcode_twig();
@@ -101,7 +101,7 @@ function barcode_new(
     description: 'Install Survos Barcode bundle and a dev helper via Composer.',
     bullets: ['composer req survos/barcode-bundle', 'composer req --dev survos/code-bundle'],
     actions: [
-        new ComposerRequire(['survos/barcode-bundle']),
+        new ComposerRequire(['survos/barcode-bundle', 'survos/core-bundle']),
         new ComposerRequire(['survos/code-bundle'], dev: true),
     ]
 )]
@@ -134,7 +134,7 @@ function barcode_controller(): void
     bullets: ['Create templates/app/index.html.twig', 'Use |barcode and barcode() helpers'],
     actions: [
         new FileWrite(
-            path: 'templates/app/index.html.twig',
+            path: 'templates/app/home.html.twig',
             content: <<<'TWIG'
 {% extends 'base.html.twig' %}
 {% block body %}
