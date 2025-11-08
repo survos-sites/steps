@@ -44,6 +44,7 @@ function install(): void { RunStep::run(_actions_from_current_task(), context())
 #[AsTask('confirm', CASTOR_NAMESPACE,  'confirm installation worked')]
 #[Step(
     actions: [
+        // note: this is relative to the demo directory!  Not the steps directory
         new Bash('symfony open:local --path=/nectar/index.html'),
     ]
 )]
