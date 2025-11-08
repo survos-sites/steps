@@ -32,11 +32,19 @@ use Survos\StepBundle\Action\{
     BrowserVisit
 };
 
+#[AsTask('purchase', CASTOR_NAMESPACE, 'purchase license')]
+#[Step(
+    bullets: [
+        'nectar theme does ...',
+        'Purchase it at theme forest and download to ~/Downloads',
+    ]
+)]
+function purchase(): void { RunStep::run(_actions_from_current_task(), context()); }
+
 #[AsTask('install', CASTOR_NAMESPACE, 'install nectar theme in public/nectar')]
 #[Step(
     actions: [
-        new Bash('wget nectar.zip -O nectar.zip'),
-        new Bash('unzip nectar.zip'),
+        new Bash('unzip ~/Downloads/themeforest-a7leii4Y-nectar-mobile-web-app-kit.zip -d public'),
     ]
 )]
 function install(): void { RunStep::run(_actions_from_current_task(), context()); }
@@ -45,7 +53,9 @@ function install(): void { RunStep::run(_actions_from_current_task(), context())
 #[Step(
     actions: [
         // note: this is relative to the demo directory!  Not the steps directory
-        new Bash('symfony open:local --path=/nectar/index.html'),
+        new Bash('ls public/nectar/classic/www/ -lh', a: 'nectar/ls--public'),
+        new DisplayArtifact('nectar/ls--public'),
+        new Bash('symfony open:local --path=/nectar/classic/www/index.html'),
     ]
 )]
 function confirm(): void { RunStep::run(_actions_from_current_task(), context()); }
