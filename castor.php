@@ -21,6 +21,7 @@ foreach ($autoloadCandidates as $autoload) {
 use Castor\Attribute\{AsArgument,AsOption};
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Service\CastorStepExporter;
+use Survos\StepBundle\Attribute\{Arg};
 use function Castor\{ run, import, variable, io, context, load_dot_env };
 use Castor\Attribute\{AsListener, AsTask, AsContext};
 use Castor\{Context};
@@ -135,9 +136,10 @@ function symfony_server(
     $start && run("symfony server:start -d");
 }
 
-#[AsTask('new', namespace: SYMFONY_NAMESPACE, description: 'Wrapper for symfony new --webapp')]
+#[AsTask('new', namespace: SYMFONY_NAMESPACE,
+    description: 'Wrapper for symfony new --webapp')]
 function symfony_new(
-    #[AsArgument("The context code, but not --context!")] ?string $code=null
+    #[Arg("The context code, but not --context!")] ?string $code=null
 ): void
 {
     $demoDir = context()->workingDirectory;
@@ -178,7 +180,7 @@ function symfony_local(
 }
 #[AsTask('slideshow', description: 'Open a slideshow in the browser')]
 function symfony_slideshow(
-      #[AsArgument(null, "path relative to server, default to /")] ?string $path=null,
+      #[Arg("path relative to server, default to /")] ?string $path=null,
       #[AsOption(null, "list the slides instead of navigating through them")] bool $list = false
 ): void
 {
@@ -277,7 +279,7 @@ function tasks(
                 }
 
                 $tasks[] = [
-                    'name' => $asTaskAttr->name ?? $fnName,
+                    'name' => ($asTaskAttr->namespace ? $asTaskAttr->namespace . ':' : '') . $asTaskAttr->name ?? $fnName,
                     'description' => $asTaskAttr->description ?? 'No description',
                     'steps' => $steps
                 ];
@@ -333,9 +335,10 @@ function tasks(
 //        io()->writeln('<comment>php artisan migrate</comment>');
 
         foreach ($task['steps'] as $index => $step) {
-            if ($description = $step['description']) {
+            if ($stepDescription = $step['description']) {
                 // the _task_ description
-                io()->writeln('## ' . $description);
+                io()->writeln('## ' . $stepDescription);
+                $description .= "\n\n" . $stepDescription;
 
             foreach ($step['actions'] as $action) {
                 if (property_exists($action, 'note')) {

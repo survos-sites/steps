@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 const INPUT_DIR = __DIR__ . '/../inputs'; // known config, php, images, etc.  urls?
-
+const CASTOR_NAMESPACE = null;
 
 /**
  * file: castor/easyadmin.castor.php
@@ -56,7 +56,7 @@ use Survos\StepBundle\Action\{
 //    io()->success('EasyAdmin demo completed.');
 //}
 
-#[AsTask('create', namespace: 'ea', description: 'test artifact')]
+#[AsTask('artifact:create', CASTOR_NAMESPACE, 'create ls and tree artifacts, display tree')]
 #[Step(
     actions: [
         new Bash('ls -lh', a: 'easy-artifacts/ls.terminal'),
@@ -66,7 +66,7 @@ use Survos\StepBundle\Action\{
 )]
 function ea_artifact(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask('display', namespace: 'ea', description: 'test artifact')]
+#[AsTask('artifact:display', CASTOR_NAMESPACE,  'display ls.terminal artifact')]
 #[Step(
     actions: [
         new DisplayArtifact('easy-artifacts/ls.terminal'),
@@ -74,17 +74,18 @@ function ea_artifact(): void { RunStep::run(_actions_from_current_task(), contex
 )]
 function display_artifact(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask('ea:new', 'Create Symfony project using the Symfony CLI')]
+#[AsTask('ea:new', null, 'Create Symfony project using the Symfony CLI')]
 #[Step(
     bullets: [
-        '--webapp install common packages (sy:new!), this is just for the slide'
+        '--webapp install common packages (sy:new!), this is just for the slide',
+        'run castor sy:new to execute this commmand!'
     ],
 )]
 function ea_new(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask(name: 'install')]
+#[AsTask('bundles:demo', CASTOR_NAMESPACE, 'Install bundles')]
 #[Step(
-    'Install EasyAdmin bundle',
+    'Install demo bundles',
     actions: [ new ComposerRequire([
         'survos/meili-bundle',
         'survos/import-bundle',
@@ -96,9 +97,8 @@ function ea_new(): void { RunStep::run(_actions_from_current_task(), context());
 )]
 function install(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask(name: 'ea:install-dev')]
+#[AsTask('bundles:dev', CASTOR_NAMESPACE, 'Install dev bundles')]
 #[Step(
-    'Install dev bundle',
     actions: [ new ComposerRequire(
         [
         'survos/code-bundle'
@@ -106,7 +106,7 @@ function install(): void { RunStep::run(_actions_from_current_task(), context())
 )]
 function ea_install_dev(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask(name: 'ea:download')]
+#[AsTask('download', null, 'Download movie data')]
 #[Step(
     'Download movie data',
     actions: [
@@ -119,13 +119,14 @@ function ea_install_dev(): void { RunStep::run(_actions_from_current_task(), con
 )]
 function ea_download(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask(name: 'ea:make-entity')]
+#[AsTask('make-entity', CASTOR_NAMESPACE, 'Generate Movie entity from CSV')]
 #[Step(
-    'Generate Movie entity',
     actions: [
         new Console('code:entity', ['Movie', '--meili', '--file',  'data/movies.csv']),
+        // creates the artifact, but doesn't not display it.  Internal
+        new Artifact('src/Entity/Movie.php', "Movie.php"),
+        // we could also display the artifact!  For testing, let's make sure they both work.
         new DisplayCode('/src/Entity/Movie.php', lang: 'php'),
-        new Artifact('src/Entity/Movie.php', "Movie.php")
     ]
 )]
 //#[Step(
@@ -138,9 +139,9 @@ function ea_download(): void { RunStep::run(_actions_from_current_task(), contex
 //)]
 function ea_make_entity(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask(name: 'ea:configure')]
+#[AsTask('configure', CASTOR_NAMESPACE, 'Configure EasyAdmin & Meili')]
 #[Step(
-    'Configure EasyAdmin & Meili',
+    'Setup Env vars (after bundles)',
     actions: [
         new Env('DATABASE_URL', [
             'default' => "sqlite:///%kernel.project_dir%/var/data_%kernel.environment%.db"
@@ -148,6 +149,11 @@ function ea_make_entity(): void { RunStep::run(_actions_from_current_task(), con
         new Env('OPEN_AI_KEY', ['hidden' => true], '.env.local'),
 //        new CopyFile(INPUT_DIR . '/config/packages/easy_admin.yaml', 'config/packages/easy_admin.yaml'),
 //        new CopyFile(INPUT_DIR . '/config/packages/survos_meili.yaml', 'config/packages/survos_meili.yaml'),
+    ]
+)]
+#[Step(
+    'Display env',
+    actions: [
         new DisplayCode('config/packages/easy_admin.yaml', lang: 'yaml'),
         new DisplayCode('config/packages/survos_meili.yaml', lang: 'yaml'),
         new DisplayCode('.env.local', lang: 'env'),
