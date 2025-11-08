@@ -19,6 +19,7 @@ use Survos\StepBundle\Action\{
     YamlWrite,
     FileWrite,
     DisplayCode,
+    DisplayArtifact,
     BrowserVisit
 };
 
@@ -117,8 +118,10 @@ function barcode_install(): void
     bullets: ['Scaffold AppController', 'Bind route /'],
     if: 'fs.workingDirIsEmpty',
     actions: [
-        new Bash('php bin/console code:controller -m home -r home -p / App -f symfony.html', note: 'Generate AppController and route /'),
-        new DisplayCode('src/Controller/AppController.php', lang: 'php', note: 'AppController.php'),
+        new Bash('php bin/console code:controller -m home -r home -p / App -f symfony.html',
+            note: 'Generate AppController and route /',
+            a: 'src/Controller/AppController.php'),
+        new DisplayArtifact('src/Controller/AppController.php', lang: 'php', note: 'AppController.php'),
         new BrowserVisit('/', note: 'Open Home Page via Symfony proxy', host: 'http://barcode.wip'),
     ]
 )]
@@ -144,9 +147,11 @@ function barcode_controller(): void
 {% endblock %}
 TWIG
             ,
-            note: 'Create demo template'
+            note: 'Create demo template',
+            a: 'home.html.twig'
         ),
-        new DisplayCode('templates/app/index.html.twig', lang: 'twig', note:'index.html.twig')
+        new DisplayArtifact('home.html.twig', lang: 'twig', note:'home.html.twig')
+//        new DisplayCode('templates/app/home.html.twig', lang: 'twig', note:'home.html.twig')
     ]
 )]
 function barcode_twig(): void
