@@ -18,6 +18,8 @@ foreach ($autoloadCandidates as $autoload) {
     if (is_file($autoload)) { require_once $autoload; break; }
 }
 
+
+
 use Castor\Attribute\{AsArgument,AsOption};
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Service\CastorStepExporter;
@@ -28,6 +30,13 @@ use Castor\{Context};
 use Castor\Event\AfterBootEvent;
 use Castor\Event\FunctionsResolvedEvent;
 use Symfony\Component\Console\Input\InputOption;
+
+try {
+    import('.castor/vendor/tacman/castor-tools/castor.php');
+} catch (Throwable $e) {
+    io()->error("castor composer install");
+    io()->error($e->getMessage());
+}
 
 const ARTIFACT_ROOT = CastorStepExporter::ARTIFACT_ROOT;
 

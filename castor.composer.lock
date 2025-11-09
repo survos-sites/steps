@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "339e064777752b76724c8b92de312ec4",
+    "content-hash": "0c960cefddb9cad42fc16bb958f4a9a2",
     "packages": [
         {
             "name": "castor-php/php-qa",
@@ -48,6 +48,49 @@
                 "source": "https://github.com/castor-php/php-qa/tree/0.1.0"
             },
             "time": "2025-03-05T16:58:00+00:00"
+        },
+        {
+            "name": "tacman/castor-tools",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/tacman/castor-tools.git",
+                "reference": "7d4369a06d7a1947e6ce44c21093f0a6f529e11b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/tacman/castor-tools/zipball/7d4369a06d7a1947e6ce44c21093f0a6f529e11b",
+                "reference": "7d4369a06d7a1947e6ce44c21093f0a6f529e11b",
+                "shasum": ""
+            },
+            "require-dev": {
+                "jolicode/castor": "^1.0"
+            },
+            "type": "castor-plugin",
+            "autoload": {
+                "files": [
+                    "src/functions.php"
+                ],
+                "psr-4": {
+                    "Tacman\\CastorTools\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Tac Tacelosky",
+                    "email": "tacman@gmail.com"
+                }
+            ],
+            "description": "Extend castor with some common tools",
+            "support": {
+                "issues": "https://github.com/tacman/castor-tools/issues",
+                "source": "https://github.com/tacman/castor-tools/tree/1.0.0"
+            },
+            "time": "2025-10-25T12:09:18+00:00"
         }
     ],
     "packages-dev": [],

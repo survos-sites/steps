@@ -96,6 +96,19 @@ function barcode_new(
     RunStep::run(_actions_from_current_task(), context());
 }
 
+#[AsTask(name: 'barcode:visit', description: 'Visit a web page')]
+#[Step('Visit a web page',
+    actions: [
+        new BrowserVisit('/', 'https://barcode.wip', a: 'default-home.png'),
+        new DisplayArtifact('default-home.png', note: 'Default Symfony homepage'),
+    ]
+)]
+function homepage_visit(
+    #[AsOption('Symfony version for symfony new --version=')] string $version = 'next'
+): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 /** 2) Require bundles */
 #[AsTask(name: 'barcode:install', description: 'Require survos/barcode-bundle and a dev helper')]
 #[Step('Install bundles',

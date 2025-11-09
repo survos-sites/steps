@@ -110,9 +110,11 @@ function ea_install_dev(): void { RunStep::run(_actions_from_current_task(), con
 #[Step(
     'Download movie data',
     actions: [
-        new Bash('mkdir -p data'),
-        new Bash('wget -O data/movies.csv.gz https://github.com/metarank/msrd/raw/master/dataset/movies.csv.gz'),
-        new Bash('gunzip data/movies.csv.gz'),
+        new Bash(commands: [
+            'mkdir -p data',
+            'wget -O data/movies.csv.gz https://github.com/metarank/msrd/raw/master/dataset/movies.csv.gz',
+            'gunzip data/movies.csv.gz'
+        ]),
         new Bash('head -n 3 data/movies.csv', a: 'download/3movies.csv'),
         new DisplayArtifact('download/3movies.csv'),
     ]
