@@ -1,5 +1,35 @@
 {
     "name": "steps",
-    "description": "Slideshows created from castor files    ",
-    "repository": "https://github.com/survos-sites/steps"
+    "description": "Survos Slideshows",
+    "keywords": [
+        "php",
+        "symfony"
+    ],
+    "repository": "https://github.com/tacman/kpa",
+    "scripts": {
+        "dokku": {
+            "predeploy": "bin/console importmap:install && bin/console asset-map:compile && bin/console  secrets:decrypt-to-local --force && bin/console doctrine:migrations:migrate -n --allow-no-migration",
+            "postdeploy": "bin/console about && cat .env"
+        }
+    },
+    "env": {
+        "SECRET_TOKEN": {
+            "description": "A secret key for verifying the integrity of signed cookies.",
+            "value": "secret"
+        },
+        "WEB_CONCURRENCY": {
+            "description": "The number of processes to run.",
+            "generator": "echo 5"
+        }
+    },
+    "image": "gliderlabs/herokuish",
+    "addons": [
+        "dokku-postgres",
+        "dokku-redis"
+    ],
+    "buildpacks": [
+        {
+            "url": "https://github.com/heroku/heroku-buildpack-php.git"
+        }
+    ]
 }
