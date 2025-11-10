@@ -5,10 +5,10 @@
         "php",
         "symfony"
     ],
-    "repository": "https://github.com/tacman/kpa",
+    "repository": "https://github.com/survos-sites/steps",
     "scripts": {
         "dokku": {
-            "predeploy": "bin/console importmap:install && bin/console asset-map:compile && bin/console  secrets:decrypt-to-local --force",
+            "predeploy": "bin/console asset-map:compile && bin/console  secrets:decrypt-to-local --force",
             "postdeploy": "bin/console about && cat .env"
         }
     },
