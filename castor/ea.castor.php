@@ -83,28 +83,77 @@ function display_artifact(): void { RunStep::run(_actions_from_current_task(), c
 )]
 function ea_new(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask('bundles:demo', CASTOR_NAMESPACE, 'Install bundles')]
+#[AsTask('install-meili', null, 'Install meilisearch')]
+#[Step(
+    actions: [
+        new Bash('docker run -it --rm  -p 7700:7700 \
+  -v $(pwd)/meili_data:/meili_data \
+  getmeili/meilisearch:v1.16'),
+    ],
+    bullets: [
+        'run with docker',
+        'install via docker-composer.yml',
+        'free trial on meilisearch'
+    ],
+)]
+function install_meili(): void { RunStep::run(_actions_from_current_task(), context()); }
+
+#[AsTask('packages:required', CASTOR_NAMESPACE, 'Install required packages')]
+#[Step(
+    bullets: [
+        'without Symfony, install meilisearch PHP SDK',
+        'low-level calls',
+    ],
+    actions: [ new ComposerRequire([
+        'meilisearch/meilisearch-php',
+        'symfony/http-client',
+        'nyholm/psr7',
+    ]) ]
+)]
+function required_packages(): void { RunStep::run(_actions_from_current_task(), context()); }
+
+#[AsTask('packages:required', CASTOR_NAMESPACE, 'Install required packages')]
+#[Step(
+    title: 'with-symfony',
+    description: 'Symfony bundles manage the dependencies',
+    bullets: [
+        'meilisearch/search-bundle: official bundle from meilisearch',
+        'https://github.com/Mezcalito/ux-search, YAML, readonly',
+        'survos/meili-bundle: PHP 8.4, attribute-based'
+    ],
+    actions: [ new ComposerRequire([
+        'survos/meili-bundle'
+    ])
+        ]
+)]
+function with_symfony(): void { RunStep::run(_actions_from_current_task(), context()); }
+#[AsTask('bundles:basic', CASTOR_NAMESPACE, 'bundles for the demo')]
 #[Step(
     'Install demo bundles',
-    actions: [ new ComposerRequire([
-        'survos/meili-bundle',
+    bullets: [
+        'Tools Import the CSV data to the database',
+        'Code generator (like Symfony maker-bundle',
+    ],
+    actions: [
+        new ComposerRequire([
         'survos/import-bundle',
-        'survos/ez-bundle',
-        'symfony/ux-icons',
         'league/csv',
-        'easycorp/easyadmin-bundle',
-    ]) ]
+        'symfony/ux-icons',
+    ],
+    ),
+        new ComposerRequire(['survos/code-bundle'], dev: true)
+
+    ]
 )]
 function install(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask('bundles:dev', CASTOR_NAMESPACE, 'Install dev bundles')]
-#[Step(
-    actions: [ new ComposerRequire(
-        [
-        'survos/code-bundle'
-    ], dev: true) ]
-)]
-function ea_install_dev(): void { RunStep::run(_actions_from_current_task(), context()); }
+//#[AsTask('bundles:dev', CASTOR_NAMESPACE, 'Install dev bundles')]
+//#[Step(
+//    actions: [
+//        new ComposerRequire(['survos/code-bundle'], dev: true)
+//    ]
+//)]
+//function ea_install_dev(): void { RunStep::run(_actions_from_current_task(), context()); }
 
 #[AsTask('download', null, 'Download movie data')]
 #[Step(
@@ -124,9 +173,11 @@ function ea_download(): void { RunStep::run(_actions_from_current_task(), contex
 #[AsTask('make-entity', CASTOR_NAMESPACE, 'Generate Movie entity from CSV')]
 #[Step(
     actions: [
-        new Console('code:entity', ['Movie', '--meili', '--file',  'data/movies.csv']),
-        // creates the artifact, but doesn't not display it.  Internal
+        new Console('code:entity', ['Movie', '--meili', '--file',  'data/movies.csv'], a: 'src/Entity/Movie.php'),
+        // creates the artifact, but doesn't display it.  Internal
         new Artifact('src/Entity/Movie.php', "Movie.php"),
+
+        new DisplayArtifact('src/Entity/Movie.php'),
         // we could also display the artifact!  For testing, let's make sure they both work.
         new DisplayCode('/src/Entity/Movie.php', lang: 'php'),
     ]
@@ -143,7 +194,11 @@ function ea_make_entity(): void { RunStep::run(_actions_from_current_task(), con
 
 #[AsTask('configure', CASTOR_NAMESPACE, 'Configure EasyAdmin & Meili')]
 #[Step(
-    'Setup Env vars (after bundles)',
+    'Setup Env vars (after bundle install)',
+    bullets: [
+        "Use sqlite during early dev",
+        "swtich to postgres + migrations later"
+    ],
     actions: [
         new Env('DATABASE_URL', [
             'default' => "sqlite:///%kernel.project_dir%/var/data_%kernel.environment%.db"
@@ -182,14 +237,14 @@ function ea_create_database(): void { RunStep::run(_actions_from_current_task(),
         'import:entities is a simple way to get flat(easy) data from csv->doctrine'
     ],
     actions: [
-        new Console('import:entities', ['Movie', '--file', 'data/movies.csv' ]),
+        new Console('import:entities', ['Movie', '--file', 'data/movies.csv' ], a: 'import.txt'),
+        new DisplayArtifact('import.txt'),
     ]
 )]
 function ea_load_database(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask(name: 'ea:dashboard')]
+#[AsTask('dashboard', CASTOR_NAMESPACE, 'Generate Dashboard + CRUD')]
 #[Step(
-    'Generate Dashboard + CRUD',
     actions: [
         new Console('code:meili:admin'),
         new Console('cache:clear'),
@@ -199,7 +254,7 @@ function ea_load_database(): void { RunStep::run(_actions_from_current_task(), c
 )]
 function ea_dashboard(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask(name: 'ea:open')]
+#[AsTask('open', CASTOR_NAMESPACE, 'start server an open browser')]
 #[Step(
     'Open Dashboard in browser',
     actions: [

@@ -23,6 +23,7 @@ foreach ($autoloadCandidates as $autoload) {
 use Castor\Attribute\{AsArgument,AsOption};
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Service\CastorStepExporter;
+use Survos\StepBundle\Util\ArtifactHelper;
 use Survos\StepBundle\Attribute\{Arg};
 use function Castor\{ run, import, variable, io, context, load_dot_env };
 use Castor\Attribute\{AsListener, AsTask, AsContext};
@@ -247,9 +248,16 @@ function tasks(
     #[AsArgument(description: 'The .castor file')] ?string $castorFile=null
 ): int
 {
+    // idea: move this to step-bundle and use classes and $exporter->exportSlides()
     if (!$castorFile) {
         $castorFile = $_ENV['CASTOR_FILE'];
     }
+//    $code = $_SERVER['CODE'] ?? throw new \RuntimeException('CODE is not defined');
+//    $exporter = new CastorStepExporter(__DIR__);
+//
+//    $slides = $exporter->exportSlides($code, $castorFile);
+//    dd($slides);
+
     $io = io();
     $table = new \Symfony\Component\Console\Helper\Table($io);
     $table->setHeaders(['Task', 'Description']);
@@ -264,12 +272,14 @@ function tasks(
     $before = get_defined_functions()['user'] ?? [];
     $targetFile = realpath($castorFile); // Calculate once instead of in loop
     $tasks = [];
+
     foreach ($before as $fnName) {
         $rf = new \ReflectionFunction($fnName);
         $functionFile = $rf->getFileName();
 
         if ($functionFile && realpath($functionFile) === $targetFile) {
             $attributes = $rf->getAttributes(AsTask::class);
+
 
             // Only process functions with AsTask attribute
             if (!empty($attributes)) {
@@ -281,14 +291,35 @@ function tasks(
 
                 foreach ($stepAttrs as $stepAttr) {
                     $step = $stepAttr->newInstance();
+                    foreach ($step->actions as $action) {
+                        // too messy!
+                        if (false && property_exists($action, 'a')) {
+                            $artifactId = $action->a;
+                            $taskName =  $asTaskAttr->name;
+                            dump($action, $step,$taskName);
+                            $wd = __DIR__; // hack
+                            $helper =  new ArtifactHelper($wd, ArtifactHelper::safe($taskName), ArtifactHelper::safe('step'));
+                            dd($helper->baseDir());
+                            $abs = artifact_path($relativePath);
+
+                            dd($wd, $helper->path($artifactId));
+                        }
+                    }
+
+                    $taskName = $attributes['taskName'] ?? '';
+
+
                     $steps[] = [
                         'description' => $step->description ?? 'No description',
                         'actions' => $step->actions ?? []
                     ];
+
+
                 }
 
                 $tasks[] = [
-                    'name' => ($asTaskAttr->namespace ? $asTaskAttr->namespace . ':' : '') . $asTaskAttr->name ?? $fnName,
+                    'name' => ($asTaskAttr->namespace ? $asTaskAttr->namespace . ':' : '') .
+                        $asTaskAttr->name ?? $fnName,
                     'description' => $asTaskAttr->description ?? 'No description',
                     'steps' => $steps
                 ];
@@ -336,7 +367,6 @@ function tasks(
 //        $io->writeln('<fg=black;bg=white> PHP Code </>');
 //        $io->writeln('<comment>' . $phpCode . '</comment>');
 //        $io->writeln('');
-//        dd();
 //
 //
 //        // Simple approach with comment style
