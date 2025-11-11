@@ -168,7 +168,8 @@ function ea_configure(): void { RunStep::run(_actions_from_current_task(), conte
     actions: [
         new Bash(commands: [
             'mkdir -p data',
-            'wget -O data/movies.csv.gz https://github.com/metarank/msrd/raw/master/dataset/movies.csv.gz',
+//          'wget -O data/movies.csv.gz https://github.com/metarank/msrd/raw/master/dataset/movies.csv.gz',
+            'curl -L -o data/movies.csv.gz https://github.com/metarank/msrd/raw/master/dataset/movies.csv.gz',
             'gunzip data/movies.csv.gz'
         ]),
         new Bash('head -n 3 data/movies.csv', a: 'download/3movies.csv'),
@@ -224,7 +225,7 @@ function ea_create_database(): void { RunStep::run(_actions_from_current_task(),
         'import:entities is a simple way to get flat(easy) data from csv->doctrine'
     ],
     actions: [
-        new Console('import:entities', ['Movie', '--file', 'data/movies.csv', '--limit 500' ], a: 'import.txt'),
+        new Console('import:entities', ['Movie', '--file', 'data/movies.csv', '--limit', '500' ], a: 'import.txt'),
         new DisplayArtifact('import.txt'),
     ]
 )]
