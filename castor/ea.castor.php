@@ -242,7 +242,7 @@ function ea_load_database(): void { RunStep::run(_actions_from_current_task(), c
     actions: [
         new Console('code:meili:admin'),
         new Console('cache:clear'),
-        new Bash('symfony open:local --path=/admin'),
+        new Bash('symfony open:local --path=/ez-meili'),
         new BrowserVisit('/ez-meili', host: 'http://ea.wip'),
 
     ]
