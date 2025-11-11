@@ -224,7 +224,7 @@ function ea_create_database(): void { RunStep::run(_actions_from_current_task(),
         'import:entities is a simple way to get flat(easy) data from csv->doctrine'
     ],
     actions: [
-        new Console('import:entities', ['Movie', '--file', 'data/movies.csv' ], a: 'import.txt'),
+        new Console('import:entities', ['Movie', '--file', 'data/movies.csv', '--limit 500' ], a: 'import.txt'),
         new DisplayArtifact('import.txt'),
     ]
 )]
