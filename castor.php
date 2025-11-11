@@ -260,7 +260,7 @@ function tasks(
 
     $io = io();
     $table = new \Symfony\Component\Console\Helper\Table($io);
-    $table->setHeaders(['Task', 'Description']);
+    $table->setHeaders(['function', 'Task', 'Description']);
     if (!file_exists($castorFile)) {
         $castorFile = __DIR__ . "/castor/{$castorFile}.castor.php";
     }
@@ -318,6 +318,7 @@ function tasks(
                 }
 
                 $tasks[] = [
+                    'function' => $rf->getName(),
                     'name' => ($asTaskAttr->namespace ? $asTaskAttr->namespace . ':' : '') .
                         $asTaskAttr->name ?? $fnName,
                     'description' => $asTaskAttr->description ?? 'No description',
@@ -406,7 +407,8 @@ function tasks(
 
             }
         }
-        $table->addRow([$task['name'], $description]);
+        $table->addRow([
+            $task['function'], $task['name'], $description]);
 
     }
     $table->render();

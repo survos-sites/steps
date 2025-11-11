@@ -33,31 +33,13 @@ use Survos\StepBundle\Action\{
 };
 
 
-//#[AsTask(name: 'ea:demo', description: 'EasyAdmin 20-minute Symfony demo')]
-//#[Step(
-//    'EasyAdmin Demo',
-//    description: 'Create a Slideshow for easyadmin',
-//    bullets: [
-//        'We are in ' . __METHOD__,
-//        'Create demo project',
-//        'Install EasyAdmin',
-//        'Generate Task entity + dashboard',
-//        'Configure YAML files'
-//    ]
-//)]
-//function ea_demo(): void
-//{
-//    ea_new();
-//    ea_install();
-//    ea_make_entity();
-//    ea_configure();
-//    ea_dashboard();
-//    ea_open();
-//    io()->success('EasyAdmin demo completed.');
-//}
 
 #[AsTask('artifact:create', CASTOR_NAMESPACE, 'create ls and tree artifacts, display tree')]
 #[Step(
+    bullets: [
+        'list',
+        'display'
+    ],
     actions: [
         new Bash('ls -lh', a: 'easy-artifacts/ls.terminal'),
         new Bash('tree --gitignore', a: 'easy-artifacts/tree.terminal'),
@@ -137,6 +119,8 @@ function with_symfony(): void { RunStep::run(_actions_from_current_task(), conte
     actions: [
         new ComposerRequire([
         'survos/import-bundle',
+        'survos/ez-bundle',
+        'easycorp/easyadmin-bundle',
         'league/csv',
         'symfony/ux-icons',
     ],
@@ -155,9 +139,32 @@ function install(): void { RunStep::run(_actions_from_current_task(), context())
 //)]
 //function ea_install_dev(): void { RunStep::run(_actions_from_current_task(), context()); }
 
+#[AsTask('configure', CASTOR_NAMESPACE, 'Configure EasyAdmin & Meili')]
+#[Step(
+    'Setup Env vars (after bundle install)',
+    bullets: [
+        "Use sqlite during early dev",
+        "swtich to postgres + migrations later"
+    ],
+    actions: [
+        new Env('DATABASE_URL', [
+            'default' => "sqlite:///%kernel.project_dir%/var/data_%kernel.environment%.db"
+        ],'.env.local'),
+        new Console('doctrine:schema:update', ['--force']),
+        new Env('OPEN_AI_KEY', ['hidden' => true], '.env.local'),
+//        new CopyFile(INPUT_DIR . '/config/packages/easy_admin.yaml', 'config/packages/easy_admin.yaml'),
+//        new CopyFile(INPUT_DIR . '/config/packages/survos_meili.yaml', 'config/packages/survos_meili.yaml'),
+    ]
+)]
+function ea_configure(): void { RunStep::run(_actions_from_current_task(), context()); }
+
 #[AsTask('download', null, 'Download movie data')]
 #[Step(
     'Download movie data',
+    bullets: [
+        'fetch and uncompress via bash',
+        'or write a Symfony command or castor task'
+    ],
     actions: [
         new Bash(commands: [
             'mkdir -p data',
@@ -172,6 +179,10 @@ function ea_download(): void { RunStep::run(_actions_from_current_task(), contex
 
 #[AsTask('make-entity', CASTOR_NAMESPACE, 'Generate Movie entity from CSV')]
 #[Step(
+    bullets: [
+        'given a CSV file, generate a Doctrine entity',
+        'duck-typing, pretty basic (but good for demos!)'
+    ],
     actions: [
         new Console('code:entity', ['Movie', '--meili', '--file',  'data/movies.csv'], a: 'src/Entity/Movie.php'),
         // creates the artifact, but doesn't display it.  Internal
@@ -192,40 +203,16 @@ function ea_download(): void { RunStep::run(_actions_from_current_task(), contex
 //)]
 function ea_make_entity(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask('configure', CASTOR_NAMESPACE, 'Configure EasyAdmin & Meili')]
-#[Step(
-    'Setup Env vars (after bundle install)',
-    bullets: [
-        "Use sqlite during early dev",
-        "swtich to postgres + migrations later"
-    ],
-    actions: [
-        new Env('DATABASE_URL', [
-            'default' => "sqlite:///%kernel.project_dir%/var/data_%kernel.environment%.db"
-        ],'.env.local'),
-        new Env('OPEN_AI_KEY', ['hidden' => true], '.env.local'),
-//        new CopyFile(INPUT_DIR . '/config/packages/easy_admin.yaml', 'config/packages/easy_admin.yaml'),
-//        new CopyFile(INPUT_DIR . '/config/packages/survos_meili.yaml', 'config/packages/survos_meili.yaml'),
-    ]
-)]
-#[Step(
-    'Display env',
-    actions: [
-        new DisplayCode('config/packages/easy_admin.yaml', lang: 'yaml'),
-        new DisplayCode('config/packages/survos_meili.yaml', lang: 'yaml'),
-        new DisplayCode('.env.local', lang: 'env'),
-    ]
-)]
-function ea_configure(): void { RunStep::run(_actions_from_current_task(), context()); }
 
 #[AsTask(name: 'ea:create:database')]
 #[Step(
-    'Create the database',
+    'Create/update the database',
     bullets: [
         'during dev and the demo, sqlite is easy to use'
     ],
     actions: [
         new Console('doctrine:schema:update', ['--force' ]),
+        new Console('meili:schema:update', ['--force' ]),
     ]
 )]
 function ea_create_database(): void { RunStep::run(_actions_from_current_task(), context()); }
@@ -245,67 +232,70 @@ function ea_load_database(): void { RunStep::run(_actions_from_current_task(), c
 
 #[AsTask('dashboard', CASTOR_NAMESPACE, 'Generate Dashboard + CRUD')]
 #[Step(
-    actions: [
-        new Console('code:meili:admin'),
-        new Console('cache:clear'),
-//        new Console('make:admin:dashboard'),
-//        new Console('make:admin:crud', ['Movie']),
-    ]
-)]
-function ea_dashboard(): void { RunStep::run(_actions_from_current_task(), context()); }
-
-#[AsTask('open', CASTOR_NAMESPACE, 'start server an open browser')]
-#[Step(
-    'Open Dashboard in browser',
-    actions: [
-        new Bash('symfony server:start -d'),
-        new Bash('symfony open:local --path=/admin'),
-        new BrowserVisit('/admin', host: 'http://127.0.0.1:8000')
-    ]
-)]
-function ea_open(): void { RunStep::run(_actions_from_current_task(), context()); }
-
-// -----------------------------------------------------------------------------
-// 6) Generate Entity from CSV (slide only — uses your generator tool)
-// -----------------------------------------------------------------------------
-#[AsTask(name: 'ea:entity-from-csv', description: 'Demonstrate CSV-to-Entity generator')]
-#[Step(
-    'Generate entity from CSV file',
-    description: 'Use the Survos code generator to inspect a CSV and create an Entity.',
     bullets: [
-        'Reads CSV header → determines field types',
-        'Creates Doctrine entity + repository',
-        'Demonstrates how automation accelerates scaffolding'
-    ],
-    actions: [
-        new Console('code:entity', ['Movie', '--file=data/movies.csv']),
-        new DisplayCode('src/Entity/Movie.php', lang: 'php', note: 'Generated from CSV')
-    ]
-)]
-function ea_entity_from_csv(): void
-{
-    RunStep::run(_actions_from_current_task(), context());
-}
-
-// -----------------------------------------------------------------------------
-// 7) Generate MeiliDashboard + CRUD (code:meili:admin)
-// -----------------------------------------------------------------------------
-#[AsTask(name: 'ea:meili-admin', description: 'Generate MeiliDashboardController & CRUD controllers')]
-#[Step(
-    'Generate MeiliDashboardController',
-    description: 'Scans MeiliService registry and generates dashboard + CRUDs.',
-    bullets: [
-        'Uses nikic/php-generator to write PHP source files',
+        'use EasyAdmin to browse the entity',
+        'use bash, 7700 or riccox to see meili',
         'Creates src/Controller/Admin/MeiliDashboardController.php',
         'Scans registry for entities and generates <Entity>CrudController.php',
         'Integrates with MeiliService settings dynamically'
     ],
     actions: [
         new Console('code:meili:admin'),
-        new DisplayCode('src/Controller/Admin/MeiliDashboardController.php', lang: 'php', note: 'Generated dashboard controller')
+        new Console('cache:clear'),
+        new Bash('symfony open:local --path=/admin'),
+        new BrowserVisit('/ez-meili', host: 'http://ea.wip'),
+
     ]
 )]
-function ea_meili_admin(): void
+#[Step('Visit a web page',
+    actions: [
+        new BrowserVisit('/', 'https://ea.wip', a: 'default-home.png'),
+        new DisplayArtifact('default-home.png', note: 'Default ez homepage'),
+    ]
+)]
+
+function ea_dashboard(): void { RunStep::run(_actions_from_current_task(), context()); }
+
+
+#[AsTask('open', CASTOR_NAMESPACE, 'start server an open browser')]
+#[Step(
+    'Open Dashboard in browser',
+    actions: [
+        new Bash('symfony server:start -d'),
+    ]
+)]
+function ea_open(): void { RunStep::run(_actions_from_current_task(), context()); }
+
+
+// -----------------------------------------------------------------------------
+// 7) Generate MeiliDashboard + CRUD (code:meili:admin)
+// -----------------------------------------------------------------------------
+
+#[AsTask(name: 'ea:demo', description: 'EasyAdmin 20-minute Symfony demo')]
+#[Step(
+    'EasyAdmin Demo',
+    description: 'Create a Slideshow for easyadmin',
+    bullets: [
+        'We are in ' . __METHOD__,
+        'Create demo project',
+        'Install EasyAdmin',
+        'Generate Task entity + dashboard',
+        'Configure YAML files'
+    ]
+)]
+function ea_demo(): void
 {
-    RunStep::run(_actions_from_current_task(), context());
+//    ea_new();
+//    required_packages();
+    with_symfony();
+    install();
+    ea_download();
+    ea_make_entity();
+    ea_configure();
+    ea_create_database();
+    ea_load_database();
+    ea_dashboard();
+    ea_open();
+    io()->success('EasyAdmin demo completed.');
 }
+
