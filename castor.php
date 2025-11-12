@@ -18,14 +18,12 @@ foreach ($autoloadCandidates as $autoload) {
     if (is_file($autoload)) { require_once $autoload; break; }
 }
 
-
-
 use Castor\Attribute\{AsArgument,AsOption};
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Service\CastorStepExporter;
 use Survos\StepBundle\Util\ArtifactHelper;
 use Survos\StepBundle\Attribute\{Arg};
-use function Castor\{ run, import, variable, io, context, load_dot_env };
+use function Castor\{ run, import, variable, io, context, ask, load_dot_env };
 use Castor\Attribute\{AsListener, AsTask, AsContext};
 use Castor\{Context};
 use Castor\Event\AfterBootEvent;
@@ -115,6 +113,31 @@ function project_name(): ?string { return $_SERVER['CODE']??assert(false, "run\n
 function demo_name(): string { return project_name() . '-demo'; }
 #[AsContext(default: true)] function ctx(): Context { return new Context(workingDirectory: '../demo/' . demo_name()); }
 
+#[AsTask('rec', null, "Start ciine")]
+function rec(
+    #[Arg('dir to record')] ?string $dir=null,
+    #[Arg('title to embed')] ?string $title=null,
+
+): void {
+    $ctx = context()->withWorkingDirectory(__DIR__ . '/public'); // hack, we know __DIR__ exists
+
+    $dir = 'public/casts';
+    $filename = '$(date +%Y-%m-%d_%H-%M-%S)'; // the bash pattern
+    $filename = 'step1';
+    if (!$dir) {
+        $dir = io()->ask("What is the directory?");
+    }
+    run("ciine rec $dir/{$filename}.cast --overwrite --capture-input -i 1 --title='$title'", context: $ctx);
+    io()->writeln("<fg=green;options=bold>REC is running.</>");
+}
+
+//local name="$1"
+//  shift
+//  local title="$*"
+//  local dir="casts/$name"
+//  mkdir -p "$dir"
+//  ciine rec "$dir/$(date +%Y-%m-%d_%H-%M-%S).cast" --capture-input -i 1 --title="$title"
+//}
 
 // -----------------------------------------------------------------------------
 // Sample tasks & global listeners

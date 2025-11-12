@@ -26,3 +26,10 @@ document.addEventListener('DOMContentLoaded', () => {
     //     hljs.highlightElement(block);
     // });
 });
+
+
+import 'asciinema-player/dist/bundle/asciinema-player.css';
+import * as AsciinemaPlayer from 'asciinema-player';
+AsciinemaPlayer.create('/test.cast', document.getElementById('demo'), {
+    // options here
+});

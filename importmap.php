@@ -336,4 +336,11 @@ return [
     '@standard-schema/spec' => [
         'version' => '1.0.0',
     ],
+    'asciinema-player' => [
+        'version' => '3.12.1',
+    ],
+    'asciinema-player/dist/bundle/asciinema-player.css' => [
+        'version' => '3.12.1',
+        'type' => 'css',
+    ],
 ];
