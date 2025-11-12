@@ -13,7 +13,12 @@ $autoloadCandidates = [
     __DIR__ . '/../../vendor/autoload.php',
     __DIR__ . '/../../../vendor/autoload.php',
 ];
-foreach ($autoloadCandidates as $autoload) { if (is_file($autoload)) { require_once $autoload; break; } }
+foreach ($autoloadCandidates as $autoload) {
+    if (is_file($autoload)) {
+        require_once $autoload;
+        break;
+    }
+}
 
 use Castor\Attribute\{AsTask, AsContext};
 use Castor\Context;
@@ -27,6 +32,7 @@ use Survos\StepBundle\Action\{
     Env,
     Console,
     Bash,
+    PregReplace,
     CopyFile,
     DisplayCode,
     BrowserVisit
@@ -34,33 +40,11 @@ use Survos\StepBundle\Action\{
 
 
 
-#[AsTask('artifact:create', CASTOR_NAMESPACE, 'create ls and tree artifacts, display tree')]
-#[Step(
-    bullets: [
-        'list',
-        'display'
-    ],
-    actions: [
-        new Bash('ls -lh', a: 'easy-artifacts/ls.terminal'),
-        new Bash('tree --gitignore', a: 'easy-artifacts/tree.terminal'),
-        new DisplayArtifact('easy-artifacts/tree.terminal'),
-    ]
-)]
-function ea_artifact(): void { RunStep::run(_actions_from_current_task(), context()); }
-
-#[AsTask('artifact:display', CASTOR_NAMESPACE,  'display ls.terminal artifact')]
-#[Step(
-    actions: [
-        new DisplayArtifact('easy-artifacts/ls.terminal'),
-    ]
-)]
-function display_artifact(): void { RunStep::run(_actions_from_current_task(), context()); }
-
-#[AsTask('ea:new', null, 'Create Symfony project using the Symfony CLI')]
+#[AsTask('new', null, 'Create Symfony project using the Symfony CLI')]
 #[Step(
     bullets: [
         '--webapp install common packages (sy:new!), this is just for the slide',
-        'run castor sy:new to execute this commmand!'
+        'run castor sy:new to execute this command!'
     ],
 )]
 function ea_new(): void { RunStep::run(_actions_from_current_task(), context()); }
@@ -86,13 +70,16 @@ function install_meili(): void { RunStep::run(_actions_from_current_task(), cont
         'without Symfony, install meilisearch PHP SDK',
         'low-level calls',
     ],
-    actions: [ new ComposerRequire([
+    actions: [new ComposerRequire([
         'meilisearch/meilisearch-php',
         'symfony/http-client',
         'nyholm/psr7',
-    ]) ]
+    ])]
 )]
-function required_packages(): void { RunStep::run(_actions_from_current_task(), context()); }
+function required_packages(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
 #[AsTask('packages:required', CASTOR_NAMESPACE, 'Install required packages')]
 #[Step(
@@ -103,12 +90,16 @@ function required_packages(): void { RunStep::run(_actions_from_current_task(), 
         'https://github.com/Mezcalito/ux-search, YAML, readonly',
         'survos/meili-bundle: PHP 8.4, attribute-based'
     ],
-    actions: [ new ComposerRequire([
+    actions: [new ComposerRequire([
         'survos/meili-bundle'
     ])
-        ]
+    ]
 )]
-function with_symfony(): void { RunStep::run(_actions_from_current_task(), context()); }
+function with_symfony(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
+
 #[AsTask('bundles:basic', CASTOR_NAMESPACE, 'bundles for the demo')]
 #[Step(
     'Install demo bundles',
@@ -118,18 +109,41 @@ function with_symfony(): void { RunStep::run(_actions_from_current_task(), conte
     ],
     actions: [
         new ComposerRequire([
-        'survos/import-bundle',
-        'survos/ez-bundle',
-        'easycorp/easyadmin-bundle',
-        'league/csv',
-        'symfony/ux-icons',
+            'survos/import-bundle',
+            'survos/ez-bundle',
+            'easycorp/easyadmin-bundle',
+            'league/csv',
+            'symfony/ux-icons',
+        ],
+        ),
+        new ComposerRequire(['survos/code-bundle'], dev: true),
+        new Bash('~/g/sites/mono/link .'),
+    ]
+)]
+function install(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
+
+#[AsTask('bundles:importmap', CASTOR_NAMESPACE, 'front-end assets')]
+#[Step(
+    'Install from jsdeliver',
+    bullets: [
+        'css for angolia',
     ],
-    ),
-        new ComposerRequire(['survos/code-bundle'], dev: true)
+    actions: [
+        new Console('importmap:require bootstrap @meilisearch/instant-meilisearch/templates/basic_search.css'),
+        new Bash('echo "import \'instantsearch.css/themes/algolia.min.css\';
+import \'@meilisearch/instant-meilisearch/templates/basic_search.css;
+import \'bootstrap/dist/css/bootstrap.min.css;\';
+" | cat - assets/app.js > temp && mv temp assets/app.js'),
 
     ]
 )]
-function install(): void { RunStep::run(_actions_from_current_task(), context()); }
+function importmap(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
 //#[AsTask('bundles:dev', CASTOR_NAMESPACE, 'Install dev bundles')]
 //#[Step(
@@ -144,39 +158,45 @@ function install(): void { RunStep::run(_actions_from_current_task(), context())
     'Setup Env vars (after bundle install)',
     bullets: [
         "Use sqlite during early dev",
-        "swtich to postgres + migrations later"
+        "switch to postgres + migrations later"
     ],
     actions: [
         new Env('DATABASE_URL', [
             'default' => "sqlite:///%kernel.project_dir%/var/data_%kernel.environment%.db"
-        ],'.env.local'),
+        ], '.env.local'),
         new Console('doctrine:schema:update', ['--force']),
         new Env('OPEN_AI_KEY', ['hidden' => true], '.env.local'),
 //        new CopyFile(INPUT_DIR . '/config/packages/easy_admin.yaml', 'config/packages/easy_admin.yaml'),
 //        new CopyFile(INPUT_DIR . '/config/packages/survos_meili.yaml', 'config/packages/survos_meili.yaml'),
     ]
 )]
-function ea_configure(): void { RunStep::run(_actions_from_current_task(), context()); }
+function ea_configure(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
 #[AsTask('download', null, 'Download movie data')]
 #[Step(
-    'Download movie data',
+    'Download movie data for demo',
     bullets: [
-        'fetch and uncompress via bash',
-        'or write a Symfony command or castor task'
+        'if movies.csv.gz is missing, fetch it via curl',
+        'if movies.csv is missing, uncompress it',
+        'in practice,  write a Symfony command or castor task'
     ],
     actions: [
         new Bash(commands: [
             'mkdir -p data',
-//          'wget -O data/movies.csv.gz https://github.com/metarank/msrd/raw/master/dataset/movies.csv.gz',
-            'curl -L -o data/movies.csv.gz https://github.com/metarank/msrd/raw/master/dataset/movies.csv.gz',
-            'gunzip data/movies.csv.gz'
+            '[ -f data/movies.csv.gz ] || curl -L -o data/movies.csv.gz https://github.com/metarank/msrd/raw/master/dataset/movies.csv.gz',
+            '[ -f data/movies.csv ] || gunzip data/movies.csv.gz -k'
         ]),
         new Bash('head -n 3 data/movies.csv', a: 'download/3movies.csv'),
         new DisplayArtifact('download/3movies.csv'),
     ]
 )]
-function ea_download(): void { RunStep::run(_actions_from_current_task(), context()); }
+function ea_download(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
 #[AsTask('make-entity', CASTOR_NAMESPACE, 'Generate Movie entity from CSV')]
 #[Step(
@@ -185,7 +205,7 @@ function ea_download(): void { RunStep::run(_actions_from_current_task(), contex
         'duck-typing, pretty basic (but good for demos!)'
     ],
     actions: [
-        new Console('code:entity', ['Movie', '--meili', '--file',  'data/movies.csv'], a: 'src/Entity/Movie.php'),
+        new Console('code:entity', ['Movie', '--meili', '--file', 'data/movies.csv'], a: 'src/Entity/Movie.php'),
         // creates the artifact, but doesn't display it.  Internal
         new Artifact('src/Entity/Movie.php', "Movie.php"),
 
@@ -202,34 +222,43 @@ function ea_download(): void { RunStep::run(_actions_from_current_task(), contex
 //        new CopyFile(INPUT_DIR . '/src/Entity/Task.php', 'src/Entity/Task.php'),
 //    ]
 //)]
-function ea_make_entity(): void { RunStep::run(_actions_from_current_task(), context()); }
+function ea_make_entity(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
 
-#[AsTask(name: 'ea:create:database')]
+#[AsTask(name: 'create:database')]
 #[Step(
     'Create/update the database',
     bullets: [
         'during dev and the demo, sqlite is easy to use'
     ],
     actions: [
-        new Console('doctrine:schema:update', ['--force' ]),
-        new Console('meili:schema:update', ['--force' ]),
+        new Console('doctrine:schema:update', ['--force']),
+        new Console('meili:schema:update', ['--force']),
     ]
 )]
-function ea_create_database(): void { RunStep::run(_actions_from_current_task(), context()); }
+function ea_create_database(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
-#[AsTask(name: 'ea:load:database')]
+#[AsTask(name: 'load:database')]
 #[Step(
     'Load the database',
     bullets: [
         'import:entities is a simple way to get flat(easy) data from csv->doctrine'
     ],
     actions: [
-        new Console('import:entities', ['Movie', '--file', 'data/movies.csv', '--limit', '500' ], a: 'import.txt'),
+        new Console('import:entities', ['Movie', '--file', 'data/movies.csv', '--limit', '500'], a: 'import.txt'),
         new DisplayArtifact('import.txt'),
     ]
 )]
-function ea_load_database(): void { RunStep::run(_actions_from_current_task(), context()); }
+function ea_load_database(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
 #[AsTask('dashboard', CASTOR_NAMESPACE, 'Generate Dashboard + CRUD')]
 #[Step(
@@ -241,11 +270,11 @@ function ea_load_database(): void { RunStep::run(_actions_from_current_task(), c
         'Integrates with MeiliService settings dynamically'
     ],
     actions: [
-        new Console('code:meili:admin'),
+        new Console('code:meili:admin', ['--path','/', '--route', 'ez_meili']),
         new Console('cache:clear'),
         new Console('cache:pool:clear', ['cache.app']),
-        new Bash('symfony open:local --path=/ez-meili'),
-        new BrowserVisit('/ez-meili', host: 'http://ea.wip', a: 'dashboard.png'),
+        new Bash('symfony open:local --path=/'),
+        new BrowserVisit('/', host: 'http://ea.wip', a: 'dashboard.png'),
 
     ]
 )]
@@ -255,11 +284,13 @@ function ea_load_database(): void { RunStep::run(_actions_from_current_task(), c
         new DisplayArtifact('default-home.png', note: 'Default ez homepage'),
     ]
 )]
+function ea_dashboard(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
-function ea_dashboard(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-
-#[AsTask('open', CASTOR_NAMESPACE, 'start server an open browser')]
+#[AsTask('start', CASTOR_NAMESPACE, 'start server an open browser')]
 #[Step(
     'Open Dashboard in browser',
     actions: [
@@ -268,12 +299,31 @@ function ea_dashboard(): void { RunStep::run(_actions_from_current_task(), conte
 )]
 function ea_open(): void { RunStep::run(_actions_from_current_task(), context()); }
 
+#[AsTask('facets', CASTOR_NAMESPACE, 'add facets and sort to Movie index')]
+#[Step(
+    actions: [
+        new PregReplace(
+            pattern: '|#\[MeiliIndex\]|',
+            replacement: "#[MeiliIndex(\n    filterable: ['genres','director','year'],\n    searchable: ['title','description']\n)]",
+            file: 'src/Entity/Movie.php',
+            a: '/src/Entity/MovieWithFacets.php'
+        ),
+        new DisplayArtifact('/src/Entity/MovieWithFacets.php'),
 
-// -----------------------------------------------------------------------------
-// 7) Generate MeiliDashboard + CRUD (code:meili:admin)
-// -----------------------------------------------------------------------------
+    ]
+)]
+function facets(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask(name: 'ea:demo', description: 'EasyAdmin 20-minute Symfony demo')]
+#[AsTask('update-index', CASTOR_NAMESPACE, 'update meili index settings')]
+#[Step(
+    actions: [
+        new Console('meili:settings:update', ['--force', '--wait'], a: 'update-index.terminal'),
+        new DisplayArtifact('update-index.terminal'),
+    ]
+)]
+function update_index(): void { RunStep::run(_actions_from_current_task(), context()); }
+
+#[AsTask(name: 'build', description: 'Build the project')]
 #[Step(
     'EasyAdmin Demo',
     description: 'Create a Slideshow for easyadmin',
@@ -291,6 +341,7 @@ function ea_demo(): void
 //    required_packages();
     with_symfony();
     install();
+    ea_open();
     ea_download();
     ea_make_entity();
     ea_configure();

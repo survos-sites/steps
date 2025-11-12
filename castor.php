@@ -22,7 +22,7 @@ use Castor\Attribute\{AsArgument,AsOption};
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Service\CastorStepExporter;
 use Survos\StepBundle\Util\ArtifactHelper;
-use Survos\StepBundle\Attribute\{Arg};
+use Survos\StepBundle\Attribute\{Arg,Opt};
 use function Castor\{ run, import, variable, io, context, ask, load_dot_env };
 use Castor\Attribute\{AsListener, AsTask, AsContext};
 use Castor\{Context};
@@ -172,6 +172,7 @@ function symfony_server(
 #[AsTask('new', namespace: SYMFONY_NAMESPACE,
     description: 'Wrapper for symfony new --webapp')]
 function symfony_new(
+    #[Opt('purge directory first, no prompt')] bool $purge = false,
     #[Arg("The context code, but not --context!")] ?string $code=null
 ): void
 {
@@ -195,10 +196,14 @@ function symfony_new(
 //        new Context()->withWorkingDirectory(__DIR__));
 //    $output = run("cat README.md"); // relative to project working dir
     run('symfony new --webapp '. $demoDir, $ctx);
+    // now we can use the demo working dir
+    run('composer config extra.symfony.allow-contrib true');
 
     // NOW we can run commands in the project context
     run('symfony proxy:domain:attach ' . project_name());
     run("symfony server:start -d");
+    //        new Bash('symfony server:start -d'),
+
     io()->success('Symfony project now available in ' . $demoDir);
 }
 
@@ -211,6 +216,16 @@ function symfony_local(
 {
     run($cmd = 'symfony open:local --path '. $path);
 }
+#[AsTask('clear:cache',  namespace: SYMFONY_NAMESPACE,
+    aliases: ['c:cl'],
+    description: 'symfony cache:clear && cache:pool:clear --all')]
+function symfony_clear_cash(
+    #[\Castor\Attribute\AsArgument("path relative to server, default to /")] string $path='/'
+): void
+{
+    run('symfony console cache:clear && symfony console cache:pool:clear --all');
+}
+
 #[AsTask('slideshow', description: 'Open a slideshow in the browser')]
 function symfony_slideshow(
       #[Arg("path relative to server, default to /")] ?string $path=null,

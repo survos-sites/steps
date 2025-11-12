@@ -21,10 +21,38 @@ use Survos\StepBundle\Runtime\Actions\PhpArtifact;
 use Survos\StepBundle\Runtime\Actions\TwigArtifact;
 use Survos\StepBundle\Runtime\Actions\ScreenshotArtifact;
 
+#[AsTask('artifact:create', CASTOR_NAMESPACE, 'create ls and tree artifacts, display tree')]
+#[Step(
+    bullets: [
+        'list',
+        'display'
+    ],
+    actions: [
+        new Bash('ls -lh', a: 'easy-artifacts/ls.terminal'),
+        new Bash('tree --gitignore', a: 'easy-artifacts/tree.terminal'),
+        new DisplayArtifact('easy-artifacts/tree.terminal'),
+    ]
+)]
+function ea_artifact(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
+
+#[AsTask('artifact:display', CASTOR_NAMESPACE, 'display ls.terminal artifact')]
+#[Step(
+    actions: [
+        new DisplayArtifact('easy-artifacts/ls.terminal'),
+    ]
+)]
+function display_artifact(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
 #[AsTask(name: 'demo:artifacts', description: 'Emit artifacts for controller + twig and a screenshot, then commit')]
 function demo_artifacts(): void
 {
+    io()->warning("These might be old");
     $projectDir = context()->workingDirectory ?? getcwd();
     $rt = new Runtime($projectDir);
 

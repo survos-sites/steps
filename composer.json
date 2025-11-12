@@ -112,7 +112,7 @@
         }
     },
     "require-dev": {
-        "dbrekelmans/bdi": "^1.4.1",
+        "dbrekelmans/bdi": "^1.4",
         "doctrine/doctrine-fixtures-bundle": "^4.3",
         "phpunit/phpunit": "^12.4.2",
         "survos/deployment-bundle": "^2.0.47",
