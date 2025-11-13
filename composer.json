@@ -3,13 +3,13 @@
     "name": "survos-sites/steps",
     "description": "Slideshows created from castor files    ",
     "license": "proprietary",
-    "minimum-stability": "beta",
+    "minimum-stability": "RC",
     "prefer-stable": true,
     "require": {
         "php": "^8.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "doctrine/dbal": "^4.3",
+        "doctrine/dbal": "^4.3.4",
         "doctrine/doctrine-bundle": "^3.0",
         "doctrine/doctrine-migrations-bundle": "^3.6",
         "doctrine/orm": "^3.5.7",
@@ -56,8 +56,8 @@
         "symfony/validator": "^7.3.7|^8.0.4",
         "symfony/web-link": "^7.3|^8.0",
         "symfony/yaml": "^7.3.5|^8.0.3",
-        "twig/extra-bundle": "^2.12|^3.22",
-        "twig/twig": "^2.12|^3.22.0"
+        "twig/extra-bundle": "^3.22",
+        "twig/twig": "^3.22.0"
     },
     "config": {
         "allow-plugins": {
@@ -108,11 +108,13 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "^7.3",
+            "require": "^7.4",
             "docker": true
         }
     },
     "require-dev": {
+        "roave/security-advisories": "dev-latest"
+        ,
         "dbrekelmans/bdi": "^1.4.1",
         "phpunit/phpunit": "^12.4.3",
         "survos/deployment-bundle": "^2.0.50",

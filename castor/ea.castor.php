@@ -2,6 +2,7 @@
 
 const INPUT_DIR = __DIR__ . '/../inputs'; // known config, php, images, etc.  urls?
 const CASTOR_NAMESPACE = null;
+const EA_DEMO_DIR = '../demo/ea-demo';
 
 /**
  * file: castor/easyadmin.castor.php
@@ -33,6 +34,7 @@ use Survos\StepBundle\Action\{
     Console,
     Bash,
     PregReplace,
+    ImportmapRequire,
     CopyFile,
     DisplayCode,
     BrowserVisit
@@ -45,11 +47,12 @@ use Survos\StepBundle\Action\{
         "A lightweight alternative to Elasticsearch or Algolia with near-instant indexing",
         "Provides typo-tolerance, filters, facets, and semantic search out of the box",
         "Designed for real-time search UIs with instant responses under 50ms",
-        "Works beautifully with Symfony via Meili-Bundle’s automated index metadata and schema syncing",
+        "Works beautifully with Symfony via bundles that encapsulate the API interactions",
     ],
 )]
 #[Step(
-    title: 'create-index',
+    title: 'create-index (HTTP API)',
+    description: 'Background: Raw API calls',
     bullets: [
         "define an index with an optional primary key",
         "returns a task UID (async)",
@@ -60,10 +63,11 @@ use Survos\StepBundle\Action\{
             'curl -s "http://127.0.0.1:7700/indexes" ' . "\\\n"
             . '-H "Content-Type: application/json" ' . "\\\n"
             . '--data-raw \'{"uid":"movies","primaryKey":"imdbId"}\' | jq',
-            note: 'Create the "movies" index with primary key "id".'
+            note: 'Create the "movies" index with primary key "imdbId".'
         ),
         new DisplayCode(
-            lang: 'json', content: <<<'JSON'
+            lang: 'json',
+            content: <<<'JSON'
 {
   "taskUid": 171,
   "indexUid": "movies",
@@ -71,24 +75,41 @@ use Survos\StepBundle\Action\{
   "type": "indexCreation",
   "enqueuedAt": "2025-11-13T10:45:23.072030011Z"
 }
-
 JSON
-
         ),
-])]
+    ],
+)]
 #[Step(
+    title: 'create-index (Symfony HttpClient)',
+    description: 'Still raw, but with HttpClientInterface',
     actions: [
+        new DisplayCode(lang: 'yaml', content: <<<'YAML'
+framework:
+  http_client:
+    scoped_clients:
+      meili.client:
+        base_uri: 'http://127.0.0.1:7700'
+        headers:
+          Content-Type: 'application/json'
+          Accept: 'application/json'
+          Authorization: 'Bearer %env(MEILI_API_KEY)%'
+YAML
+),
         new DisplayCode(
             lang: 'PHP',
             content: <<<'PHP'
-$task = $this->meiliClient->request('POST', '/indexes', [
-    'uid' => 'movies'
-    'primartyKey' => 'imdbId'
+$response = $this->meiliClient->request('POST', '/indexes', [
+    'json' => [
+        'uid'        => 'movies',
+        'primaryKey' => 'imdbId',
+    ],
 ]);
-PHP)
-            ]
-)]
 
+$task = $response->toArray();
+PHP
+        ),
+    ],
+)]
 #[Step(
     title: 'update-settings',
     bullets: [
@@ -97,13 +118,20 @@ PHP)
         "search results change only after task completes",
     ],
     actions: [
-        new Bash(
-            'curl -s -X PATCH "http://127.0.0.1:7700/indexes/movies/settings" '
-            . '-H "Content-Type: application/json" '
-            . '--data-raw \'{"searchableAttributes":["title","overview"],"filterableAttributes":["genre","year"]}\' | jq',
-            note: 'Update settings for the "movies" index.'
+        new DisplayCode(
+            lang: 'PHP',
+            content: <<<'PHP'
+$response = $this->meiliClient->request('PATCH', '/indexes/movies/settings', [
+    'json' => [
+        'searchableAttributes' => ['title', 'overview'],
+        'filterableAttributes' => ['genre', 'year'],
+    ],
+]);
+
+$task = $response->toArray();
+PHP
         ),
-    ]
+    ],
 )]
 #[Step(
     title: 'add-documents',
@@ -114,14 +142,30 @@ PHP)
         "documents become searchable after indexing finishes",
     ],
     actions: [
-        new Bash(
-            'curl -s -X POST "http://127.0.0.1:7700/indexes/movies/documents" '
-            . '-H "Content-Type: application/json" '
-            . '--data-raw \'[{"id":1,"title":"Pony Movie","overview":"A movie about a pony","genre":"family","year":2024}]\' | jq',
-            note: 'Add a sample document to the "movies" index.'
+        new DisplayCode(
+            lang: 'PHP',
+            content: <<<'PHP'
+$response = $this->meiliClient->request('POST', '/indexes/movies/documents', [
+    'json' => [
+        [
+            'id'       => 1,
+            'title'    => 'Pony Movie',
+            'overview' => 'A movie about a pony',
+            'genre'    => 'family',
+            'year'     => 2024,
+        ],
+    ],
+]);
+
+$task = $response->toArray();
+PHP
         ),
-    ]
-)]function meili_overview(): void { RunStep::run(_actions_from_current_task(), context()); }
+    ],
+)]
+function meili_overview(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
 
 #[AsTask('install-meili', null, 'Install meilisearch')]
@@ -139,18 +183,76 @@ PHP)
 )]
 function install_meili(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask('packages:required', CASTOR_NAMESPACE, 'Install required packages')]
+#[AsTask('docker-config', null, 'configure docker.yml')]
 #[Step(
+    actions: [
+        new DisplayCode(lang: 'yaml', content: <<<'YAML'
+services:
+    meilisearch:
+        image: getmeili/meilisearch:v1.24
+        container_name: meilisearch
+        volumes: [./.docker/meili-1.24/:/meili_data/]
+        environment:
+            MEILI_NO_ANALYTICS: true
+            MEILI_HTTP_ALLOWED_ORIGINS: '["*"]'
+        networks: [meili_network]
+        ports: ["7700:7700"]
+    meilisearch-ui:
+        image: riccoxie/meilisearch-ui:latest
+        container_name: meilisearch-ui
+        restart: on-failure:5
+        environment:
+            SINGLETON_MODE: true
+            SINGLETON_HOST: http://localhost:7700
+            SINGLETON_API_KEY: your-api-key
+        ports: ["24900:24900"]
+        depends_on: [meilisearch]
+        networks: [meili_network]
+    networks: [meili_network: [driver: bridge]]
+YAML
+        )])]
+function configure_docker(): void { RunStep::run(_actions_from_current_task(), context()); }
+
+#[AsTask(name: 'build', description: "Let's build a demo!")]
+#[Step(
+    'Meilisearch Demo',
+    description: 'Every step to build a movie search site',
     bullets: [
-        'without Symfony, install meilisearch PHP SDK',
-        'low-level calls',
+        'Create demo project',
+        'Install bundles',
+        'Download movie data',
+        'Generate Movie entity from downloaded data',
+        'configure and create sqlite database',
+        'create meilisearch movie index',
+        'Import movie data to database and index'
     ],
-    actions: [new ComposerRequire([
-        'meilisearch/meilisearch-php',
-        'symfony/http-client',
-        'nyholm/psr7',
-    ])]
 )]
+#[Step(
+    description: 'create a new webapp project',
+    // we are NOT actually running the actions, they are here for the slide
+    actions: [
+        new Bash('symfony new --webapp meili-demo --dir' . EA_DEMO_DIR),
+    ]
+)]
+
+function ea_demo(): void
+{
+//    ea_new();
+//    required_packages();
+    with_symfony();
+    install();
+    ea_open();
+    ea_download();
+    ea_make_entity();
+    ea_configure();
+    ea_create_database();
+    ea_load_database();
+    ea_dashboard();
+    ea_open();
+    io()->success('EasyAdmin demo completed.');
+}
+
+#[AsTask('packages:required', CASTOR_NAMESPACE, 'Install required packages')]
 function required_packages(): void
 {
     RunStep::run(_actions_from_current_task(), context());
@@ -170,6 +272,19 @@ function required_packages(): void
     ])
     ]
 )]
+#[Step(
+    title: 'Some key dependencies installed with meili-bundle',
+    bullets: [
+        'dependencies include the meilisearch PHP SDK',
+        'listed here for completeness',
+    ],
+    actions: [new ComposerRequire([
+        'meilisearch/meilisearch-php',
+        'symfony/http-client',
+        'nyholm/psr7',
+    ])]
+)]
+
 function with_symfony(): void
 {
     RunStep::run(_actions_from_current_task(), context());
@@ -177,10 +292,11 @@ function with_symfony(): void
 
 #[AsTask('bundles:basic', CASTOR_NAMESPACE, 'bundles for the demo')]
 #[Step(
-    'Install demo bundles',
+    'Necessary for demo only',
     bullets: [
         'Tools Import the CSV data to the database',
-        'Code generator (like Symfony maker-bundle',
+        'Code generator (like Symfony maker-bundle)',
+        'Leverages easy-admin for bundle adminstration',
     ],
     actions: [
         new ComposerRequire([
@@ -207,6 +323,7 @@ function install(): void
         'css for angolia',
     ],
     actions: [
+        new ImportmapRequire(['bootstrap', '@meilisearch/instant-meilisearch/templates/basic_search.css']),
         new Console('importmap:require bootstrap @meilisearch/instant-meilisearch/templates/basic_search.css'),
         new Bash('echo "import \'instantsearch.css/themes/algolia.min.css\';
 import \'@meilisearch/instant-meilisearch/templates/basic_search.css;
@@ -276,8 +393,9 @@ function ea_download(): void
 #[AsTask('make-entity', CASTOR_NAMESPACE, 'Generate Movie entity from CSV')]
 #[Step(
     bullets: [
+        'automated version of bin/console make:entity Movie',
         'given a CSV file, generate a Doctrine entity',
-        'duck-typing, pretty basic (but good for demos!)'
+        'duck-typing, basic but great for demos'
     ],
     actions: [
         new Console('code:entity', ['Movie', '--meili', '--file', 'data/movies.csv'], a: 'src/Entity/Movie.php'),
@@ -305,13 +423,14 @@ function ea_make_entity(): void
 
 #[AsTask(name: 'create:database')]
 #[Step(
-    'Create/update the database',
+    'Create/update database and meili index',
     bullets: [
-        'during dev and the demo, sqlite is easy to use'
+        'during dev and the demo, sqlite is easy to use',
+        'create the meiliindex'
     ],
     actions: [
         new Console('doctrine:schema:update', ['--force']),
-        new Console('meili:schema:update', ['--force']),
+        new Console('meili:settings:update', ['--force']),
     ]
 )]
 function ea_create_database(): void
@@ -323,24 +442,38 @@ function ea_create_database(): void
 #[Step(
     'Load the database',
     bullets: [
-        'import:entities is a simple way to get flat(easy) data from csv->doctrine'
+        'import:entities is a simple way to get flat(easy) data from csv->doctrine',
+        'doctrine post-flush listener populates the meili index',
     ],
     actions: [
         new Console('import:entities', ['Movie', '--file', 'data/movies.csv', '--limit', '500'], a: 'import.txt'),
         new DisplayArtifact('import.txt'),
     ]
 )]
-function ea_load_database(): void
-{
-    RunStep::run(_actions_from_current_task(), context());
-}
+function ea_load_database(): void { RunStep::run(_actions_from_current_task(), context()); }
+
+#[AsTask('show_data', CASTOR_NAMESPACE, 'We have a searchable index!')]
+#[Step(
+    description: "Ways to see/search our index",
+    bullets: [
+        'http://127.0.0.1:7700 is included in meilisearch',
+        'but not very powerful',
+        'riccox is better'
+    ],
+    actions: [
+        new BrowserVisit('/ins/0/index/movie/documents?listType=grid', 'http://127.0.0.1:24900', a: 'riccox.png'),
+//        new BrowserVisit('/', 'http://127.0.0.1:24900', a: 'riccox.png'),
+        new DisplayArtifact('riccox.png'),
+    ],
+)]
+function ea_show_data(): void { RunStep::run(_actions_from_current_task(), context()); }
 
 #[AsTask('dashboard', CASTOR_NAMESPACE, 'Generate Dashboard + CRUD')]
 #[Step(
     bullets: [
-        'use EasyAdmin to browse the entity',
-        'use bash, localhost:7700 or riccox to see meili',
+        'use EasyAdmin to browse the doctrine database',
         'Creates src/Controller/Admin/MeiliDashboardController.php',
+        'Demo uses easy-admin as home page!',
         'Scans registry for entities and generates <Entity>CrudController.php',
         'Integrates with MeiliService settings dynamically'
     ],
@@ -395,39 +528,11 @@ function facets(): void { RunStep::run(_actions_from_current_task(), context());
 )]
 #[Step('Search and see facets',
     actions: [
-        new BrowserVisit('/meili/meiliAdmin/instant-search/index/movie', 'https://ea.wip', a: 'search-with-facets.png'),
+        new BrowserVisit('/instant-search/index/movie', 'https://ea.wip', a: 'search-with-facets.png'),
+//        new BrowserVisit('/meili/meiliAdmin/instant-search/index/movie', 'https://ea.wip', a: 'search-with-facets.png'),
         new DisplayArtifact('search-with-facets.png', note: 'Facets on side'),
     ]
 )]
-
 function update_index(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask(name: 'build', description: 'Build the project')]
-#[Step(
-    'EasyAdmin Demo',
-    description: 'Create a Slideshow for easyadmin',
-    bullets: [
-        'We are in ' . __METHOD__,
-        'Create demo project',
-        'Install EasyAdmin',
-        'Generate Task entity + dashboard',
-        'Configure YAML files'
-    ]
-)]
-function ea_demo(): void
-{
-//    ea_new();
-//    required_packages();
-    with_symfony();
-    install();
-    ea_open();
-    ea_download();
-    ea_make_entity();
-    ea_configure();
-    ea_create_database();
-    ea_load_database();
-    ea_dashboard();
-    ea_open();
-    io()->success('EasyAdmin demo completed.');
-}
 
