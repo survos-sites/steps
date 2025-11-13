@@ -38,8 +38,6 @@ use Survos\StepBundle\Action\{
     BrowserVisit
 };
 
-
-
 #[AsTask('meili-overview', null, 'What is Meilisearch')]
 #[Step(
     bullets: [
@@ -50,14 +48,88 @@ use Survos\StepBundle\Action\{
         "Works beautifully with Symfony via Meili-Bundle’s automated index metadata and schema syncing",
     ],
 )]
-function ea_new(): void { RunStep::run(_actions_from_current_task(), context()); }
+#[Step(
+    title: 'create-index',
+    bullets: [
+        "define an index with an optional primary key",
+        "returns a task UID (async)",
+        "index is empty until documents are added",
+    ],
+    actions: [
+        new Bash(
+            'curl -s "http://127.0.0.1:7700/indexes" ' . "\\\n"
+            . '-H "Content-Type: application/json" ' . "\\\n"
+            . '--data-raw \'{"uid":"movies","primaryKey":"imdbId"}\' | jq',
+            note: 'Create the "movies" index with primary key "id".'
+        ),
+        new DisplayCode(
+            lang: 'json', content: <<<'JSON'
+{
+  "taskUid": 171,
+  "indexUid": "movies",
+  "status": "enqueued",
+  "type": "indexCreation",
+  "enqueuedAt": "2025-11-13T10:45:23.072030011Z"
+}
+
+JSON
+
+        ),
+])]
+#[Step(
+    actions: [
+        new DisplayCode(
+            lang: 'PHP',
+            content: <<<'PHP'
+$task = $this->meiliClient->request('POST', '/indexes', [
+    'uid' => 'movies'
+    'primartyKey' => 'imdbId'
+]);
+PHP)
+            ]
+)]
+
+#[Step(
+    title: 'update-settings',
+    bullets: [
+        "configure searchable, filterable, and sortable fields",
+        "settings updates are asynchronous",
+        "search results change only after task completes",
+    ],
+    actions: [
+        new Bash(
+            'curl -s -X PATCH "http://127.0.0.1:7700/indexes/movies/settings" '
+            . '-H "Content-Type: application/json" '
+            . '--data-raw \'{"searchableAttributes":["title","overview"],"filterableAttributes":["genre","year"]}\' | jq',
+            note: 'Update settings for the "movies" index.'
+        ),
+    ]
+)]
+#[Step(
+    title: 'add-documents',
+    description: "add or update documents",
+    bullets: [
+        "send documents as JSON",
+        "ingestion is asynchronous (tasks)",
+        "documents become searchable after indexing finishes",
+    ],
+    actions: [
+        new Bash(
+            'curl -s -X POST "http://127.0.0.1:7700/indexes/movies/documents" '
+            . '-H "Content-Type: application/json" '
+            . '--data-raw \'[{"id":1,"title":"Pony Movie","overview":"A movie about a pony","genre":"family","year":2024}]\' | jq',
+            note: 'Add a sample document to the "movies" index.'
+        ),
+    ]
+)]function meili_overview(): void { RunStep::run(_actions_from_current_task(), context()); }
+
 
 #[AsTask('install-meili', null, 'Install meilisearch')]
 #[Step(
     actions: [
         new Bash('docker run -it --rm  -p 7700:7700 \
   -v $(pwd)/meili_data:/meili_data \
-  getmeili/meilisearch:v1.16'),
+  getmeili/meilisearch:latest'),
     ],
     bullets: [
         'run with docker',
