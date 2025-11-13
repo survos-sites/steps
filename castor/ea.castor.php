@@ -40,11 +40,14 @@ use Survos\StepBundle\Action\{
 
 
 
-#[AsTask('new', null, 'Create Symfony project using the Symfony CLI')]
+#[AsTask('meili-overview', null, 'What is Meilisearch')]
 #[Step(
     bullets: [
-        '--webapp install common packages (sy:new!), this is just for the slide',
-        'run castor sy:new to execute this command!'
+        "An open-source, developer-friendly search engine focused on speed and relevance",
+        "A lightweight alternative to Elasticsearch or Algolia with near-instant indexing",
+        "Provides typo-tolerance, filters, facets, and semantic search out of the box",
+        "Designed for real-time search UIs with instant responses under 50ms",
+        "Works beautifully with Symfony via Meili-Bundle’s automated index metadata and schema syncing",
     ],
 )]
 function ea_new(): void { RunStep::run(_actions_from_current_task(), context()); }
@@ -164,7 +167,7 @@ function importmap(): void
         new Env('DATABASE_URL', [
             'default' => "sqlite:///%kernel.project_dir%/var/data_%kernel.environment%.db"
         ], '.env.local'),
-        new Console('doctrine:schema:update', ['--force']),
+//        new Console('doctrine:schema:update', ['--force']),
         new Env('OPEN_AI_KEY', ['hidden' => true], '.env.local'),
 //        new CopyFile(INPUT_DIR . '/config/packages/easy_admin.yaml', 'config/packages/easy_admin.yaml'),
 //        new CopyFile(INPUT_DIR . '/config/packages/survos_meili.yaml', 'config/packages/survos_meili.yaml'),
@@ -264,7 +267,7 @@ function ea_load_database(): void
 #[Step(
     bullets: [
         'use EasyAdmin to browse the entity',
-        'use bash, 7700 or riccox to see meili',
+        'use bash, localhost:7700 or riccox to see meili',
         'Creates src/Controller/Admin/MeiliDashboardController.php',
         'Scans registry for entities and generates <Entity>CrudController.php',
         'Integrates with MeiliService settings dynamically'
@@ -273,9 +276,6 @@ function ea_load_database(): void
         new Console('code:meili:admin', ['--path','/', '--route', 'ez_meili']),
         new Console('cache:clear'),
         new Console('cache:pool:clear', ['cache.app']),
-        new Bash('symfony open:local --path=/'),
-        new BrowserVisit('/', host: 'http://ea.wip', a: 'dashboard.png'),
-
     ]
 )]
 #[Step('Visit a web page',
@@ -299,7 +299,7 @@ function ea_dashboard(): void
 )]
 function ea_open(): void { RunStep::run(_actions_from_current_task(), context()); }
 
-#[AsTask('facets', CASTOR_NAMESPACE, 'add facets and sort to Movie index')]
+#[AsTask('facets', CASTOR_NAMESPACE, 'add searchable, filterable and sortable to Movie index')]
 #[Step(
     actions: [
         new PregReplace(
@@ -321,6 +321,13 @@ function facets(): void { RunStep::run(_actions_from_current_task(), context());
         new DisplayArtifact('update-index.terminal'),
     ]
 )]
+#[Step('Search and see facets',
+    actions: [
+        new BrowserVisit('/meili/meiliAdmin/instant-search/index/movie', 'https://ea.wip', a: 'search-with-facets.png'),
+        new DisplayArtifact('search-with-facets.png', note: 'Facets on side'),
+    ]
+)]
+
 function update_index(): void { RunStep::run(_actions_from_current_task(), context()); }
 
 #[AsTask(name: 'build', description: 'Build the project')]
