@@ -325,11 +325,12 @@ function install(): void
         'css for angolia',
     ],
     actions: [
-        new ImportmapRequire(['bootstrap', '@meilisearch/instant-meilisearch/templates/basic_search.css']),
-        new Console('importmap:require bootstrap @meilisearch/instant-meilisearch/templates/basic_search.css'),
+        new ImportmapRequire(['@tabler/core', '@meilisearch/instant-meilisearch/templates/basic_search.css']),
+//        new Console('importmap:require bootstrap @meilisearch/instant-meilisearch/templates/basic_search.css'),
         new Bash('echo "import \'instantsearch.css/themes/algolia.min.css\';
-import \'@meilisearch/instant-meilisearch/templates/basic_search.css;
-import \'bootstrap/dist/css/bootstrap.min.css;\';
+import \'@meilisearch/instant-meilisearch/templates/basic_search.css;\'
+import \'@tabler/core/dist/css/tabler.min.css;\'
+import \'@tabler/core;\';
 " | cat - assets/app.js > temp && mv temp assets/app.js'),
 
     ]
