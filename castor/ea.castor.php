@@ -298,19 +298,22 @@ function with_symfony(): void
     bullets: [
         'Tools Import the CSV data to the database',
         'Code generator (like Symfony maker-bundle)',
-        'Leverages easy-admin for bundle adminstration',
+        'Leverages easy-admin for bundle administration',
     ],
     actions: [
-        new ComposerRequire([
-            'survos/import-bundle',
-            'survos/ez-bundle',
-            'easycorp/easyadmin-bundle',
-            'league/csv',
-            'symfony/ux-icons',
-        ],
-        ),
-        new ComposerRequire(['survos/code-bundle'], dev: true),
-        new Bash('~/g/sites/mono/link .'),
+//        new ComposerRequire([
+//            'survos/import-bundle',
+//            'survos/ez-bundle',
+//            'easycorp/easyadmin-bundle',
+//            'league/csv',
+//            'symfony/ux-icons',
+//        ],
+//        ),
+//        new ComposerRequire(['survos/code-bundle'], dev: true),
+        new Bash('../../mono/link .'),
+        new Console('ux:icons:lock'),
+        new CopyFile(INPUT_DIR . '/config/packages/ux_icons.yaml', 'config/packages/ux_icons.yaml'),
+
     ]
 )]
 function install(): void
@@ -326,11 +329,10 @@ function install(): void
     ],
     actions: [
         new ImportmapRequire(['@tabler/core', '@meilisearch/instant-meilisearch/templates/basic_search.css']),
-//        new Console('importmap:require bootstrap @meilisearch/instant-meilisearch/templates/basic_search.css'),
         new Bash('echo "import \'instantsearch.css/themes/algolia.min.css\';
-import \'@meilisearch/instant-meilisearch/templates/basic_search.css;\'
-import \'@tabler/core/dist/css/tabler.min.css;\'
-import \'@tabler/core;\';
+import \'@meilisearch/instant-meilisearch/templates/basic_search.css\';
+import \'@tabler/core/dist/css/tabler.min.css\';
+import \'@tabler/core\';
 " | cat - assets/app.js > temp && mv temp assets/app.js'),
 
     ]
