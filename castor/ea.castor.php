@@ -248,6 +248,8 @@ function ea_demo(): void
     ea_create_database();
     ea_load_database();
     ea_dashboard();
+    facets();
+
     ea_open();
     io()->success('EasyAdmin demo completed.');
 }
@@ -514,6 +516,8 @@ function ea_open(): void { RunStep::run(_actions_from_current_task(), context())
             a: '/src/Entity/MovieWithFacets.php'
         ),
         new DisplayArtifact('/src/Entity/MovieWithFacets.php'),
+        new Console('meili:settings:update', ['--force']),
+
 
     ]
 )]
