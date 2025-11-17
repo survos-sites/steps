@@ -313,7 +313,7 @@ function with_symfony(): void
         new ComposerRequire(['survos/code-bundle'], dev: true),
         new Bash('../../mono/link .'),
         new Console('ux:icons:lock'),
-        new CopyFile(INPUT_DIR . '/config/packages/ux_icons.yaml', 'config/packages/ux_icons.yaml'),
+//        new CopyFile(INPUT_DIR . '/config/packages/ux_icons.yaml', 'config/packages/ux_icons.yaml'),
 
     ]
 )]
