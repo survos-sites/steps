@@ -305,6 +305,7 @@ function with_symfony(): void
             'survos/import-bundle',
             'survos/ez-bundle',
             'easycorp/easyadmin-bundle',
+            'openai-php/client',
             'league/csv',
             'symfony/ux-icons',
         ],
@@ -328,7 +329,7 @@ function install(): void
         'css for angolia',
     ],
     actions: [
-        new ImportmapRequire(['@tabler/core', '@meilisearch/instant-meilisearch/templates/basic_search.css']),
+        new ImportmapRequire(['@tabler/core', 'bootstrap', '@meilisearch/instant-meilisearch/templates/basic_search.css']),
         new Bash('echo "import \'instantsearch.css/themes/algolia.min.css\';
 import \'@meilisearch/instant-meilisearch/templates/basic_search.css\';
 import \'@tabler/core/dist/css/tabler.min.css\';
@@ -362,7 +363,7 @@ function importmap(): void
             'default' => "sqlite:///%kernel.project_dir%/var/data_%kernel.environment%.db"
         ], '.env.local'),
 //        new Console('doctrine:schema:update', ['--force']),
-        new Env('OPEN_AI_KEY', ['hidden' => true], '.env.local'),
+        new Env('OPENAI_API_KEY', ['hidden' => true], '.env.local'),
 //        new CopyFile(INPUT_DIR . '/config/packages/easy_admin.yaml', 'config/packages/easy_admin.yaml'),
 //        new CopyFile(INPUT_DIR . '/config/packages/survos_meili.yaml', 'config/packages/survos_meili.yaml'),
     ]
@@ -483,7 +484,7 @@ function ea_show_data(): void { RunStep::run(_actions_from_current_task(), conte
         'Integrates with MeiliService settings dynamically'
     ],
     actions: [
-        new Console('code:meili:admin', ['--path','/', '--route', 'ez_meili']),
+        new Console('code:meili:admin', ['--path','/']),
         new Console('cache:clear'),
         new Console('cache:pool:clear', ['cache.app']),
     ]
@@ -531,6 +532,12 @@ function facets(): void { RunStep::run(_actions_from_current_task(), context());
     actions: [
         new Console('meili:settings:update', ['--force', '--wait'], a: 'update-index.terminal'),
         new DisplayArtifact('update-index.terminal'),
+    ]
+)]
+#[Step(
+    actions: [
+        new Console('code:js:twig', ['movie'], a: 'create-twig.terminal'),
+        new DisplayArtifact('create-twig.terminal'),
     ]
 )]
 #[Step('Search and see facets',
