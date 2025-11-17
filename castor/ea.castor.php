@@ -241,6 +241,7 @@ function ea_demo(): void
 //    required_packages();
     with_symfony();
     install();
+    importmap();
     ea_open();
     ea_download();
     ea_make_entity();
