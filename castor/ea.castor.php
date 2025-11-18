@@ -26,6 +26,7 @@ use Castor\Context;
 use function Castor\{context, io};
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Runtime\RunStep;
+use Survos\StepBundle\Action as A;
 use Survos\StepBundle\Action\{
     Artifact, // writer, when adding an artifactId to bash or console isn't enough
     DisplayArtifact, // reader
@@ -33,6 +34,7 @@ use Survos\StepBundle\Action\{
     Env,
     Console,
     Bash,
+    Bullet,
     PregReplace,
     ImportmapRequire,
     CopyFile,
@@ -53,11 +55,6 @@ use Survos\StepBundle\Action\{
 #[Step(
     title: 'create-index (HTTP API)',
     description: 'Background: Raw API calls',
-    bullets: [
-        "define an index with an optional primary key",
-        "returns a task UID (async)",
-        "index is empty until documents are added",
-    ],
     actions: [
         new Bash(
             'curl -s "http://127.0.0.1:7700/indexes" ' . "\\\n"
@@ -65,8 +62,17 @@ use Survos\StepBundle\Action\{
             . '--data-raw \'{"uid":"movies","primaryKey":"imdbId"}\' | jq',
             note: 'Create the "movies" index with primary key "imdbId".'
         ),
+        new Bullet(
+            fade: false,
+            msg: [
+            "define an index with an optional primary key (default: 'id')",
+            "returns a task UID (async)",
+            "index is empty until documents are added",
+            ],
+        ),
         new DisplayCode(
             lang: 'json',
+            note: 'All write tasks are async, so a task object is returned',
             content: <<<'JSON'
 {
   "taskUid": 171,
@@ -75,8 +81,9 @@ use Survos\StepBundle\Action\{
   "type": "indexCreation",
   "enqueuedAt": "2025-11-13T10:45:23.072030011Z"
 }
-JSON
+JSON,
         ),
+        new Bullet(style: 'callout', fade: false, msg: 'query the task by id until status is finished')
     ],
 )]
 #[Step(
@@ -112,11 +119,6 @@ PHP
 )]
 #[Step(
     title: 'update-settings',
-    bullets: [
-        "configure searchable, filterable, and sortable fields",
-        "settings updates are asynchronous",
-        "search results change only after task completes",
-    ],
     actions: [
         new DisplayCode(
             lang: 'PHP',
@@ -132,6 +134,12 @@ $task = $response->toArray();
 PHP
         ),
     ],
+    bullets: [
+        "configure searchable, filterable, and sortable fields",
+        "settings updates are asynchronous",
+        "search results change only after task completes",
+    ],
+
 )]
 #[Step(
     title: 'add-documents',

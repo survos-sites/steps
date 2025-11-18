@@ -15,6 +15,7 @@ use Survos\StepBundle\Metadata\Actions\{
 use Survos\StepBundle\Action\{
     YamlWrite,
     Env,
+    Bullet,
     Bash,
     Console,
     ComposerRequire
@@ -46,14 +47,16 @@ function create(): void {
 #[Step(
     title: 'Install bundles & libraries',
     description: 'Add Survos Bunny bundle (and optional Datatables helper).',
-    bullets: [
-        'Composer deps inside bunny-demo',
-        'You can skip the optional helper if you prefer'
-    ],
     actions: [
         new ComposerRequire(
             packages: ['survos/bunny-bundle','survos/simple-datatables-bundle'],
             dev: false,
+        ),
+        new Bullet(
+            msg: [
+                'Composer deps inside bunny-demo',
+                'You can skip the optional helper if you prefer'
+            ]
         ),
     ]
 )]
@@ -70,17 +73,19 @@ function install(): void { RunStep::run(_actions_from_current_task(), context())
 #[Step(
     title: 'Configure Bunny API key',
     description: 'Write the main API key to .env.local and dump zone config.',
-    bullets: [
-        'Get the main API key from https://dash.bunny.net/account/api-key',
-        'Command can filter/limit zones in the future via --filter (TODO)',
-        'Generated YAML references env vars; edit .env.local to set final values'
-    ],
     actions: [
         // Write a placeholder key; edit .env.local later to set the real one.
         // @todo: prompt
         new Env('BUNNY_API_KEY', ['hidden' => true], '.env.local'),
         // Dump config (reads BUNNY_API_KEY from env/local)
         new Console('bunny:config',postfix: ' >> .env.local',  note: 'Append env var suggestions to .env.local'),
+        new Bullet(msg:
+            [
+                'Get the main API key from https://dash.bunny.net/account/api-key',
+                'Command can filter/limit zones in the future via --filter (TODO)',
+                'Generated YAML references env vars; edit .env.local to set final values'
+            ]
+        )
     ]
 )]
 function config(): void { RunStep::run(_actions_from_current_task(), context()); }
