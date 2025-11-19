@@ -197,9 +197,15 @@ function symfony_new(
 //    $output = run("cat README.md"); // relative to project working dir
     run('symfony new --webapp --version=next '. $demoDir, $ctx);
     // now we can use the demo working dir
-    run('composer config extra.symfony.allow-contrib true');
-    run('composer config minimum-stability RC');
-    run('composer require php:^8.4');
+//    run("sed -i 's/7\.4\.\*/^8.0/g' composer.json");
+//    run('rm composer.lock');
+//    run('composer config extra.symfony.allow-contrib true');
+////    run('composer require php:^8.4');
+//    run('sed -i \'s/"php": "[^"]*"/"php": "^8.4"/g\' composer.json');
+//    run('composer config minimum-stability RC');
+//    run('composer config extra.symfony.require ^8.0');
+//    run('composer update');
+//    run('composer about');
 
     // NOW we can run commands in the project context
     run('symfony proxy:domain:attach ' . project_name());
@@ -236,7 +242,7 @@ function symfony_slideshow(
 {
     if (!$path) {
         // the context must be _this_ repo, not the created symfony project
-        $path = sprintf('/slides%s/%s', $list ? '-overview' : '',  project_name());
+        $path = sprintf('/step/slides%s/%s', $list ? '-overview' : '',  project_name());
     }
     run($cmd = 'symfony open:local --path '. $path, new Context()->withWorkingDirectory(__DIR__));
 //    run($cmd = 'symfony open:local --path '. $path, new Context()->withWorkingDirectory(__DIR__));

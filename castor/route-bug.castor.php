@@ -2,7 +2,7 @@
 
 const INPUT_DIR = __DIR__ . '/../inputs'; // known config, php, images, etc.  urls?
 const CASTOR_NAMESPACE = null;
-const EA_DEMO_DIR = '../demo/ea-demo';
+const EA_DEMO_DIR = '../demo/route-bug-demo';
 
 /**
  * file: castor/easyadmin.castor.php
@@ -42,185 +42,6 @@ use Survos\StepBundle\Action\{
     BrowserVisit
 };
 
-#[AsTask('meili-overview', null, 'What is Meilisearch')]
-#[Step(
-    bullets: [
-        "An open-source, developer-friendly search engine focused on speed and relevance",
-        "A lightweight alternative to Elasticsearch or Algolia with near-instant indexing",
-        "Provides typo-tolerance, filters, facets, and semantic search out of the box",
-        "Designed for real-time search UIs with instant responses under 50ms",
-        "Works beautifully with Symfony via bundles that encapsulate the API interactions",
-    ],
-)]
-#[Step(
-    title: 'create-index (HTTP API)',
-    description: 'Background: Raw API calls',
-    actions: [
-        new Bash(
-            'curl -s "http://127.0.0.1:7700/indexes" ' . "\\\n"
-            . '-H "Content-Type: application/json" ' . "\\\n"
-            . '--data-raw \'{"uid":"movies","primaryKey":"imdbId"}\' | jq',
-            note: 'Create the "movies" index with primary key "imdbId".'
-        ),
-        new Bullet(
-            fade: false,
-            msg: [
-            "define an index with an optional primary key (default: 'id')",
-            "returns a task UID (async)",
-            "index is empty until documents are added",
-            ],
-        ),
-        new DisplayCode(
-            lang: 'json',
-            note: 'All write tasks are async, so a task object is returned',
-            content: <<<'JSON'
-{
-  "taskUid": 171,
-  "indexUid": "movies",
-  "status": "enqueued",
-  "type": "indexCreation",
-  "enqueuedAt": "2025-11-13T10:45:23.072030011Z"
-}
-JSON,
-        ),
-        new Bullet(style: 'callout', fade: false, msg: 'query the task by id until status is finished')
-    ],
-)]
-#[Step(
-    title: 'create-index (Symfony HttpClient)',
-    description: 'Still raw, but with HttpClientInterface',
-    actions: [
-        new DisplayCode(lang: 'yaml', content: <<<'YAML'
-framework:
-  http_client:
-    scoped_clients:
-      meili.client:
-        base_uri: 'http://127.0.0.1:7700'
-        headers:
-          Content-Type: 'application/json'
-          Accept: 'application/json'
-          Authorization: 'Bearer %env(MEILI_API_KEY)%'
-YAML
-),
-        new DisplayCode(
-            lang: 'PHP',
-            content: <<<'PHP'
-$response = $this->meiliClient->request('POST', '/indexes', [
-    'json' => [
-        'uid'        => 'movies',
-        'primaryKey' => 'imdbId',
-    ],
-]);
-
-$task = $response->toArray();
-PHP
-        ),
-    ],
-)]
-#[Step(
-    title: 'update-settings',
-    actions: [
-        new DisplayCode(
-            lang: 'PHP',
-            content: <<<'PHP'
-$response = $this->meiliClient->request('PATCH', '/indexes/movies/settings', [
-    'json' => [
-        'searchableAttributes' => ['title', 'overview'],
-        'filterableAttributes' => ['genre', 'year'],
-    ],
-]);
-
-$task = $response->toArray();
-PHP
-        ),
-    ],
-    bullets: [
-        "configure searchable, filterable, and sortable fields",
-        "settings updates are asynchronous",
-        "search results change only after task completes",
-    ],
-
-)]
-#[Step(
-    title: 'add-documents',
-    description: "add or update documents",
-    bullets: [
-        "send documents as JSON",
-        "ingestion is asynchronous (tasks)",
-        "documents become searchable after indexing finishes",
-    ],
-    actions: [
-        new DisplayCode(
-            lang: 'PHP',
-            content: <<<'PHP'
-$response = $this->meiliClient->request('POST', '/indexes/movies/documents', [
-    'json' => [
-        [
-            'id'       => 1,
-            'title'    => 'Pony Movie',
-            'overview' => 'A movie about a pony',
-            'genre'    => 'family',
-            'year'     => 2024,
-        ],
-    ],
-]);
-
-$task = $response->toArray();
-PHP
-        ),
-    ],
-)]
-function meili_overview(): void
-{
-    RunStep::run(_actions_from_current_task(), context());
-}
-
-
-#[AsTask('install-meili', null, 'Install meilisearch')]
-#[Step(
-    actions: [
-        new Bash('docker run -it --rm  -p 7700:7700 \
-  -v $(pwd)/meili_data:/meili_data \
-  getmeili/meilisearch:latest'),
-    ],
-    bullets: [
-        'run with docker',
-        'install via docker-composer.yml',
-        'free trial on meilisearch'
-    ],
-)]
-function install_meili(): void { RunStep::run(_actions_from_current_task(), context()); }
-
-#[AsTask('docker-config', null, 'configure docker.yml')]
-#[Step(
-    actions: [
-        new DisplayCode(lang: 'yaml', content: <<<'YAML'
-services:
-    meilisearch:
-        image: getmeili/meilisearch:v1.24
-        container_name: meilisearch
-        volumes: [./.docker/meili-1.24/:/meili_data/]
-        environment:
-            MEILI_NO_ANALYTICS: true
-            MEILI_HTTP_ALLOWED_ORIGINS: '["*"]'
-        networks: [meili_network]
-        ports: ["7700:7700"]
-    meilisearch-ui:
-        image: riccoxie/meilisearch-ui:latest
-        container_name: meilisearch-ui
-        restart: on-failure:5
-        environment:
-            SINGLETON_MODE: true
-            SINGLETON_HOST: http://localhost:7700
-            SINGLETON_API_KEY: your-api-key
-        ports: ["24900:24900"]
-        depends_on: [meilisearch]
-        networks: [meili_network]
-    networks: [meili_network: [driver: bridge]]
-YAML
-        )])]
-function configure_docker(): void { RunStep::run(_actions_from_current_task(), context()); }
-
 #[AsTask(name: 'build', description: "Let's build a demo!")]
 #[Step(
     'Meilisearch Demo',
@@ -243,7 +64,7 @@ function configure_docker(): void { RunStep::run(_actions_from_current_task(), c
     ]
 )]
 
-function ea_demo(): void
+function build(): void
 {
 //    ea_new();
 //    required_packages();
@@ -264,36 +85,19 @@ function ea_demo(): void
 }
 
 #[AsTask('packages:required', CASTOR_NAMESPACE, 'Install required packages')]
-function required_packages(): void
-{
-    RunStep::run(_actions_from_current_task(), context());
-}
-
-#[AsTask('packages:required', CASTOR_NAMESPACE, 'Install required packages')]
 #[Step(
     title: 'with-symfony',
     description: 'Symfony bundles manage the dependencies',
     bullets: [
-        'meilisearch/search-bundle: official bundle from meilisearch',
-        'https://github.com/Mezcalito/ux-search, YAML, readonly',
-        'survos/meili-bundle: PHP 8.4, attribute-based'
+        'survos/meili-bundle, from recipes-contrib'
     ],
-    actions: [new ComposerRequire([
-        'survos/meili-bundle'
-    ])
+    actions: [
+        new ComposerRequire(['survos/meili-bundle']),
+        new ComposerRequire(['survos/command-bundle'], dev: true),
+        new Bash('cat config/routes/survos_meili.yaml'),
+        new Bash('cat config/routes/survos_command.yaml'),
+        new Bash('bin/console debug:route'),
     ]
-)]
-#[Step(
-    title: 'Some key dependencies installed with meili-bundle',
-    bullets: [
-        'dependencies include the meilisearch PHP SDK',
-        'listed here for completeness',
-    ],
-    actions: [new ComposerRequire([
-        'meilisearch/meilisearch-php',
-        'symfony/http-client',
-        'nyholm/psr7',
-    ])]
 )]
 
 function with_symfony(): void

@@ -2,7 +2,7 @@
 
 const INPUT_DIR = __DIR__ . '/../inputs'; // known config, php, images, etc.  urls?
 const CASTOR_NAMESPACE = null;
-const EA_DEMO_DIR = '../demo/ea-demo';
+const EA_DEMO_DIR = '../demo/meili-demo';
 
 /**
  * file: castor/easyadmin.castor.php
@@ -23,6 +23,7 @@ foreach ($autoloadCandidates as $autoload) {
 
 use Castor\Attribute\{AsTask, AsContext};
 use Castor\Context;
+use Survos\MeiliBundle\Metadata\MeiliIndex;
 use function Castor\{context, io};
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Runtime\RunStep;
@@ -46,30 +47,29 @@ use Survos\StepBundle\Action\{
 #[Step(
     bullets: [
         "An open-source, developer-friendly search engine focused on speed and relevance",
-        "A lightweight alternative to Elasticsearch or Algolia with near-instant indexing",
+        "A lightweight alternative to Elasticsearch or Algolia with fast indexing",
         "Provides typo-tolerance, filters, facets, and semantic search out of the box",
         "Designed for real-time search UIs with instant responses under 50ms",
-        "Works beautifully with Symfony via bundles that encapsulate the API interactions",
+        "various Symfony bundles that encapsulate the API interactions",
+        "built-in vector store for semantic search",
     ],
 )]
 #[Step(
-    title: 'create-index (HTTP API)',
+    title: 'How the API works',
     description: 'Background: Raw API calls',
     actions: [
         new Bash(
-            'curl -s "http://127.0.0.1:7700/indexes" ' . "\\\n"
+            note: 'Create the "movies" index with primary key "imdbId".',
+            command: 'curl -s "http://127.0.0.1:7700/indexes" ' . "\\\n"
             . '-H "Content-Type: application/json" ' . "\\\n"
             . '--data-raw \'{"uid":"movies","primaryKey":"imdbId"}\' | jq',
-            note: 'Create the "movies" index with primary key "imdbId".'
         ),
-        new Bullet(
-            fade: false,
-            msg: [
-            "define an index with an optional primary key (default: 'id')",
-            "returns a task UID (async)",
-            "index is empty until documents are added",
-            ],
-        ),
+//        new Bullet(
+//            fade: false,
+//            msg: [
+//            "define an index with an optional primary key (default: 'id')",
+//            ],
+//        ),
         new DisplayCode(
             lang: 'json',
             note: 'All write tasks are async, so a task object is returned',
@@ -101,24 +101,29 @@ framework:
           Accept: 'application/json'
           Authorization: 'Bearer %env(MEILI_API_KEY)%'
 YAML
-),
+        ),
         new DisplayCode(
             lang: 'PHP',
             content: <<<'PHP'
-$response = $this->meiliClient->request('POST', '/indexes', [
-    'json' => [
-        'uid'        => 'movies',
-        'primaryKey' => 'imdbId',
-    ],
-]);
+    public function __construct(
+        private readonly HttpClientInterface $meiliClient
+    ) {}
 
-$task = $response->toArray();
+    public function createIndex() {
+        $response = $this->meiliClient->request('POST', '/indexes', [
+            'json' => [
+                'uid'        => 'movies',
+                'primaryKey' => 'imdbId',
+            ],
+        ]);
+        $task = $response->toArray();
+    }
 PHP
         ),
     ],
 )]
 #[Step(
-    title: 'update-settings',
+    title: 'Configure without PHP library',
     actions: [
         new DisplayCode(
             lang: 'PHP',
@@ -128,27 +133,23 @@ $response = $this->meiliClient->request('PATCH', '/indexes/movies/settings', [
         'searchableAttributes' => ['title', 'overview'],
         'filterableAttributes' => ['genre', 'year'],
     ],
-]);
-
+]
+);
 $task = $response->toArray();
 PHP
         ),
-    ],
-    bullets: [
-        "configure searchable, filterable, and sortable fields",
-        "settings updates are asynchronous",
-        "search results change only after task completes",
+        new Bullet(msg: [
+            "configure searchable, filterable, and sortable fields",
+            "settings updates are asynchronous",
+            "search results change only after task completes",
+        ]
+        )
     ],
 
 )]
 #[Step(
     title: 'add-documents',
     description: "add or update documents",
-    bullets: [
-        "send documents as JSON",
-        "ingestion is asynchronous (tasks)",
-        "documents become searchable after indexing finishes",
-    ],
     actions: [
         new DisplayCode(
             lang: 'PHP',
@@ -168,8 +169,73 @@ $response = $this->meiliClient->request('POST', '/indexes/movies/documents', [
 $task = $response->toArray();
 PHP
         ),
+        new Bullet([
+    "send documents as JSON",
+    "must contain a primary key field",
+    "ingestion is asynchronous (tasks)",
+    "documents become searchable after indexing finishes",
+]),
+
     ],
 )]
+#[Step('Meilisearch PHP library', "Fortunately, we have a PHP library...",
+    actions: [
+        new DisplayCode(
+            lang: 'bash',
+            content: 'composer require meilisearch/meilisearch-php symfony/http-client nyholm/psr7:^1.0'
+        ),
+
+        new DisplayCode(
+            lang: 'PHP',
+            content: <<<'PHP'
+$client = new Client('http://127.0.0.1:7700', 'masterKey');
+// get the apiEndpoint!
+$index = $client->index('movies');
+
+$documents = [
+    ['id' => 4,  'title' => 'Mad Max: Fury Road', 'genres' => ['Adventure, Science Fiction']],
+    ['id' => 5,  'title' => 'Moana', 'genres' => ['Fantasy, Action']],
+    ['id' => 6,  'title' => 'Philadelphia', 'year' => 1997, 'genres' => ['Drama']],
+];
+
+$task = $index->addDocuments($documents);
+$task->wait(); // optional, wait until async finished
+PHP,
+        ),
+        new Bullet(msg: [
+            'if id already exists, data will be _updated_',
+            'Genre and year are filterable, not searchable',
+        ])
+    ]
+)]
+#[Step('Even better, we have bundles!',
+    bullets: [
+        'meilisearch/search-bundle: official bundle from meilisearch',
+        'https://github.com/Mezcalito/ux-search, YAML, readonly',
+        'survos/meili-bundle: PHP 8.4, attribute-based'
+    ],
+    actions: [
+        new DisplayCode(
+            note: "survos/meili-bundle, attributes applied to a doctrine entity",
+            lang: 'PHP',
+            content: <<<'PHP'
+#[MeiliIndex(
+    primaryKey: 'imdbId',
+    searchable: ['title','overview'],
+    filterable: ['year', 'budget', 'genres'],
+    sortable: ['year', 'budget'],
+)]
+PHP,
+        ),
+        new DisplayCode(
+            lang: 'bash',
+            content: <<<'BASH'
+bin/console meili:settings:update --force
+bin/console meili:populate
+BASH,
+        ),
+    ]
+    )]
 function meili_overview(): void
 {
     RunStep::run(_actions_from_current_task(), context());
@@ -189,7 +255,10 @@ function meili_overview(): void
         'free trial on meilisearch'
     ],
 )]
-function install_meili(): void { RunStep::run(_actions_from_current_task(), context()); }
+function install_meili(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
 #[AsTask('docker-config', null, 'configure docker.yml')]
 #[Step(
@@ -219,7 +288,10 @@ services:
     networks: [meili_network: [driver: bridge]]
 YAML
         )])]
-function configure_docker(): void { RunStep::run(_actions_from_current_task(), context()); }
+function configure_docker(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
 #[AsTask(name: 'build', description: "Let's build a demo!")]
 #[Step(
@@ -242,7 +314,6 @@ function configure_docker(): void { RunStep::run(_actions_from_current_task(), c
         new Bash('symfony new --webapp meili-demo --dir' . EA_DEMO_DIR),
     ]
 )]
-
 function ea_demo(): void
 {
 //    ea_new();
@@ -278,24 +349,17 @@ function required_packages(): void
         'https://github.com/Mezcalito/ux-search, YAML, readonly',
         'survos/meili-bundle: PHP 8.4, attribute-based'
     ],
-    actions: [new ComposerRequire([
-        'survos/meili-bundle'
-    ])
+    actions: [
+        new ComposerRequire(['survos/meili-bundle']),
+            new Bullet(style: 'callout', msg: "Automatically installed dependencies"),
+            new ComposerRequire([
+                    'meilisearch/meilisearch-php',
+                    'symfony/http-client',
+                    'nyholm/psr7',
+                ]
+            )
     ]
 )]
-#[Step(
-    title: 'Some key dependencies installed with meili-bundle',
-    bullets: [
-        'dependencies include the meilisearch PHP SDK',
-        'listed here for completeness',
-    ],
-    actions: [new ComposerRequire([
-        'meilisearch/meilisearch-php',
-        'symfony/http-client',
-        'nyholm/psr7',
-    ])]
-)]
-
 function with_symfony(): void
 {
     RunStep::run(_actions_from_current_task(), context());
@@ -372,6 +436,8 @@ function importmap(): void
             'default' => "sqlite:///%kernel.project_dir%/var/data_%kernel.environment%.db"
         ], '.env.local'),
 //        new Console('doctrine:schema:update', ['--force']),
+        new Bullet(msg: 'Visit https://platform.openai.com/api-keys'),
+        new BrowserVisit('https://platform.openai.com/api-keys'),
         new Env('OPENAI_API_KEY', ['hidden' => true], '.env.local'),
 //        new CopyFile(INPUT_DIR . '/config/packages/easy_admin.yaml', 'config/packages/easy_admin.yaml'),
 //        new CopyFile(INPUT_DIR . '/config/packages/survos_meili.yaml', 'config/packages/survos_meili.yaml'),
@@ -444,8 +510,8 @@ function ea_make_entity(): void
         'create the meiliindex'
     ],
     actions: [
-        new Console('doctrine:schema:update', ['--force']),
-        new Console('meili:settings:update', ['--force']),
+        new Console('doctrine:schema:update', ['--force'], note: 'Sqlite: create and update'),
+        new Console('meili:settings:update', ['--force'], note: 'meili: create and update'),
     ]
 )]
 function ea_create_database(): void
@@ -456,18 +522,44 @@ function ea_create_database(): void
 #[AsTask(name: 'load:database')]
 #[Step(
     'Load the database',
-    bullets: [
-        'import:entities is a simple way to get flat(easy) data from csv->doctrine',
-        'doctrine post-flush listener populates the meili index',
-    ],
     actions: [
+        new DisplayCode(
+            note: "boilerplace code for importing data from csv",
+            lang: 'PHP', content: <<<'PHP'
+$reader = new CsvReader('data/movies.csv');
+foreach ($reader as $idx => $data) {
+        if (!$product = $this->movieRepository->find($data->id)) {
+            $movie = new Movie($data->id);
+            $this->entityManager->persist($movie);
+        }
+        $movie->title = $data->title;
+        $movie->budget = $data->budget;
+        // etc.
+}
+$this->entityManager->flush();
+PHP),
+        new Bullet([
+            'Needs to flush periodically',
+            'we may want --limit during testing',
+        ]
+        ),
         new Console('import:entities', ['Movie', '--file', 'data/movies.csv', '--limit', '500'], a: 'import.txt'),
+        new Bullet([
+                'import:entities is a simple way to get flat(easy) data from csv->doctrine',
+                'same internal logic that creates the Entity class',
+                'tweak the entity class using Property Hooks',
+                'doctrine post-flush listener populates the meili index',
+            ]
+        ),
         new DisplayArtifact('import.txt'),
     ]
 )]
-function ea_load_database(): void { RunStep::run(_actions_from_current_task(), context()); }
+function ea_load_database(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
-#[AsTask('show_data', CASTOR_NAMESPACE, 'We have a searchable index!')]
+#[AsTask('show_data', CASTOR_NAMESPACE, 'We have data~')]
 #[Step(
     description: "Ways to see/search our index",
     bullets: [
@@ -476,31 +568,35 @@ function ea_load_database(): void { RunStep::run(_actions_from_current_task(), c
         'riccox is better'
     ],
     actions: [
+        new BrowserVisit('/', 'http://127.0.0.1:7700', a: 'meili.png'),
         new BrowserVisit('/ins/0/index/movie/documents?listType=grid', 'http://127.0.0.1:24900', a: 'riccox.png'),
 //        new BrowserVisit('/', 'http://127.0.0.1:24900', a: 'riccox.png'),
         new DisplayArtifact('riccox.png'),
     ],
 )]
-function ea_show_data(): void { RunStep::run(_actions_from_current_task(), context()); }
+function ea_show_data(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
 #[AsTask('dashboard', CASTOR_NAMESPACE, 'Generate Dashboard + CRUD')]
 #[Step(
     bullets: [
         'use EasyAdmin to browse the doctrine database',
-        'Creates src/Controller/Admin/MeiliDashboardController.php',
+        'code:meili:admin -- Creates Dashboard controllers + crud',
         'Demo uses easy-admin as home page!',
         'Scans registry for entities and generates <Entity>CrudController.php',
         'Integrates with MeiliService settings dynamically'
     ],
     actions: [
-        new Console('code:meili:admin', ['--path','/']),
+        new Console('code:meili:admin', ['--path', '/']),
         new Console('cache:clear'),
         new Console('cache:pool:clear', ['cache.app']),
     ]
 )]
-#[Step('Visit a web page',
+#[Step('Open the EZ Meili Dashboard',
     actions: [
-        new BrowserVisit('/', 'https://ea.wip', a: 'default-home.png'),
+        new BrowserVisit('/', 'https://meili-demo.wip', a: 'default-home.png'),
         new DisplayArtifact('default-home.png', note: 'Default ez homepage'),
     ]
 )]
@@ -510,14 +606,17 @@ function ea_dashboard(): void
 }
 
 
-#[AsTask('start', CASTOR_NAMESPACE, 'start server an open browser')]
-#[Step(
-    'Open Dashboard in browser',
-    actions: [
-        new Bash('symfony server:start -d'),
-    ]
-)]
-function ea_open(): void { RunStep::run(_actions_from_current_task(), context()); }
+//#[AsTask('start', CASTOR_NAMESPACE, 'start server and open browser')]
+//#[Step(
+//    'Open Dashboard in browser',
+//    actions: [
+//        new Bash('symfony server:start -d'),
+//    ]
+//)]
+//function ea_open(): void
+//{
+//    RunStep::run(_actions_from_current_task(), context());
+//}
 
 #[AsTask('facets', CASTOR_NAMESPACE, 'add searchable, filterable and sortable to Movie index')]
 #[Step(
@@ -534,7 +633,10 @@ function ea_open(): void { RunStep::run(_actions_from_current_task(), context())
 
     ]
 )]
-function facets(): void { RunStep::run(_actions_from_current_task(), context()); }
+function facets(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
 #[AsTask('update-index', CASTOR_NAMESPACE, 'update meili index settings')]
 #[Step(
@@ -556,6 +658,9 @@ function facets(): void { RunStep::run(_actions_from_current_task(), context());
         new DisplayArtifact('search-with-facets.png', note: 'Facets on side'),
     ]
 )]
-function update_index(): void { RunStep::run(_actions_from_current_task(), context()); }
+function update_index(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
 
 
