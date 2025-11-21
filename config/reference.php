@@ -1293,6 +1293,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *     search_glob?: scalar|null, // Default: "*.castor.php"
  *     search_depth?: int, // Default: 0
  * }
+ * @psalm-type SurvosStepConfig = array<mixed>
  * @psalm-type SurvosImportConfig = array{
  *     dir?: scalar|null, // The default directory for data files // Default: "data"
  * }
@@ -1330,6 +1331,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *     survos_barcode?: SurvosBarcodeConfig,
  *     survos_core?: SurvosCoreConfig,
  *     survos_step?: SurvosStepConfig,
+ *     survos_step?: SurvosStepConfig,
  *     survos_import?: SurvosImportConfig,
  *     ux_icons?: UxIconsConfig,
  *     "when@dev"?: array{
@@ -1354,6 +1356,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         survos_barcode?: SurvosBarcodeConfig,
  *         survos_core?: SurvosCoreConfig,
  *         survos_step?: SurvosStepConfig,
+ *         survos_step?: SurvosStepConfig,
  *         survos_import?: SurvosImportConfig,
  *         ux_icons?: UxIconsConfig,
  *     },
@@ -1374,6 +1377,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         meilisearch?: MeilisearchConfig,
  *         survos_barcode?: SurvosBarcodeConfig,
  *         survos_core?: SurvosCoreConfig,
+ *         survos_step?: SurvosStepConfig,
  *         survos_step?: SurvosStepConfig,
  *         survos_import?: SurvosImportConfig,
  *         ux_icons?: UxIconsConfig,
@@ -1397,6 +1401,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         survos_deployment?: SurvosDeploymentConfig,
  *         survos_barcode?: SurvosBarcodeConfig,
  *         survos_core?: SurvosCoreConfig,
+ *         survos_step?: SurvosStepConfig,
  *         survos_step?: SurvosStepConfig,
  *         survos_import?: SurvosImportConfig,
  *         ux_icons?: UxIconsConfig,

@@ -139,7 +139,7 @@ $task = $response->toArray();
 PHP
         ),
         new Bullet(msg: [
-            "configure searchable, filterable, and sortable fields",
+            "configure <code>searchable</code>, filterable, and sortable fields",
             "settings updates are asynchronous",
             "search results change only after task completes",
         ]
@@ -478,7 +478,8 @@ function ea_download(): void
         'duck-typing, basic but great for demos'
     ],
     actions: [
-        new Console('code:entity', ['Movie', '--meili', '--file', 'data/movies.csv'], a: 'src/Entity/Movie.php'),
+        new Console('json:convert', ['data/movies.csv', 'data/movies.jsonl'], a: 'stats.terminal'),
+        new Console('code:entity', ['Movie', 'data/movies.jsonl', '--force'], a: 'src/Entity/Movie.php'),
 //        new Console('doctrine:schema:update', ['--force']),
         // creates the artifact, but doesn't display it.  Internal
         new Artifact('src/Entity/Movie.php', "Movie.php"),
