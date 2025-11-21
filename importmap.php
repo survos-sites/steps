@@ -42,6 +42,9 @@ return [
     'reveal.js/plugin/highlight/highlight.js' => [
         'version' => '5.2.1',
     ],
+    'reveal.js/plugin/notes/notes.js' => [
+        'version' => '5.2.1',
+    ],
     'reveal.js/dist/reveal.js' => [
         'version' => '5.2.1',
     ],
