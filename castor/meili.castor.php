@@ -45,15 +45,33 @@ use Survos\StepBundle\Action\{
 
 #[AsTask('meili-overview', null, 'What is Meilisearch')]
 #[Step(
-    bullets: [
-        "An open-source, developer-friendly search engine focused on speed and relevance",
-        "A lightweight alternative to Elasticsearch or Algolia with fast indexing",
-        "Provides typo-tolerance, filters, facets, and semantic search out of the box",
-        "Designed for real-time search UIs with instant responses under 50ms",
-        "various Symfony bundles that encapsulate the API interactions",
-        "built-in vector store for semantic search",
-    ],
+    description: "Since this is the first slide, make the bullets big!",
+    actions: [
+
+        new Bullet(size: 1,
+            fade: true,
+            msg:
+            [
+                "An open-source, developer-friendly search engine focused on speed and relevance",
+                "A lightweight alternative to Elasticsearch or Algolia with fast indexing",
+                "Provides typo-tolerance, filters, facets, and semantic search out of the box",
+//        "Designed for real-time search UIs with instant responses under 50ms",
+//        "various Symfony bundles that encapsulate the API interactions",
+//        "built-in vector store for semantic search",
+            ]
+        )
+    ]
 )]
+//#[Step(
+//    bullets: [
+//        "An open-source, developer-friendly search engine focused on speed and relevance",
+//        "A lightweight alternative to Elasticsearch or Algolia with fast indexing",
+//        "Provides typo-tolerance, filters, facets, and semantic search out of the box",
+//        "Designed for real-time search UIs with instant responses under 50ms",
+//        "various Symfony bundles that encapsulate the API interactions",
+//        "built-in vector store for semantic search",
+//    ],
+//)]
 #[Step(
     title: 'How the API works',
     description: 'Background: Raw API calls',
@@ -64,12 +82,14 @@ use Survos\StepBundle\Action\{
             . '-H "Content-Type: application/json" ' . "\\\n"
             . '--data-raw \'{"uid":"movies","primaryKey":"imdbId"}\' | jq',
         ),
-//        new Bullet(
-//            fade: false,
-//            msg: [
-//            "define an index with an optional primary key (default: 'id')",
-//            ],
-//        ),
+        new Bullet(
+            fade: false,
+            size: 4,
+            msg: [
+                "font is smaller since it's on a page",
+            "define an index with an optional primary key (default: 'id')",
+            ],
+        ),
         new DisplayCode(
             lang: 'json',
             note: 'All write tasks are async, so a task object is returned',
