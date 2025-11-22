@@ -47,11 +47,10 @@ use Survos\StepBundle\Action\{
 #[Step(
     description: "Since this is the first slide, make the bullets big!",
     actions: [
-
-        new Bullet(size: 1,
+        new Bullet(
+            size: 1,
             fade: true,
-            msg:
-            [
+            msg: [
                 "An open-source, developer-friendly search engine focused on speed and relevance",
                 "A lightweight alternative to Elasticsearch or Algolia with fast indexing",
                 "Provides typo-tolerance, filters, facets, and semantic search out of the box",
@@ -87,7 +86,7 @@ use Survos\StepBundle\Action\{
             size: 4,
             msg: [
                 "font is smaller since it's on a page",
-            "define an index with an optional primary key (default: 'id')",
+                "define an index with an optional primary key (default: 'id')",
             ],
         ),
         new DisplayCode(
@@ -190,11 +189,11 @@ $task = $response->toArray();
 PHP
         ),
         new Bullet([
-    "send documents as JSON",
-    "must contain a primary key field",
-    "ingestion is asynchronous (tasks)",
-    "documents become searchable after indexing finishes",
-]),
+            "send documents as JSON",
+            "must contain a primary key field",
+            "ingestion is asynchronous (tasks)",
+            "documents become searchable after indexing finishes",
+        ]),
 
     ],
 )]
@@ -223,12 +222,13 @@ $task->wait(); // optional, wait until async finished
 PHP,
         ),
         new Bullet(msg: [
-            'if id already exists, data will be _updated_',
+            'if id already exists, data will be <b>updated</b>',
             'Genre and year are filterable, not searchable',
         ])
     ]
 )]
 #[Step('Even better, we have bundles!',
+    description: "Use a bundle to encapculate the server interactions",
     bullets: [
         'meilisearch/search-bundle: official bundle from meilisearch',
         'https://github.com/Mezcalito/ux-search, YAML, readonly',
@@ -236,6 +236,7 @@ PHP,
     ],
     actions: [
         new DisplayCode(
+            fade: true,
             note: "survos/meili-bundle, attributes applied to a doctrine entity",
             lang: 'PHP',
             content: <<<'PHP'
@@ -245,17 +246,74 @@ PHP,
     filterable: ['year', 'budget', 'genres'],
     sortable: ['year', 'budget'],
 )]
+#[ORM\Entity(repositoryClass: MovieRepository::class)]
+class Movie
 PHP,
         ),
         new DisplayCode(
+            fade: true,
+            note: "can share configuration with ApiPlatform",
+            lang: 'PHP',
+            content: <<<'PHP'
+#[ApiFilter(filterClass: SearchFilter::class, properties: self::FILTERABLE_FIELDS)]
+#[ApiFilter(filterClass: SearchFilter::class, properties: self::SEARCHABLE_FIELDS)]
+#[ApiFilter(filterClass: OrderFilter::class, properties: self::SORTABLE_FIELDS)]
+#[MeiliIndex(
+    primaryKey: 'code',
+    filterable: self::FILTERABLE_FIELDS,
+    sortable: self::SORTABLE_FIELDS,
+    searchable: self::SEARCHABLE_FIELDS,
+)]
+final class Wine
+{
+    public const FILTERABLE_FIELDS = ['year', 'type', 'domain', 'quantity', 'price', 'quality'];
+    public const SORTABLE_FIELDS = ['year', 'quantity', 'price', 'quality'];
+    public const SEARCHABLE_FIELDS = [];
+PHP,
+        ),
+    ]
+)]
+#[Step('Populating a Meilisearch Index',
+    actions: [
+        new DisplayCode(
+            note: "Like doctrine:schema:update --force with sqlite",
             lang: 'bash',
             content: <<<'BASH'
-bin/console meili:settings:update --force
-bin/console meili:populate
+# Create a sqlite database during testing
+bin/console doctrine:schema:update --force
+# OR use migrations
+bin/console make:migration && bin/console doctrine:migrations:migrate --force
+
+# sends the settings from the attributes to /settings endpoint
+bin/console meili:settings:update --force [--index movie] [--reset]
+
+
+BASH,
+        ),
+        new DisplayCode(
+            note: "If entities already exist, push to meili",
+            lang: 'bash',
+            content: <<<'BASH'
+# sends the settings from the attributes to /settings endpoint
+bin/console meili:populate App\\Entity\\Movie
+
+BASH,
+        ),
+        new DisplayCode(
+            note: "Automatically populate meili via postFlush() listener",
+            lang: 'bash',
+            content: <<<'BASH'
+# Create your own import app (or UI)
+bin/console app:import-movies --file movies.csv
+
+# survos/import-bundle used in the demo
+bin/console import:entities Movie data/movies.jsonl
+
+# add data via the web, api, other service, whatever
 BASH,
         ),
     ]
-    )]
+)]
 function meili_overview(): void
 {
     RunStep::run(_actions_from_current_task(), context());
@@ -265,9 +323,13 @@ function meili_overview(): void
 #[AsTask('install-meili', null, 'Install meilisearch')]
 #[Step(
     actions: [
-        new Bash('docker run -it --rm  -p 7700:7700 \
+        new Bash(
+            'docker run -it --rm  -p 7700:7700 \
   -v $(pwd)/meili_data:/meili_data \
-  getmeili/meilisearch:latest'),
+  getmeili/meilisearch:latest',
+            run: false,
+            note: "run with docker"
+        ),
     ],
     bullets: [
         'run with docker',
@@ -282,6 +344,7 @@ function install_meili(): void
 
 #[AsTask('docker-config', null, 'configure docker.yml')]
 #[Step(
+    description: "docker + riccox dashboard",
     actions: [
         new DisplayCode(lang: 'yaml', content: <<<'YAML'
 services:
@@ -318,10 +381,10 @@ function configure_docker(): void
     'Meilisearch Demo',
     description: 'Every step to build a movie search site',
     bullets: [
-        'Create demo project',
+        'Create demo project with symfony:new --webapp',
         'Install bundles',
-        'Download movie data',
-        'Generate Movie entity from downloaded data',
+        'Download data',
+        'create <em>Movie</em> entity from downloaded data',
         'configure and create sqlite database',
         'create meilisearch movie index',
         'Import movie data to database and index'
@@ -331,7 +394,9 @@ function configure_docker(): void
     description: 'create a new webapp project',
     // we are NOT actually running the actions, they are here for the slide
     actions: [
-        new Bash('symfony new --webapp meili-demo --dir' . EA_DEMO_DIR),
+        new Bash('symfony new --webapp meili-demo --dir' . EA_DEMO_DIR,
+            run: false,
+        ),
     ]
 )]
 function ea_demo(): void
@@ -363,20 +428,17 @@ function required_packages(): void
 #[Step(
     title: 'with-symfony',
     description: 'Symfony bundles manage the dependencies',
-    bullets: [
-        'meilisearch/search-bundle: official bundle from meilisearch',
-        'https://github.com/Mezcalito/ux-search, YAML, readonly',
-        'survos/meili-bundle: PHP 8.4, attribute-based'
-    ],
     actions: [
         new ComposerRequire(['survos/meili-bundle']),
-            new Bullet(style: 'callout', msg: "Automatically installed dependencies"),
-            new ComposerRequire([
-                    'meilisearch/meilisearch-php',
-                    'symfony/http-client',
-                    'nyholm/psr7',
-                ]
-            )
+        new Bullet(style: 'callout',
+            msg: "Dependencies are automatically installed"),
+        new ComposerRequire([
+                'meilisearch/meilisearch-php',
+                'symfony/http-client',
+                'nyholm/psr7',
+                'survos/jsonl-bundle',
+            ]
+        )
     ]
 )]
 function with_symfony(): void
@@ -388,21 +450,25 @@ function with_symfony(): void
 #[Step(
     'Necessary for demo only',
     bullets: [
-        'Tools Import the CSV data to the database',
-        'Code generator (like Symfony maker-bundle)',
+        'Tools to analyze csv/json data',
+        'Tools to import to database',
+        'Tools are paired to work together for fast demos',
+        'OpenAI for semantic search and (optionally) code generation',
         'Leverages easy-admin for bundle administration',
     ],
     actions: [
         new ComposerRequire([
-            'survos/import-bundle',
-            'survos/ez-bundle',
-            'easycorp/easyadmin-bundle',
-            'openai-php/client',
             'league/csv',
+            'survos/import-bundle',
+            'openai-php/client',
+            'easycorp/easyadmin-bundle',
+            'survos/ez-bundle',
             'symfony/ux-icons',
         ],
         ),
-        new ComposerRequire(['survos/code-bundle'], dev: true),
+        new ComposerRequire(
+            description: 'Code generator (like Symfony maker-bundle)',
+            packages: ['survos/code-bundle'], dev: true),
         new Bash('../../mono/link .'),
         new Console('ux:icons:lock'),
 //        new CopyFile(INPUT_DIR . '/config/packages/ux_icons.yaml', 'config/packages/ux_icons.yaml'),
@@ -416,7 +482,7 @@ function install(): void
 
 #[AsTask('bundles:importmap', CASTOR_NAMESPACE, 'front-end assets')]
 #[Step(
-    'Install from jsdeliver',
+    'Install Frontend using AssetMapper',
     bullets: [
         'css for angolia',
     ],
@@ -426,8 +492,20 @@ function install(): void
 import \'@meilisearch/instant-meilisearch/templates/basic_search.css\';
 import \'@tabler/core/dist/css/tabler.min.css\';
 import \'@tabler/core\';
-" | cat - assets/app.js > temp && mv temp assets/app.js'),
+" | cat - assets/app.js > temp && mv temp assets/app.js',
+            display: false
+        ),
+        new DisplayCode(lang: 'js', content: <<<JS
+// assets/app.js
+import './bootstrap.js';
+import './styles/app.css';
 
+import '@tabler/core';
+import '@tabler/core/dist/css/tabler.min.css';
+
+import 'instantsearch.css/themes/algolia.min.css';
+JS
+        )
     ]
 )]
 function importmap(): void
@@ -471,16 +549,25 @@ function ea_configure(): void
 #[Step(
     'Download movie data for demo',
     bullets: [
-        'if movies.csv.gz is missing, fetch it via curl',
-        'if movies.csv is missing, uncompress it',
-        'in practice,  write a Symfony command or castor task'
+        'fetch and uncompress movies.csv.gz',
+        'in practice: bash script or Symfony command or castor task'
     ],
     actions: [
-        new Bash(commands: [
-            'mkdir -p data',
-            '[ -f data/movies.csv.gz ] || curl -L -o data/movies.csv.gz https://github.com/metarank/msrd/raw/master/dataset/movies.csv.gz',
-            '[ -f data/movies.csv ] || gunzip data/movies.csv.gz -k'
-        ]),
+        new Bash(
+            display: false,
+            commands: [
+                'mkdir -p data',
+                '[ -f data/movies.csv.gz ] || curl -L -o data/movies.csv.gz https://github.com/metarank/msrd/raw/master/dataset/movies.csv.gz',
+                '[ -f data/movies.csv ] || gunzip data/movies.csv.gz -k'
+            ]),
+        new Bash(
+            description: 'Download movie data for demo',
+            run: false,
+            commands: [
+                'mkdir -p data',
+                'curl -L -o data/movies.csv.gz https://github.com/metarank/msrd/raw/master/dataset/movies.csv.gz',
+                'gunzip data/movies.csv.gz -k'
+            ]),
         new Bash('head -n 3 data/movies.csv', a: 'download/3movies.csv'),
         new DisplayArtifact('download/3movies.csv'),
     ]
@@ -493,9 +580,45 @@ function ea_download(): void
 #[AsTask('make-entity', CASTOR_NAMESPACE, 'Generate Movie entity from CSV')]
 #[Step(
     bullets: [
+        'bin/console make:entity Movie',
+        'worked fine for years',
+    ],
+    actions: [
+        new DisplayCode(lang: 'bash', content: <<<JS
+bin/console make:entity Movie
+ created: src/Entity/Movie.php
+ created: src/Repository/MovieRepository.php
+
+ Entity generated! Now let's add some fields!
+ You can always add more fields later manually or by re-running this command.
+
+ New property name (press <return> to stop adding fields):
+ > title
+
+ Field type (enter ? to see all types) [string]:
+ >
+
+ Field length [255]:
+ >
+
+ Can this field be null in the database (nullable) (yes/no) [no]:
+ > no
+
+ updated: src/Entity/Movie.php
+
+ Add another property? Enter the property name (or press <return> to stop adding fields):
+ >
+
+JS
+        )
+    ]
+)]
+#[Step(
+    bullets: [
         'automated version of bin/console make:entity Movie',
-        'given a CSV file, generate a Doctrine entity',
-        'duck-typing, basic but great for demos'
+        'json:convert reads CSV/JSON, writes jsonl and field analysis',
+        'bonus: light cleanup of data with event listeners',
+        'then generate a Doctrine entity from the analysis',
     ],
     actions: [
         new Console('json:convert', ['data/movies.csv', 'data/movies.jsonl'], a: 'stats.terminal'),
@@ -503,10 +626,13 @@ function ea_download(): void
 //        new Console('doctrine:schema:update', ['--force']),
         // creates the artifact, but doesn't display it.  Internal
         new Artifact('src/Entity/Movie.php', "Movie.php"),
-
-        new DisplayArtifact('src/Entity/Movie.php'),
         // we could also display the artifact!  For testing, let's make sure they both work.
 //        new DisplayCode('/src/Entity/Movie.php', lang: 'php'),
+    ]
+)]
+#[Step("Movie Class",
+    actions: [
+        new DisplayArtifact('src/Entity/Movie.php'),
     ]
 )]
 //#[Step(
@@ -542,7 +668,7 @@ function ea_create_database(): void
 
 #[AsTask(name: 'load:database')]
 #[Step(
-    'Load the database',
+    'Load the database (prototype)',
     actions: [
         new DisplayCode(
             note: "boilerplace code for importing data from csv",
@@ -558,17 +684,22 @@ foreach ($reader as $idx => $data) {
         // etc.
 }
 $this->entityManager->flush();
-PHP),
-        new Bullet([
-            'Needs to flush periodically',
-            'we may want --limit during testing',
-        ]
+PHP
         ),
-        new Console('import:entities', ['Movie', '--file', 'data/movies.csv', '--limit', '500'], a: 'import.txt'),
         new Bullet([
-                'import:entities is a simple way to get flat(easy) data from csv->doctrine',
+                'Needs to flush periodically',
+                'we may want --limit during testing',
+            ]
+        ),
+    ]
+)]
+#[Step('bulk import',
+    actions: [
+        new Console('import:entities', ['Movie', 'data/movies.jsonl', '--limit', '500'], a: 'import.txt'),
+        new Bullet([
+                'import:entities is a simple way to get flat(easy) data to doctrine',
                 'same internal logic that creates the Entity class',
-                'tweak the entity class using Property Hooks',
+                'tweak the data via Property Hooks/Listeners',
                 'doctrine post-flush listener populates the meili index',
             ]
         ),
@@ -580,7 +711,7 @@ function ea_load_database(): void
     RunStep::run(_actions_from_current_task(), context());
 }
 
-#[AsTask('show_data', CASTOR_NAMESPACE, 'We have data~')]
+#[AsTask('show_data', CASTOR_NAMESPACE, 'We have data!')]
 #[Step(
     description: "Ways to see/search our index",
     bullets: [

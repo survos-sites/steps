@@ -241,8 +241,7 @@ function symfony_slideshow(
 ): void
 {
     if (!$path) {
-        // the context must be _this_ repo, not the created symfony project
-        $path = sprintf('/step/slides%s/%s', $list ? '-overview' : '',  project_name());
+        $path = ($list ? '/slideshow/overview/' : '/slideshow/show/') . project_name();
     }
     run($cmd = 'symfony open:local --path '. $path, new Context()->withWorkingDirectory(__DIR__));
 //    run($cmd = 'symfony open:local --path '. $path, new Context()->withWorkingDirectory(__DIR__));
