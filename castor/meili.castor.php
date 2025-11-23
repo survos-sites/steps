@@ -437,7 +437,9 @@ function required_packages(): void
                 'symfony/http-client',
                 'nyholm/psr7',
                 'survos/jsonl-bundle',
-            ]
+            ],
+            run: false
+
         )
     ]
 )]
@@ -621,7 +623,7 @@ JS
         'then generate a Doctrine entity from the analysis',
     ],
     actions: [
-        new Console('json:convert', ['data/movies.csv', 'data/movies.jsonl'], a: 'stats.terminal'),
+        new Console('import:convert', ['data/movies.csv', '--output', 'data/movies.jsonl'], a: 'stats.terminal'),
         new Console('code:entity', ['Movie', 'data/movies.jsonl', '--force'], a: 'src/Entity/Movie.php'),
 //        new Console('doctrine:schema:update', ['--force']),
         // creates the artifact, but doesn't display it.  Internal
