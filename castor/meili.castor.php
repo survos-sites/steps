@@ -413,8 +413,6 @@ function ea_demo(): void
     ea_load_database(); // load:database
     ea_dashboard();
     facets();
-
-    ea_open();
     io()->success('Meili demo completed.');
 }
 
@@ -429,11 +427,12 @@ function required_packages(): void
     title: 'with-symfony',
     description: 'Symfony bundles manage the dependencies',
     actions: [
-        new ComposerRequire(['survos/meili-bundle']),
+        new ComposerRequire([
+            'survos/meili-bundle', 'meilisearch/meilisearch-php:dev-main']),
         new Bullet(style: 'callout',
             msg: "Dependencies are automatically installed"),
         new ComposerRequire([
-                'meilisearch/meilisearch-php',
+                'meilisearch/meilisearch-php:dev-main',
                 'symfony/http-client',
                 'nyholm/psr7',
                 'survos/jsonl-bundle',
