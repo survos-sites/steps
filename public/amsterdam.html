@@ -1,0 +1,390 @@
+cat > public/slides/meili-amsterdam.html <<'HTML'
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Semantic & Hybrid Search with MeiliSearch</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme">
+    <style>
+        .reveal pre code {
+            font-size: 0.9em;
+            line-height: 1.3;
+        }
+        .reveal section img {
+            background: #111;
+            border-radius: 8px;
+            max-height: 480px;
+        }
+        .dim {
+            opacity: 0.7;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+
+        <!-- ======================= TITLE ======================= -->
+        <section>
+            <h1>Semantic &amp; Hybrid Search<br>with MeiliSearch</h1>
+            <h3>Using PHP Attributes, Embeddings &amp; JSONL Pipelines</h3>
+            <p>Amsterdam · <span class="dim">meili.survos.com</span></p>
+        </section>
+
+        <!-- ======================= LIVE DEMO ======================= -->
+        <section data-background-color="#111">
+            <h2>First: a Live Demo</h2>
+            <ul>
+                <li>Keyword search</li>
+                <li>Facets &amp; filters</li>
+                <li>Semantic search</li>
+                <li>Hybrid slider (keyword ⇄ semantic)</li>
+            </ul>
+            <p class="dim">[Switch to browser · meili.survos.com]</p>
+        </section>
+
+        <!-- ======================= DATASET GALLERY ======================= -->
+        <section>
+            <h2>Multiple Datasets, Same Workflow</h2>
+            <p>On <strong>meili.survos.com</strong>:</p>
+            <ul>
+                <li>🎬 Movies (ratings, genres, year)</li>
+                <li>🍷 Wines (region, type, price, quality)</li>
+                <li>🚗 Cars (make, model, specs)</li>
+                <li>🏛 WCMA collection (artworks &amp; metadata)</li>
+                <li>🦸 Marvel (characters &amp; comics)</li>
+                <li>🛒 Products (price, stock, tags, brand)</li>
+            </ul>
+            <p class="dim">All powered by the same pattern: Doctrine entity → Meili index → UI.</p>
+        </section>
+
+        <!-- ======================= MOST ALREADY HAVE ENTITIES ======================= -->
+        <section>
+            <h2>You Probably Already Have This</h2>
+            <ul>
+                <li>A real database</li>
+                <li>Doctrine entities</li>
+                <li>Maybe ApiPlatform resources</li>
+            </ul>
+            <p style="margin-top:1em;">
+                <strong>Good news:</strong> you’re ~90% of the way there.<br>
+                You “just” need to annotate entities with search metadata.
+            </p>
+        </section>
+
+        <!-- ======================= ENTITY AS SOURCE OF TRUTH ======================= -->
+        <section>
+            <h2>The Entity as Single Source of Truth</h2>
+            <p>API, filters, Meili index &amp; semantic config in one class:</p>
+            <pre><code class="language-php">
+#[ApiResource(
+    operations: [
+        new Get(
+            normalizationContext: [
+                'groups' =&gt; ['product.read', 'product.details'],
+            ]
+        ),
+        new GetCollection(
+            normalizationContext: [
+                'groups' =&gt; ['product.read'],
+            ]
+        )
+    ],
+    normalizationContext: [
+        'groups' =&gt; ['product.read', 'product.details', 'rp'],
+    ],
+)]
+#[ApiFilter(OrderFilter::class, properties: ['price','stock','rating'])]
+#[ApiFilter(FacetsFieldSearchFilter::class,
+    properties: ['category', 'tags', 'rating', 'stock', 'price'],
+    arguments: ["searchParameterName" =&gt; "facet_filter"]
+)]
+#[ApiFilter(RangeFilter::class, properties: ['rating','stock','price'])]
+#[MeiliIndex(
+    primaryKey: 'sku',
+    persisted: new Fields(
+        fields: ['sku','stock','price','title','brand'],
+        groups: ['product.read','product.details','product.searchable']
+    ),
+    displayed: ['*'],
+    filterable: new Fields(
+        fields: ['category','tags','rating','price','brand'],
+    ),
+    sortable: ['price','rating'],
+    searchable: new Fields(
+        groups: ['product.searchable']
+    ),
+    embedders: ['product']
+)]
+class Product
+{
+    // ...
+}
+  </code></pre>
+            <p class="dim">You can define fields explicitly, via serialization groups, or both.</p>
+        </section>
+
+        <!-- ======================= GROUPS / REAL WORLD ======================= -->
+        <section>
+            <h2>Real World: Relations &amp; Serialization Groups</h2>
+            <ul>
+                <li>In demos we can serialize everything.</li>
+                <li>In real apps you have:
+                    <ul>
+                        <li>relations (ManyToOne, ManyToMany, etc.)</li>
+                        <li>circular references</li>
+                        <li>sensitive fields</li>
+                    </ul>
+                </li>
+            </ul>
+            <p>Solution: use <strong>Symfony serialization groups</strong> for Meili.</p>
+            <pre><code class="language-php">
+#[Groups(['product.read','product.searchable'])]
+public string $title;
+
+#[MeiliIndex(
+    persisted: new Fields(groups: ['product.read']),
+    searchable: new Fields(groups: ['product.searchable']),
+)]
+  </code></pre>
+            <p class="dim">You can target Meili with dedicated groups, instead of exposing everything.</p>
+        </section>
+
+        <!-- ======================= SEARCH MODES ======================= -->
+        <section>
+            <h2>Four Flavors of Search</h2>
+            <ul>
+                <li><strong>Filtered search</strong> – boolean filters on structured fields<br>
+                    <span class="dim">category = "wine" AND price &lt; 20</span>
+                </li>
+                <li><strong>Full-text search</strong> – typo-tolerant keyword search</li>
+                <li><strong>Semantic search</strong> – match by meaning, not just words</li>
+                <li><strong>Hybrid search</strong> – blend keyword + semantic signals</li>
+            </ul>
+            <p class="dim">Meili handles all four; we wire them via attributes.</p>
+        </section>
+
+        <!-- ======================= SEMANTIC INTRO ======================= -->
+        <section>
+            <h2>What is Semantic Search?</h2>
+            <ul>
+                <li>Turns text into vectors (<em>embeddings</em>) in a high-dimensional space.</li>
+                <li>Similar meaning ⇒ points close together.</li>
+                <li>Query is embedded, then we find nearest vectors.</li>
+            </ul>
+            <p>Examples:</p>
+            <ul>
+                <li>“cool gifts for a tech executive”</li>
+                <li>“things to decorate an apartment”</li>
+            </ul>
+            <p class="dim">Those are <em>ideas</em>, not exact keywords.</p>
+        </section>
+
+        <!-- ======================= EMBEDDER CONFIG YAML ======================= -->
+        <section>
+            <h2>Configuring an Embedder (Once)</h2>
+            <p>Bundle config (simplified):</p>
+            <pre><code class="language-yaml">
+survos_meili:
+    host: '%env(default::MEILI_SERVER)%'
+    apiKey: '%env(default::MEILI_API_KEY)%'
+    searchKey: '%env(default::MEILI_SEARCH_KEY)%'
+    embedders:
+        product:
+            source: 'openAi'
+            model: 'text-embedding-3-large' # ~13¢ / 1M tokens
+            apiKey: '%env(OPENAI_API_KEY)%'
+            template: 'templates/liquid/product.liquid'
+            examples:
+                - 'cool gifts for a tech executive'
+                - 'things to decorate an apartment'
+  </code></pre>
+            <ul>
+                <li><strong>source</strong>: who does the embeddings (OpenAI here)</li>
+                <li><strong>model</strong>: controls quality &amp; cost</li>
+                <li><strong>template</strong>: what text we embed for each product</li>
+                <li><strong>examples</strong>: “shape” what queries we care about</li>
+            </ul>
+            <p class="dim">We won’t go into AI template generation here; it’s cool, but extra.</p>
+        </section>
+
+        <!-- ======================= COST / MEILI:ESTIMATE ======================= -->
+        <section>
+            <h2>Cost: It’s Cheaper Than You Think</h2>
+            <ul>
+                <li><code>text-embedding-3-small</code> ≈ $0.02 / 1M tokens</li>
+                <li><code>text-embedding-3-large</code> ≈ $0.13 / 1M tokens</li>
+                <li>10,000 products × ~100 tokens ≈ 1M tokens</li>
+                <li>→ Semantic indexing for a catalog can be pennies.</li>
+            </ul>
+            <p>Use the built-in estimator:</p>
+            <pre><code class="language-bash">
+bin/console meili:estimate Product
+# Estimates tokens &amp; $ cost of embedding your entities
+  </code></pre>
+            <p class="dim">Gives you a rough budget before you turn semantic on.</p>
+        </section>
+
+        <!-- ======================= SETTINGS + EMBED ======================= -->
+        <section>
+            <h2>Apply Settings &amp; Generate Embeddings</h2>
+            <p>One command to push settings <em>and</em> embed:</p>
+            <pre><code class="language-bash">
+# Update Meili settings from attributes
+# and (optionally) create embeddings
+bin/console meili:settings:update --force --embed
+  </code></pre>
+            <ul>
+                <li>Reads <code>#[MeiliIndex]</code> &amp; <code>#[MeiliField]</code> metadata.</li>
+                <li>Calls Meili settings APIs.</li>
+                <li>Iterates entities to generate embeddings via the configured embedder.</li>
+            </ul>
+            <p class="dim">After this, your index is ready for semantic &amp; hybrid search.</p>
+        </section>
+
+        <!-- ======================= HYBRID SEARCH SLIDE ======================= -->
+        <section>
+            <h2>Hybrid Search: Best of Both Worlds</h2>
+            <ul>
+                <li>Keyword score: great for exact matches, filters, facets.</li>
+                <li>Semantic score: great for intent &amp; fuzzy ideas.</li>
+                <li>Hybrid blends them:
+                    <br><span class="dim">score = (1 − α) · keyword + α · semantic</span>
+                </li>
+            </ul>
+            <p>In the UI:</p>
+            <ul>
+                <li>Slider from “Keyword only” → “Semantic only”.</li>
+                <li>Users can tune what feels best for their dataset.</li>
+            </ul>
+        </section>
+
+        <!-- ======================= ASYNC / MESSENGER ======================= -->
+        <section>
+            <h2>Scaling: Symfony Messenger &amp; Async Indexing</h2>
+            <ul>
+                <li>Indexing big datasets:
+                    <ul>
+                        <li>Don’t block HTTP requests.</li>
+                        <li>Database changes → messages → workers.</li>
+                    </ul>
+                </li>
+                <li>Typical flow:
+                    <ul>
+                        <li>Doctrine <code>postFlush</code> or domain event</li>
+                        <li>Dispatch message with entity ID</li>
+                        <li>Worker loads entity, normalizes, calls Meili</li>
+                    </ul>
+                </li>
+            </ul>
+            <p class="dim">Meili itself is async (tasks); Messenger helps your side scale.</p>
+        </section>
+
+        <!-- ======================= OPTIONAL IMPORT PIPELINE ======================= -->
+        <section>
+            <h2>Optional: From CSV/JSON to Entities</h2>
+            <p>If your data starts in flat files (CSV/JSON/ZIP):</p>
+            <ul>
+                <li><strong>json:convert</strong> – CSV/JSON → JSONL + profile</li>
+                <li><strong>json:entity</strong> – profile → Doctrine entity (types, lengths)</li>
+                <li>Then treat it like any other entity for Meili &amp; API.</li>
+            </ul>
+            <p class="dim">
+                The step-by-step import workflow is documented in the tutorial.<br>
+                For the talk, we focus on annotated entities &amp; semantic search.
+            </p>
+        </section>
+
+        <!-- ======================= EASYADMIN DASHBOARD BONUS ======================= -->
+        <section>
+            <h2>Bonus: EasyAdmin Meili Dashboard</h2>
+            <p>Once entities &amp; indexes are configured:</p>
+            <pre><code class="language-bash">
+bin/console code:meili:admin --path=/
+  </code></pre>
+            <ul>
+                <li>Generates EasyAdmin dashboard &amp; CRUD controllers.</li>
+                <li>Uses Meili metadata for filters &amp; search fields.</li>
+                <li>Becomes a “dev cockpit” for your data + search.</li>
+            </ul>
+            <p class="dim">I’ll just show it briefly; you don’t need to remember the command.</p>
+        </section>
+
+        <!-- ======================= BUNDLE STATUS / VENDOR NEUTRAL ======================= -->
+        <section>
+            <h2>About the Bundle(s)</h2>
+            <ul>
+                <li>Used in production on my own sites.</li>
+                <li>Still under active development (APIs may evolve).</li>
+                <li>The core idea is stable:
+                    <ul>
+                        <li>Define your index with PHP attributes.</li>
+                        <li>Drive Meili settings from entities.</li>
+                    </ul>
+                </li>
+                <li>You can use these attributes with other Meili/Symfony bundles
+                    if they fit your project better.</li>
+            </ul>
+            <p class="dim">The pattern matters more than the specific vendor code.</p>
+        </section>
+
+        <!-- ======================= TUTORIAL ======================= -->
+        <section>
+            <h2>Full Tutorial: Step-by-Step</h2>
+            <p>Everything I’ve shown is reproducible:</p>
+            <ul>
+                <li>Commands to load each dataset into Meili.</li>
+                <li>CSV/JSON → JSONL → entity generation.</li>
+                <li>Meili settings, semantic &amp; hybrid config.</li>
+                <li>EasyAdmin dashboard generation.</li>
+            </ul>
+            <p class="dim">[Link / QR to GitHub repo &amp; tutorial page]</p>
+        </section>
+
+        <!-- ======================= RECAP ======================= -->
+        <section>
+            <h2>Recap</h2>
+            <ul>
+                <li>Your Doctrine entity becomes:
+                    <ul>
+                        <li>DB schema</li>
+                        <li>API description</li>
+                        <li>Meili index definition</li>
+                        <li>Semantic / hybrid behavior</li>
+                    </ul>
+                </li>
+                <li>Semantic &amp; hybrid search are:
+                    <ul>
+                        <li>Powerful for users</li>
+                        <li>Surprisingly cheap to run</li>
+                        <li>Straightforward to configure via attributes</li>
+                    </ul>
+                </li>
+                <li>Detailed tutorial covers all the “how”.</li>
+            </ul>
+        </section>
+
+        <!-- ======================= QUESTIONS ======================= -->
+        <section>
+            <h2>Questions?</h2>
+            <p>Slides &amp; code:</p>
+            <p class="dim">meili.survos.com · [GitHub repo link]</p>
+        </section>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script>
+    Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        transition: 'fade'
+    });
+</script>
+</body>
+</html>
+HTML

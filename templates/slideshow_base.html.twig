@@ -1,0 +1,34 @@
+{# templates/slideshow_base.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Semantic & hybrid search with MeiliSearch{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {% block stylesheets %}
+        {# Optional: keep this or switch to the GitHub theme via importmap #}
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/dark.min.css">
+        <link href="{{ asset('bundles/survosstep/steps.css') }}" rel="stylesheet" />
+    {% endblock %}
+
+    {% block javascripts %}
+        {% block importmap %}{{ importmap('app') }}{% endblock %}
+    {% endblock %}
+</head>
+<body>
+{#<header class="global-header">#}
+{#    <div class="global-header-inner">#}
+{#        <span class="talk-title">Semantic & hybrid search with MeiliSearch</span>#}
+{#        <span class="talk-meta">SymfonyCon Amsterdam 2025 · meili.survos.com</span>#}
+{#    </div>#}
+{#</header>#}
+
+<div class="reveal">
+    <div class="slides">
+        {% block body %}{% endblock %}
+    </div>
+</div>
+</body>
+</html>
