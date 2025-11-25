@@ -346,4 +346,7 @@ return [
         'version' => '3.12.1',
         'type' => 'css',
     ],
+    'hljs' => [
+        'version' => '6.2.3',
+    ],
 ];
