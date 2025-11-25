@@ -23,7 +23,6 @@ foreach ($autoloadCandidates as $autoload) {
 
 use Castor\Attribute\{AsTask, AsContext};
 use Castor\Context;
-use Survos\MeiliBundle\Metadata\MeiliIndex;
 use function Castor\{context, io};
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Runtime\RunStep;
@@ -32,6 +31,7 @@ use Survos\StepBundle\Action\{
     Artifact, // writer, when adding an artifactId to bash or console isn't enough
     DisplayArtifact, // reader
     ComposerRequire,
+    SplitSlide,
     Env,
     Console,
     Bash,
@@ -43,12 +43,34 @@ use Survos\StepBundle\Action\{
     BrowserVisit
 };
 
+#[AsTask(name: 'agenda', description: "Presentation Agenda")]
+#[Step(
+    description: 'The next 30 minutes...',
+    bullets: [
+        'sidebar!'
+    ],
+    actions: [
+        new Bullet(msg: [
+            'What is meilisearch',
+            "See Instasearch in action",
+            'Low-level API',
+            'PHP library API',
+            'Bundle API/Attributes',
+            "Let's build a demo",
+        ]),
+        new BrowserVisit('/', 'https://meili.survos.com')
+    ]
+)]
+function agenda(): void
+{
+}
+
 #[AsTask('meili-overview', null, 'What is Meilisearch')]
 #[Step(
     description: "Since this is the first slide, make the bullets big!",
     actions: [
         new Bullet(
-            size: 1,
+            size: 6,
             fade: true,
             msg: [
                 "An open-source, developer-friendly search engine focused on speed and relevance",
@@ -74,6 +96,11 @@ use Survos\StepBundle\Action\{
 #[Step(
     title: 'How the API works',
     description: 'Background: Raw API calls',
+    bullets: [
+        "Straightfoward http calls",
+        "define an index with an optional primary key (default: 'id')",
+        "async -- a task is returned immediately",
+    ],
     actions: [
         new Bash(
             note: 'Create the "movies" index with primary key "imdbId".',
@@ -82,18 +109,16 @@ use Survos\StepBundle\Action\{
             . '--data-raw \'{"uid":"movies","primaryKey":"imdbId"}\' | jq',
         ),
         new Bullet(
-            fade: false,
-            size: 4,
+//            fade: false,
+            size: 1,
             msg: [
-                "font is smaller since it's on a page",
-                "define an index with an optional primary key (default: 'id')",
             ],
         ),
         new DisplayCode(
             lang: 'json',
             note: 'All write tasks are async, so a task object is returned',
             content: <<<'JSON'
-{
+{ 
   "taskUid": 171,
   "indexUid": "movies",
   "status": "enqueued",
@@ -106,15 +131,14 @@ JSON,
     ],
 )]
 #[Step(
-    title: 'create-index (Symfony HttpClient)',
-    description: 'Still raw, but with HttpClientInterface',
+    title: 'Create inddex Symfony HttpClient)',
     actions: [
         new DisplayCode(lang: 'yaml', content: <<<'YAML'
 framework:
   http_client:
     scoped_clients:
       meili.client:
-        base_uri: 'http://127.0.0.1:7700'
+        base_uri: '%env(MEILI_SERVER)%'
         headers:
           Content-Type: 'application/json'
           Accept: 'application/json'
@@ -142,7 +166,7 @@ PHP
     ],
 )]
 #[Step(
-    title: 'Configure without PHP library',
+    title: 'Configure settings',
     actions: [
         new DisplayCode(
             lang: 'PHP',
@@ -157,17 +181,15 @@ $response = $this->meiliClient->request('PATCH', '/indexes/movies/settings', [
 $task = $response->toArray();
 PHP
         ),
-        new Bullet(msg: [
-            "configure <code>searchable</code>, filterable, and sortable fields",
-            "settings updates are asynchronous",
-            "search results change only after task completes",
-        ]
-        )
+//        new Bullet(msg: [
+//            "configure searchable, filterable, and sortable fields",
+//            "settings updates are asynchronous",
+//            "search results change only after task completes",
+//        ]),
     ],
 
 )]
 #[Step(
-    title: 'add-documents',
     description: "add or update documents",
     actions: [
         new DisplayCode(
@@ -188,16 +210,31 @@ $response = $this->meiliClient->request('POST', '/indexes/movies/documents', [
 $task = $response->toArray();
 PHP
         ),
-        new Bullet([
-            "send documents as JSON",
-            "must contain a primary key field",
-            "ingestion is asynchronous (tasks)",
-            "documents become searchable after indexing finishes",
-        ]),
-
+        new DisplayCode(
+            lang: 'PHP',
+            content: <<<'PHP'
+$response = $this->meiliClient->request('POST', '/indexes/movies/search', [
+    'json' => [
+        'q'        => 'pony',
+        'limit'    => 20,
+        'offset'   => 0,
+        'filter'   => ['genre = "family"'],
     ],
+]);
+
+$results = $response->toArray();
+PHP
+        ),
+    ],
+    bullets: [
+        "send documents as JSON",
+        "must contain a primary key field",
+        "ingestion is asynchronous (tasks)",
+        "documents become searchable after indexing finishes",
+    ]
+
 )]
-#[Step('Meilisearch PHP library', "Fortunately, we have a PHP library...",
+#[Step('Meilisearch PHP library', "Forget raw curl/api, we have a PHP library...",
     actions: [
         new DisplayCode(
             lang: 'bash',
@@ -208,7 +245,7 @@ PHP
             lang: 'PHP',
             content: <<<'PHP'
 $client = new Client('http://127.0.0.1:7700', 'masterKey');
-// get the apiEndpoint!
+// index is an ENDPOINT service
 $index = $client->index('movies');
 
 $documents = [
@@ -221,20 +258,33 @@ $task = $index->addDocuments($documents);
 $task->wait(); // optional, wait until async finished
 PHP,
         ),
-        new Bullet(msg: [
-            'if id already exists, data will be <b>updated</b>',
-            'Genre and year are filterable, not searchable',
-        ])
+    ], bullets: [
+        'addDocuments()',
+        'search()',
+        'updateSettings()'
     ]
 )]
-#[Step('Even better, we have bundles!',
-    description: "Use a bundle to encapculate the server interactions",
-    bullets: [
-        'meilisearch/search-bundle: official bundle from meilisearch',
-        'https://github.com/Mezcalito/ux-search, YAML, readonly',
-        'survos/meili-bundle: PHP 8.4, attribute-based'
-    ],
+#[Step("Use a bundle to encapculate the server interactions",
     actions: [
+        new Bullet([
+            'meilisearch/search-bundle: official bundle, YAML, no UI search',
+            'mezcalito/ux-search: YAML, no index creation',
+            'survos/meili-bundle: PHP 8.4, attribute-based index and UI search'
+        ]),
+        new DisplayCode(
+            lang: 'yaml',
+            content: <<<'YAML'
+# config/packages/meili_search.yaml
+meili_search:
+    indexes:
+        movies:
+            primary_key: id
+            settings:
+                searchableAttributes: ['title', 'overview']
+                filterableAttributes: ['genre', 'year']
+                sortableAttributes: ['year']
+YAML
+        ),
         new DisplayCode(
             fade: true,
             note: "survos/meili-bundle, attributes applied to a doctrine entity",
@@ -250,6 +300,7 @@ PHP,
 class Movie
 PHP,
         ),
+        new SplitSlide(),
         new DisplayCode(
             fade: true,
             note: "can share configuration with ApiPlatform",
@@ -284,17 +335,18 @@ bin/console doctrine:schema:update --force
 # OR use migrations
 bin/console make:migration && bin/console doctrine:migrations:migrate --force
 
-# sends the settings from the attributes to /settings endpoint
+# sends the settings from the attributes calls updateSettings()
 bin/console meili:settings:update --force [--index movie] [--reset]
 
 
 BASH,
         ),
+        new SplitSlide(),
         new DisplayCode(
-            note: "If entities already exist, push to meili",
+            note: "Push EXISTING doctrine entities to Meili",
             lang: 'bash',
             content: <<<'BASH'
-# sends the settings from the attributes to /settings endpoint
+# iterates through the entity, normalizes and sends addDocuments()
 bin/console meili:populate App\\Entity\\Movie
 
 BASH,
@@ -319,6 +371,18 @@ function meili_overview(): void
     RunStep::run(_actions_from_current_task(), context());
 }
 
+#[AsTask('install-meili', null, 'Prerequisite: A meilisearch instance')]
+#[Step(
+    actions: [
+        new Bullet([
+            'run with docker',
+            'install via docker-composer.yml',
+            'free trial on meilisearch'
+        ])
+    ]
+)]
+
+function prepare_launch(): void {};
 
 #[AsTask('install-meili', null, 'Install meilisearch')]
 #[Step(
@@ -330,11 +394,6 @@ function meili_overview(): void
             run: false,
             note: "run with docker"
         ),
-    ],
-    bullets: [
-        'run with docker',
-        'install via docker-composer.yml',
-        'free trial on meilisearch'
     ],
 )]
 function install_meili(): void
@@ -378,22 +437,19 @@ function configure_docker(): void
 
 #[AsTask(name: 'build', description: "Let's build a demo!")]
 #[Step(
-    'Meilisearch Demo',
-    description: 'Every step to build a movie search site',
-    bullets: [
-        'Create demo project with symfony:new --webapp',
-        'Install bundles',
-        'Download data',
-        'create <em>Movie</em> entity from downloaded data',
-        'configure and create sqlite database',
-        'create meilisearch movie index',
-        'Import movie data to database and index'
-    ],
-)]
-#[Step(
     description: 'create a new webapp project',
     // we are NOT actually running the actions, they are here for the slide
     actions: [
+        new Bullet([
+            'Create demo project with symfony:new --webapp',
+            'Install bundles',
+            'Download data',
+            'create <em>Movie</em> entity from downloaded data',
+            'configure and create sqlite database',
+            'create meilisearch movie index',
+            'Import movie data to database and index',
+            'Configure EasyAdmin-based Meili Dashboard',
+        ]),
         new Bash('symfony new --webapp meili-demo --dir' . EA_DEMO_DIR,
             run: false,
         ),
@@ -431,12 +487,13 @@ function required_packages(): void
             'survos/meili-bundle', 'meilisearch/meilisearch-php:dev-main']),
         new Bullet(style: 'callout',
             msg: "Dependencies are automatically installed"),
+        new SplitSlide(),
         new ComposerRequire([
-                'meilisearch/meilisearch-php:dev-main',
-                'symfony/http-client',
-                'nyholm/psr7',
-                'survos/jsonl-bundle',
-            ],
+            'meilisearch/meilisearch-php:dev-main',
+            'symfony/http-client',
+            'nyholm/psr7',
+            'survos/jsonl-bundle',
+        ],
             run: false
 
         )
@@ -449,14 +506,7 @@ function with_symfony(): void
 
 #[AsTask('bundles:basic', CASTOR_NAMESPACE, 'bundles for the demo')]
 #[Step(
-    'Necessary for demo only',
-    bullets: [
-        'Tools to analyze csv/json data',
-        'Tools to import to database',
-        'Tools are paired to work together for fast demos',
-        'OpenAI for semantic search and (optionally) code generation',
-        'Leverages easy-admin for bundle administration',
-    ],
+    'Suggested Bundles',
     actions: [
         new ComposerRequire([
             'league/csv',
@@ -467,11 +517,19 @@ function with_symfony(): void
             'symfony/ux-icons',
         ],
         ),
+        new Bullet(msg: [
+            'Tools to analyze csv/json data',
+            'Tools to import to database',
+            'Tools are paired to work together for fast demos',
+            'OpenAI for semantic search and (optionally) code generation',
+            'Leverages easy-admin for bundle administration',
+        ]),
+        new SplitSlide(),
         new ComposerRequire(
             description: 'Code generator (like Symfony maker-bundle)',
             packages: ['survos/code-bundle'], dev: true),
-        new Bash('../../mono/link .'),
-        new Console('ux:icons:lock'),
+        new Bash('../../mono/link .', display: false),
+//        new Console('ux:icons:lock'),
 //        new CopyFile(INPUT_DIR . '/config/packages/ux_icons.yaml', 'config/packages/ux_icons.yaml'),
 
     ]
