@@ -208,7 +208,7 @@ function symfony_new(
 //    run('composer about');
 
     // NOW we can run commands in the project context
-    run('symfony proxy:domain:attach ' . project_name());
+    run('symfony proxy:domain:attach ' . project_name() . '-demo');
     run("symfony server:start -d");
     //        new Bash('symfony server:start -d'),
 
