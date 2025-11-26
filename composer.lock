@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c0aabaeede629b8e953548ae47848fa2",
+    "content-hash": "121a133baf1d78ec71dd9ccfe400d076",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -4092,7 +4092,7 @@
         },
         {
             "name": "survos/barcode-bundle",
-            "version": "2.0.74",
+            "version": "2.0.75",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/barcode-bundle.git",
@@ -4161,7 +4161,7 @@
             "description": "Integrates picqer/php-barcode-generator in a Symfony application",
             "support": {
                 "issues": "https://github.com/survos/barcode-bundle/issues",
-                "source": "https://github.com/survos/barcode-bundle/tree/2.0.74"
+                "source": "https://github.com/survos/barcode-bundle/tree/2.0.75"
             },
             "funding": [
                 {
@@ -4173,7 +4173,7 @@
         },
         {
             "name": "survos/core-bundle",
-            "version": "2.0.74",
+            "version": "2.0.75",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/core-bundle.git",
@@ -4255,7 +4255,7 @@
             ],
             "support": {
                 "issues": "https://github.com/survos/core-bundle/issues",
-                "source": "https://github.com/survos/core-bundle/tree/2.0.74"
+                "source": "https://github.com/survos/core-bundle/tree/2.0.75"
             },
             "funding": [
                 {
@@ -4267,7 +4267,7 @@
         },
         {
             "name": "survos/import-bundle",
-            "version": "2.0.74",
+            "version": "2.0.75",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/import-bundle.git",
@@ -4315,7 +4315,7 @@
             ],
             "support": {
                 "issues": "https://github.com/survos/import-bundle/issues",
-                "source": "https://github.com/survos/import-bundle/tree/2.0.74"
+                "source": "https://github.com/survos/import-bundle/tree/2.0.75"
             },
             "funding": [
                 {
@@ -4390,7 +4390,7 @@
         },
         {
             "name": "survos/jsonl-bundle",
-            "version": "2.0.74",
+            "version": "2.0.75",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/jsonl-bundle.git",
@@ -4437,7 +4437,7 @@
             "description": "Fast, concurrent, resumable, strictly-ordered JSONL ingestion utilities for Symfony 7.3 / PHP 8.4",
             "support": {
                 "issues": "https://github.com/survos/jsonl-bundle/issues",
-                "source": "https://github.com/survos/jsonl-bundle/tree/2.0.74"
+                "source": "https://github.com/survos/jsonl-bundle/tree/2.0.75"
             },
             "funding": [
                 {
@@ -4449,16 +4449,16 @@
         },
         {
             "name": "survos/step-bundle",
-            "version": "2.0.74",
+            "version": "2.0.75",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/step-bundle.git",
-                "reference": "5abc58918e126c1dd4a85ccae74bd5f971565e90"
+                "reference": "8b4b767e7f04ca1a6e96ca544f24ed4903e83402"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/survos/step-bundle/zipball/5abc58918e126c1dd4a85ccae74bd5f971565e90",
-                "reference": "5abc58918e126c1dd4a85ccae74bd5f971565e90",
+                "url": "https://api.github.com/repos/survos/step-bundle/zipball/8b4b767e7f04ca1a6e96ca544f24ed4903e83402",
+                "reference": "8b4b767e7f04ca1a6e96ca544f24ed4903e83402",
                 "shasum": ""
             },
             "require": {
@@ -4494,7 +4494,7 @@
             ],
             "support": {
                 "issues": "https://github.com/survos/step-bundle/issues",
-                "source": "https://github.com/survos/step-bundle/tree/2.0.74"
+                "source": "https://github.com/survos/step-bundle/tree/2.0.75"
             },
             "funding": [
                 {
@@ -4502,7 +4502,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-26T13:09:06+00:00"
+            "time": "2025-11-26T16:13:29+00:00"
         },
         {
             "name": "symfony/asset",
@@ -13663,7 +13663,7 @@
         },
         {
             "name": "survos/deployment-bundle",
-            "version": "2.0.74",
+            "version": "2.0.75",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/deployment-bundle.git",
@@ -13711,7 +13711,7 @@
             ],
             "support": {
                 "issues": "https://github.com/survos/deployment-bundle/issues",
-                "source": "https://github.com/survos/deployment-bundle/tree/2.0.74"
+                "source": "https://github.com/survos/deployment-bundle/tree/2.0.75"
             },
             "funding": [
                 {
