@@ -69,7 +69,7 @@ function _actions_from_current_taskXX(): array
                 'See semantic and hybrid search in action',
                 'Treat your Doctrine entity as the source of truth',
                 'Understand embedders, cost and configuration',
-                'Leave with a mental model, not just commands',
+                'Leave with a workflow for searching YOUR data',
             ]
         ),
     ]
@@ -84,7 +84,7 @@ function showtime_agenda(): void
  */
 #[AsTask(name: 'showtime:demo', description: 'Open main demo (meili.survos.com)')]
 #[Step(
-    description: 'First: quick demo',
+    description: 'First: some demos',
     actions: [
         new Bullet(
             fade: true,
@@ -92,10 +92,9 @@ function showtime_agenda(): void
                 'Keyword search',
                 'Facets and filters',
                 'Semantic search',
-                'Hybrid slider (keyword ↔ semantic)',
             ]
             ),
-        new BrowserVisit('/', 'https://dummy.survos.com/search/index/dtdemo_product', a: 'meili-demo.png'),
+        new BrowserVisit('/', 'https://meili.survos.com/meili/search/index/meili_product', a: 'meili-demo.png'),
 //        new DisplayArtifact('meili-demo.png', note: 'Screenshot from meili.survos.com (optional)')
     ]
 )]
@@ -149,9 +148,11 @@ function showtime_datasets(): void
             ]
         ),
         new Bullet(
+            fade: false,
             style: 'callout',
             msg: 'Good news: you are already most of the way to MeiliSearch'
         ),
+        new BrowserVisit('/slideshow/show/meili')
     ]
 )]
 function showtime_entities_intro(): void

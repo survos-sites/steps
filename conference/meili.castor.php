@@ -43,22 +43,21 @@ use Survos\StepBundle\Action\{
     BrowserVisit
 };
 
-#[AsTask(name: 'agenda', description: "Presentation Agenda")]
+#[AsTask(name: 'agenda', description: "The nitty gritty")]
 #[Step(
-    description: 'The next 30 minutes...',
-    bullets: [
-        'sidebar!'
-    ],
+//    description: 'The next 30 minutes...',
+//    bullets: [
+//        'sidebar!'
+//    ],
     actions: [
         new Bullet(msg: [
             'What is meilisearch',
-            "See Instasearch in action",
             'Low-level API',
             'PHP library API',
             'Bundle API/Attributes',
-            "Let's build a demo",
+            "Command Overview",
+            "Production Configuration",
         ]),
-        new BrowserVisit(path: '/', host: 'https://meili.survos.com')
     ]
 )]
 function agenda(): void
@@ -74,12 +73,11 @@ function agenda(): void
             fade: true,
             size: 2,
             msg: [
-                "An open-source, developer-friendly search engine focused on speed and relevance",
-                "A lightweight alternative to Elasticsearch or Algolia with fast indexing",
-                "Provides typo-tolerance, filters, facets, and semantic search out of the box",
-//        "Designed for real-time search UIs with instant responses under 50ms",
-//        "various Symfony bundles that encapsulate the API interactions",
-//        "built-in vector store for semantic search",
+                "An open-source, developer-friendly search engine",
+                "Simple REST interface, many client libraries",
+                "Easy alternative to Elasticsearch or Algolia",
+                "Typo-tolerance, keyword search, filters and semantic search out of the box",
+                "FAST!  Search responses under 50ms",
             ]
         )
     ]
@@ -95,16 +93,11 @@ function agenda(): void
 //    ],
 //)]
 #[Step(
-    title: 'How the API works',
-    description: 'Background: Raw API calls',
-    bullets: [
-        "Straightfoward http calls",
-        "define an index with an optional primary key (default: 'id')",
-        "async -- a task is returned immediately",
-    ],
+    title: 'Lowest level: HTTP API calls',
+//    description: 'Background: Raw API calls',
     actions: [
         new Bash(
-            note: 'Create the "movies" index with primary key "imdbId".',
+            note: 'Typical API call: create an index',
             command: 'curl -s "http://127.0.0.1:7700/indexes" ' . "\\\n"
             . '-H "Content-Type: application/json" ' . "\\\n"
             . '--data-raw \'{"uid":"movies","primaryKey":"imdbId"}\' | jq',
@@ -113,6 +106,9 @@ function agenda(): void
 //            fade: false,
             size: 1,
             msg: [
+                "Straightfoward http calls: POST/PATCH to update, GET/POST to fetch",
+                "define an index with an optional primary key (default: 'id')",
+                "async -- a task is returned immediately",
             ],
         ),
         new DisplayCode(
@@ -132,7 +128,7 @@ JSON,
     ],
 )]
 #[Step(
-    title: 'Create index Symfony HttpClient)',
+    title: 'Create index Symfony HttpClient',
     actions: [
         new DisplayCode(lang: 'yaml', content: <<<'YAML'
 framework:
@@ -146,6 +142,21 @@ framework:
           Authorization: 'Bearer %env(MEILI_API_KEY)%'
 YAML
         ),
+        new SplitSlide(),
+
+//        new DisplayCode(
+//            lang: 'PHP',
+//            content: <<<'PHP'
+//$response = $this->meiliClient->request('PATCH', '/indexes/movies/settings', [
+//    'json' => [
+//        'searchableAttributes' => ['title', 'overview'],
+//        'filterableAttributes' => ['genre', 'year'],
+//    ],
+//]
+//);
+//$task = $response->toArray(); // returns async task id
+//PHP
+//        ),
         new DisplayCode(
             lang: 'PHP',
             content: <<<'PHP'
@@ -167,52 +178,16 @@ PHP
     ],
 )]
 #[Step(
-    title: 'Configure settings',
-    actions: [
-        new DisplayCode(
-            lang: 'PHP',
-            content: <<<'PHP'
-$response = $this->meiliClient->request('PATCH', '/indexes/movies/settings', [
-    'json' => [
-        'searchableAttributes' => ['title', 'overview'],
-        'filterableAttributes' => ['genre', 'year'],
-    ],
-]
-);
-$task = $response->toArray();
-PHP
-        ),
-//        new Bullet(msg: [
-//            "configure searchable, filterable, and sortable fields",
-//            "settings updates are asynchronous",
-//            "search results change only after task completes",
-//        ]),
-    ],
-
-)]
-#[Step(
     description: "add or update documents",
     actions: [
         new DisplayCode(
-            lang: 'PHP',
-            content: <<<'PHP'
-$response = $this->meiliClient->request('POST', '/indexes/movies/documents', [
-    'json' => [
-        [
-            'id'       => 1,
-            'title'    => 'Pony Movie',
-            'overview' => 'A movie about a pony',
-            'genre'    => 'family',
-            'year'     => 2024,
-        ],
-    ],
-]);
-
-$task = $response->toArray();
-PHP
+            note: 'add docs', fade: false,
+            path: INPUT_DIR . '/php/update-docs.php',
+            lang: 'PHP'
         ),
         new DisplayCode(
             lang: 'PHP',
+            size: 1,
             content: <<<'PHP'
 $response = $this->meiliClient->request('POST', '/indexes/movies/search', [
     'json' => [
@@ -235,29 +210,18 @@ PHP
     ]
 
 )]
-#[Step('Meilisearch PHP library', "Forget raw curl/api, we have a PHP library...",
+#[Step('Meilisearch PHP library', "Use the SDK to encapsulate the raw http calls",
     actions: [
         new DisplayCode(
             lang: 'bash',
             content: 'composer require meilisearch/meilisearch-php symfony/http-client nyholm/psr7:^1.0'
         ),
+//        new CopyFile(INPUT_DIR . '/config/packages/ux_icons.yaml', 'config/packages/ux_icons.yaml'),
+
 
         new DisplayCode(
             lang: 'PHP',
-            content: <<<'PHP'
-$client = new Client('http://127.0.0.1:7700', 'masterKey');
-// index is an ENDPOINT service
-$index = $client->index('movies');
-
-$documents = [
-    ['id' => 4,  'title' => 'Mad Max: Fury Road', 'genres' => ['Adventure, Science Fiction']],
-    ['id' => 5,  'title' => 'Moana', 'genres' => ['Fantasy, Action']],
-    ['id' => 6,  'title' => 'Philadelphia', 'year' => 1997, 'genres' => ['Drama']],
-];
-
-$task = $index->addDocuments($documents);
-$task->wait(); // optional, wait until async finished
-PHP,
+            path: INPUT_DIR . '/php/add-docs-with-client.php',
         ),
     ], bullets: [
         'addDocuments()',
@@ -265,80 +229,69 @@ PHP,
         'updateSettings()'
     ]
 )]
-#[Step("Use a bundle to encapculate the server interactions",
+#[Step(
+    title: 'Configure settings',
+    actions: [
+        new Bullet(msg: [
+            "configure searchable, filterable, and sortable fields",
+            "settings updates are asynchronous",
+            "search results change only after task completes",
+        ]),
+        new SplitSlide(),
+        new DisplayCode(
+            path: INPUT_DIR . '/php/update-settings-with-sdk.php',
+        ),
+
+    ],
+
+)]
+function sdk()
+{
+}
+
+;
+
+#[AsTask('bundles', "Attributes for almost everything")]
+#[Step(
+    title: 'Attributes!',
+    description: "Doctrine Entity is the Source of Truth",
     actions: [
         new Bullet([
-            'meilisearch/search-bundle: official bundle, YAML, no UI search',
-            'mezcalito/ux-search: YAML, no index creation',
-            'survos/meili-bundle: PHP 8.4, attribute-based index and UI search'
+            'meilisearch/search-bundle: official bundle',
+            ' --     configure index with YAML, no insta-search',
+            'mezcalito/ux-search: insta-search, no index creation',
+            ' --     Symfony LiveComponent',
+            'survos/meili-bundle: PHP 8.4, attribute-based index and UI search',
+            ' --     Attributes for configuration and instasearch, js-twig templates',
         ], size: 2),
-        new DisplayCode(
-            lang: 'yaml',
-            content: <<<'YAML'
-# config/packages/meili_search.yaml
-meili_search:
-    indexes:
-        movies:
-            primary_key: id
-            settings:
-                searchableAttributes: ['title', 'overview']
-                filterableAttributes: ['genre', 'year']
-                sortableAttributes: ['year']
-YAML
-        ),
-        new DisplayCode(
-            fade: true,
-            note: "survos/meili-bundle, attributes applied to a doctrine entity",
-            lang: 'PHP',
-            content: <<<'PHP'
-#[MeiliIndex(
-    primaryKey: 'imdbId',
-    searchable: ['title','overview'],
-    filterable: ['year', 'budget', 'genres'],
-    sortable: ['year', 'budget'],
-)]
-#[ORM\Entity(repositoryClass: MovieRepository::class)]
-class Movie
-PHP,
-        ),
         new SplitSlide(),
         new DisplayCode(
             fade: true,
-            note: "can share configuration with ApiPlatform",
-            lang: 'PHP',
-            content: <<<'PHP'
-#[ApiFilter(filterClass: SearchFilter::class, properties: self::FILTERABLE_FIELDS)]
-#[ApiFilter(filterClass: SearchFilter::class, properties: self::SEARCHABLE_FIELDS)]
-#[ApiFilter(filterClass: OrderFilter::class, properties: self::SORTABLE_FIELDS)]
-#[MeiliIndex(
-    primaryKey: 'code',
-    filterable: self::FILTERABLE_FIELDS,
-    sortable: self::SORTABLE_FIELDS,
-    searchable: self::SEARCHABLE_FIELDS,
-)]
-final class Wine
-{
-    public const FILTERABLE_FIELDS = ['year', 'type', 'domain', 'quantity', 'price', 'quality'];
-    public const SORTABLE_FIELDS = ['year', 'quantity', 'price', 'quality'];
-    public const SEARCHABLE_FIELDS = [];
-PHP,
+            note: "survos/meili-bundle, attributes applied to a doctrine entity",
+            path: INPUT_DIR . '/php/movie-with-attributes.php',
         ),
     ]
 )]
-#[Step('Populating a Meilisearch Index',
+#[Step(
+    title: 'From Attributes to Actions',
+    description: "Next logical steps: configure and populate",
     actions: [
+        new Bullet(
+            msg: [
+                'Create/update the index with settings in attributes',
+                'Populate the index with existing data',
+                'Populate the index with new data',
+            ], size: 2),
+        new SplitSlide(),
         new DisplayCode(
             note: "Like doctrine:schema:update --force with sqlite",
             lang: 'bash',
             content: <<<'BASH'
-# Create a sqlite database during testing
+# In Doctrine:
 bin/console doctrine:schema:update --force
-# OR use migrations
-bin/console make:migration && bin/console doctrine:migrations:migrate --force
 
-# sends the settings from the attributes calls updateSettings()
+# sends the settings from the attributes PATCH /settings or updateSettings()
 bin/console meili:settings:update --force [--index movie] [--reset]
-
 
 BASH,
         ),
@@ -348,23 +301,117 @@ BASH,
             lang: 'bash',
             content: <<<'BASH'
 # iterates through the entity, normalizes and sends addDocuments()
-bin/console meili:populate App\\Entity\\Movie
-
+bin/console meili:populate movie
+bin/console meili:populate --all
 BASH,
         ),
+        new Bullet(
+            size: 2,
+//            header: "Automatically populate meili via postFlush() listener",
+            msg: [
+                'Loops through the entity table',
+                'Dispatches a message to serialize and send',
+                'Messages can be async using Symfony Messenger',
+                'Async Messages are batched',
+            ]
+        ),
+    ]
+)]
+function overview_slides()
+{
+}
+
+;
+
+
+#[AsTask('background sync')]
+#[Step(description: "Keeping doctrine/meili in sync",
+    actions: [
+        new Bullet(
+//            header: "Automatically populate meili via postFlush() listener",
+            msg: [
+                'Doctrine dispatches a postFlush event',
+                'Listener dispatches a message with just the changed fields',
+                'Messages can be async using Symfony Messenger',
+                'Async Messages are batched',
+            ]
+        ),
+    ]
+)]
+function postFlush() {}
+
+#[AsTask('recap')]
+#[Step('Recap: Basics',
+actions: [
+    new Bullet(
+        msg: [
+            'Put MeiliIndex attributes in Doctrine Entity',
+            'Update the meili index',
+            'populate the meili index with existing data',
+            "If data is simple, we're done!"
+        ]
+    )
+    ]
+)]
+function recap() {}
+
+#[AsTask('advanced')]
+#[Step('Real World Considerations',
+    actions: [
         new DisplayCode(
-            note: "Automatically populate meili via postFlush() listener",
-            lang: 'bash',
-            content: <<<'BASH'
-# Create your own import app (or UI)
-bin/console app:import-movies --file movies.csv
-
-# survos/import-bundle used in the demo
-bin/console import:entities Movie data/movie.jsonl
-
-# add data via the web, api, other service, whatever
-BASH,
+            path: INPUT_DIR . '/php/movie-with-attributes.php'
         ),
+        new SplitSlide(),
+        new DisplayCode(
+            path: INPUT_DIR . '/php/movie-with-persisted.php'
+        ),
+        new Bullet(
+            size: 2,
+            msg: [
+                "Problem: circular issues when serializing",
+                "Solution: persisted: ['every','field'] (boo)",
+                'use Symfony Serializer #[Group] ',
+            ]
+        ),
+        new SplitSlide("This rings a bell"),
+        new Bullet(
+            msg: [
+                'searchable, sortable, filterable',
+                'use Symfony Serializer #[Group]',
+                'Where have I heard this before?',
+                'ApiPlatform!',
+                'Build a world-class API with Attributes.  Details at 11:45 tomorrow!',
+            ]
+        ),
+    ]
+)]
+function realWorldConsiderations() {}
+
+
+#[AsTask('integrations')]
+#[Step(
+    actions: [
+        new DisplayCode(
+            fade: false,
+            note: "can share configuration with ApiPlatform",
+            path: INPUT_DIR . '/php/movie-with-api-platform.php',
+        ),
+        new Bullet(
+            style: "callout",
+            msg: [
+                'Api Platform does not have built-in text search'
+            ]
+        ),
+        new SplitSlide("With Groups"),
+        new DisplayCode(
+            fade: false,
+            note: "can share configuration with ApiPlatform",
+            path: INPUT_DIR . '/php/product-with-groups.php',
+        ),
+    ]
+)]
+#[Step('Adding Semantic',
+    actions: [
     ]
 )]
 function meili_overview(): void
@@ -382,8 +429,11 @@ function meili_overview(): void
         ])
     ]
 )]
+function prepare_launch(): void
+{
+}
 
-function prepare_launch(): void {};
+;
 
 #[AsTask('install-meili', null, 'Install meilisearch')]
 #[Step(
@@ -530,7 +580,6 @@ function with_symfony(): void
             packages: ['survos/code-bundle'], dev: true),
         new Bash('../../mono/link .', display: false),
         new Bash("sed -i \"s|# sync: 'sync://'|sync: 'sync://'|\" config/packages/messenger.yaml"),//        new Console('ux:icons:lock'),
-//        new CopyFile(INPUT_DIR . '/config/packages/ux_icons.yaml', 'config/packages/ux_icons.yaml'),
 
     ]
 )]
