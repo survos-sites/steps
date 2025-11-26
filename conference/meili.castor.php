@@ -58,20 +58,21 @@ use Survos\StepBundle\Action\{
             'Bundle API/Attributes',
             "Let's build a demo",
         ]),
-        new BrowserVisit('/', 'https://meili.survos.com')
+        new BrowserVisit(path: '/', host: 'https://meili.survos.com')
     ]
 )]
 function agenda(): void
 {
 }
 
-#[AsTask('meili-overview', null, 'What is Meilisearch')]
+#[AsTask('meili-overview', null,
+//    'What is Meilisearch'
+)]
 #[Step(
-    description: "Since this is the first slide, make the bullets big!",
     actions: [
         new Bullet(
-            size: 6,
             fade: true,
+            size: 2,
             msg: [
                 "An open-source, developer-friendly search engine focused on speed and relevance",
                 "A lightweight alternative to Elasticsearch or Algolia with fast indexing",
@@ -131,7 +132,7 @@ JSON,
     ],
 )]
 #[Step(
-    title: 'Create inddex Symfony HttpClient)',
+    title: 'Create index Symfony HttpClient)',
     actions: [
         new DisplayCode(lang: 'yaml', content: <<<'YAML'
 framework:
@@ -270,7 +271,7 @@ PHP,
             'meilisearch/search-bundle: official bundle, YAML, no UI search',
             'mezcalito/ux-search: YAML, no index creation',
             'survos/meili-bundle: PHP 8.4, attribute-based index and UI search'
-        ]),
+        ], size: 2),
         new DisplayCode(
             lang: 'yaml',
             content: <<<'YAML'
@@ -359,7 +360,7 @@ BASH,
 bin/console app:import-movies --file movies.csv
 
 # survos/import-bundle used in the demo
-bin/console import:entities Movie data/movies.jsonl
+bin/console import:entities Movie data/movie.jsonl
 
 # add data via the web, api, other service, whatever
 BASH,
@@ -495,7 +496,6 @@ function required_packages(): void
             'survos/jsonl-bundle',
         ],
             run: false
-
         )
     ]
 )]
@@ -529,7 +529,7 @@ function with_symfony(): void
             description: 'Code generator (like Symfony maker-bundle)',
             packages: ['survos/code-bundle'], dev: true),
         new Bash('../../mono/link .', display: false),
-//        new Console('ux:icons:lock'),
+        new Bash("sed -i \"s|# sync: 'sync://'|sync: 'sync://'|\" config/packages/messenger.yaml"),//        new Console('ux:icons:lock'),
 //        new CopyFile(INPUT_DIR . '/config/packages/ux_icons.yaml', 'config/packages/ux_icons.yaml'),
 
     ]
@@ -680,11 +680,13 @@ JS
         'then generate a Doctrine entity from the analysis',
     ],
     actions: [
-        new Console('import:convert', ['data/movies.csv'], a: 'stats.terminal'),
-        new Console('code:entity', ['data/movies.profile.json', 'Movie', '--force'], a: 'src/Entity/Movie.php'),
+        new Console('import:convert', ['data/movies.csv', '--dataset', 'movie'], a: 'stats.terminal'),
+        new Console('code:entity', ['data/movie.profile.json', 'Movie', '--force'], a: 'src/Entity/Movie.php'),
+        new Console('code:template', ['movie', '--twig'], a: 'templates/js/movie.html.twig'),
 //        new Console('doctrine:schema:update', ['--force']),
         // creates the artifact, but doesn't display it.  Internal
         new Artifact('src/Entity/Movie.php', "Movie.php"),
+        new Artifact('templates/js/movie.html.twig', "movie.html.twig"),
         // we could also display the artifact!  For testing, let's make sure they both work.
 //        new DisplayCode('/src/Entity/Movie.php', lang: 'php'),
     ]
@@ -754,7 +756,7 @@ PHP
 )]
 #[Step('bulk import',
     actions: [
-        new Console('import:entities', ['Movie', 'data/movies.jsonl', '--limit', '500'], a: 'import.txt'),
+        new Console('import:entities', ['Movie', 'data/movie.jsonl', '--limit', '500'], a: 'import.txt'),
         new Bullet([
                 'import:entities is a simple way to get flat(easy) data to doctrine',
                 'same internal logic that creates the Entity class',
