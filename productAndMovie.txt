@@ -1,0 +1,43 @@
+We're going to build this 2-entity website
+
+First, Products from dummyjson.com, the traditional way
+
+* create a class (bin/console make:entity Product)
+* add the fields
+* create a command that fetches the data and imports it to the class
+* run it.
+
+Now we want to add full text search and filtering.  Easy.
+
+#[Meiliindex] attribute
+declare your fields.
+Create the meiliindex
+
+very similar to updating doctrine
+
+bin/console meili:settings:update --force
+
+Now when we import, our service listens for the doctrine post-load event and populates meili.
+
+We can see that on riccox: http://localhost:24900/
+
+How do we see the doctrine data? Or the fancy instasearch?  Simply code generation:
+
+bin/console code:meili:admin
+
+Looks for the entities tagged with #[Meiliindex] and create an EasyAdmin dashboard for them.  A link to the dashboard is to a page that reads the meili index and facets defined in it, and creates a beautiful, fast UI.
+
+You've seen how we define which fields are filterable, sortable and searchable.
+
+In the demo, the product display card is formatted.  Let's talk about it for a minute.  It _is_ a twig file, but it's actually parsed by js-twig.  That's why it's so fast -- the rendering happens in the browser!  Althoug there are some restrictions on what can be done in js-twig v. server-side twig, there are mechanisms for stimulus* functions and the path() function, two of the most common twig functions you may want.
+
+Now, search products by price and category is cool, but semantic is even better.
+
+* get an OPEN_AI API Key
+* configure the embedder key in the survos_meili config
+* add the embedder to the MeiliIndex attribute in the class
+* run bin/console meilisearch:settings:update --force --embed
+
+Now open the browser, and in addition to having the regular search, there's a link for semantic.  Boom.
+
+For the movies tab, we're going to leverage some analysis and code generation tools.

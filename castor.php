@@ -3,6 +3,9 @@
 
 declare(strict_types=1);
 
+define('INPUT_DIR', __DIR__ . '/../inputs'); // absolute path to the 'steps' Symfony app
+const CASTOR_NAMESPACE = null;
+
 const SYMFONY_NAMESPACE = 'sy';
 define('STEPS_PROJECT_DIR', __DIR__); // absolute path to the 'steps' Symfony app
 function steps_project_dir(): string { return STEPS_PROJECT_DIR; }

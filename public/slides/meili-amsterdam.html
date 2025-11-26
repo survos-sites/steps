@@ -1,0 +1,498 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Semantic & Hybrid Search with MeiliSearch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.5">
+
+  <!-- Reveal core -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme">
+
+  <!-- Highlight.js for pretty code -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+
+  <!-- Custom conference styling -->
+<!--  <link rel="stylesheet" href="meili-amsterdam.css">-->
+</head>
+<body>
+
+<header class="global-header">
+  <div class="global-header-inner">
+    <span class="talk-title">Semantic & hybrid search with MeiliSearch</span>
+    <span class="talk-meta">Amsterdam · meili.survos.com</span>
+  </div>
+</header>
+
+<div class="reveal">
+<div class="slides">
+
+<!-- ========== TITLE ========== -->
+<section>
+  <h2>Today’s journey</h2>
+  <ul>
+    <li class="fragment fade-in">See semantic and hybrid search in action</li>
+    <li class="fragment fade-in">Treat your Doctrine entity as the source of truth</li>
+    <li class="fragment fade-in">Understand embedders, cost and configuration</li>
+    <li class="fragment fade-in">Leave with a mental model, not just commands</li>
+  </ul>
+  <aside class="notes">
+    Welcome, quick intro of yourself and context (Symfony / Meili work).  
+    Set expectations: this is a “show and understand” talk, not a live workshop.  
+    Mention that a detailed tutorial will be available for all the gritty steps.
+  </aside>
+</section>
+
+<!-- ========== LIVE DEMO ========== -->
+<section data-background-color="#111111">
+  <h2>First: a quick demo</h2>
+  <ul>
+    <li class="fragment fade-in">Keyword search</li>
+    <li class="fragment fade-in">Facets and filters</li>
+    <li class="fragment fade-in">Semantic search</li>
+    <li class="fragment fade-in">Hybrid slider (keyword ↔ semantic)</li>
+  </ul>
+  <div class="demo-actions">
+    <a href="https://meili.survos.com/" target="_blank" rel="noreferrer" class="action-button">
+      Open demo (meili.survos.com)
+    </a>
+  </div>
+  <aside class="notes">
+    Switch to the browser and show the main demo.  
+    Narrate: start with a simple keyword, then add a facet, then enable semantic, then move the hybrid slider.  
+    Don’t explain how it works yet; just let people see what it feels like.
+  </aside>
+</section>
+
+<!-- ========== DATASET GALLERY ========== -->
+<section>
+  <h2>Many datasets, one approach</h2>
+  <ul class="icon-list">
+    <li class="fragment fade-in"><span class="icon">🎬</span> Movies · ratings, genres, year</li>
+    <li class="fragment fade-in"><span class="icon">🍷</span> Wines · region, type, price, quality</li>
+    <li class="fragment fade-in"><span class="icon">🚗</span> Cars · make, model, specs</li>
+    <li class="fragment fade-in"><span class="icon">🏛</span> WCMA · artworks and metadata</li>
+    <li class="fragment fade-in"><span class="icon">🦸</span> Marvel · characters and comics</li>
+    <li class="fragment fade-in"><span class="icon">🛒</span> Products · price, stock, tags, brand</li>
+  </ul>
+  <p class="dim fragment fade-in">
+    Each dataset uses the same pattern: Doctrine entity → Meili index → search UI.
+  </p>
+  <aside class="notes">
+    Emphasise that this is not a one-off demo.  
+    You have multiple real-world datasets all using the same workflow.  
+    The rest of the talk explains the pattern behind these.
+  </aside>
+</section>
+
+<!-- ========== YOU ALREADY HAVE ENTITIES ========== -->
+<section>
+  <h2>What you probably already have</h2>
+  <ul>
+    <li class="fragment fade-in">A real database with useful data</li>
+    <li class="fragment fade-in">Doctrine entities describing that data</li>
+    <li class="fragment fade-in">Possibly ApiPlatform resources on top</li>
+  </ul>
+  <p class="fragment fade-in">
+    Good news: you’re already most of the way to MeiliSearch.
+  </p>
+  <aside class="notes">
+    Make it clear you’re not asking people to start from CSV in this talk.  
+    For most teams, the question is: “how do I turn my existing entities into a good index?”
+  </aside>
+</section>
+
+<!-- ========== ENTITY AS SOURCE OF TRUTH ========== -->
+<section>
+  <h2>The entity as the source of truth</h2>
+  <p>One class can describe API, filters, index and semantic behaviour:</p>
+  <pre><code class="language-php">
+#[ApiResource(
+    operations: [
+        new Get(
+            normalizationContext: [
+                'groups' =&gt; ['product.read', 'product.details'],
+            ]
+        ),
+        new GetCollection(
+            normalizationContext: [
+                'groups' =&gt; ['product.read'],
+            ]
+        )
+    ],
+    normalizationContext: ['groups' =&gt; ['product.read', 'product.details', 'rp']],
+)]
+#[ApiFilter(OrderFilter::class, properties: ['price','stock','rating'])]
+#[ApiFilter(FacetsFieldSearchFilter::class,
+    properties: ['category', 'tags', 'rating', 'stock', 'price'],
+    arguments: ['searchParameterName' =&gt; 'facet_filter']
+)]
+#[ApiFilter(RangeFilter::class, properties: ['rating','stock','price'])]
+#[MeiliIndex(
+    primaryKey: 'sku',
+    persisted: new Fields(
+        fields: ['sku','stock','price','title','brand'],
+        groups: ['product.read','product.details','product.searchable']
+    ),
+    displayed: ['*'],
+    filterable: new Fields(
+        fields: ['category','tags','rating','price','brand'],
+    ),
+    sortable: ['price','rating'],
+    searchable: new Fields(
+        groups: ['product.searchable']
+    ),
+    embedders: ['product']
+)]
+class Product
+{
+    // ...
+}
+  </code></pre>
+  <p class="dim fragment fade-in">
+    You can constrain the payload with fields, groups, or both.
+  </p>
+  <aside class="notes">
+    This is the “hero slide.”  
+    Point out: ApiResource, filters, MeiliIndex are all on one class.  
+    Explain briefly: persisted/displayed/filterable/sortable/searchable and how groups let you avoid circular references.
+  </aside>
+</section>
+
+<!-- ========== GROUPS / REAL WORLD ========== -->
+<section>
+  <h2>Real world relationships and groups</h2>
+  <ul>
+    <li class="fragment fade-in">Demos can serialize everything without trouble.</li>
+    <li class="fragment fade-in">Real apps have relations and circular references.</li>
+    <li class="fragment fade-in">You may not want to expose all fields to Meili.</li>
+  </ul>
+  <p class="fragment fade-in">Use Symfony serialization groups for Meili:</p>
+  <pre><code class="language-php">
+#[Groups(['product.read','product.searchable'])]
+public string $title;
+
+#[MeiliIndex(
+    persisted: new Fields(groups: ['product.read']),
+    searchable: new Fields(groups: ['product.searchable']),
+)]
+  </code></pre>
+  <p class="dim fragment fade-in">
+    You can either restrict by fields, by groups, or combine both, depending on your needs.
+  </p>
+  <aside class="notes">
+    Mention that this is where things differ from toy examples.  
+    Serialization groups give precise control over what Meili sees and prevents recursive serialization.  
+    Keep this part practical and not too academic.
+  </aside>
+</section>
+
+<!-- ========== SEARCH MODES ========== -->
+<section>
+  <h2>Four flavours of search</h2>
+  <ul>
+    <li class="fragment fade-in">
+      <strong>Filtered search</strong> · boolean filters on structured fields<br>
+      <span class="dim">category = "wine" and price &lt; 20</span>
+    </li>
+    <li class="fragment fade-in">
+      <strong>Full-text search</strong> · typo-tolerant keyword search
+    </li>
+    <li class="fragment fade-in">
+      <strong>Semantic search</strong> · match by meaning, not just shared words
+    </li>
+    <li class="fragment fade-in">
+      <strong>Hybrid search</strong> · blend keyword and semantic scores
+    </li>
+  </ul>
+  <aside class="notes">
+    This is the conceptual backbone.  
+    Make sure the audience can distinguish “filters” from “full-text” and from “semantic.”  
+    Hybrid will make more sense after this slide.
+  </aside>
+</section>
+
+<!-- ========== SEMANTIC INTRO ========== -->
+<section>
+  <h2>What semantic search actually does</h2>
+  <ul>
+    <li class="fragment fade-in">Take text (title, description, brand, etc).</li>
+    <li class="fragment fade-in">Turn it into a vector of numbers: an embedding.</li>
+    <li class="fragment fade-in">Similar meaning → vectors close together.</li>
+    <li class="fragment fade-in">Query is also embedded, then we search by distance.</li>
+  </ul>
+  <p class="fragment fade-in">Examples of queries:</p>
+  <ul class="icon-list">
+    <li class="fragment fade-in"><span class="icon">💡</span> cool gifts for a tech executive</li>
+    <li class="fragment fade-in"><span class="icon">🏠</span> things to decorate an apartment</li>
+  </ul>
+  <aside class="notes">
+    Explain with your own words: we’re not searching for the literal string “cool gifts,” we’re matching items whose meaning is close to that idea.  
+    Keep the math out; focus on intuition.
+  </aside>
+</section>
+
+<!-- ========== EMBEDDER CONFIG YAML ========== -->
+<section>
+  <h2>Configuring an embedder</h2>
+  <p>Bundle configuration (simplified):</p>
+  <pre><code class="language-yaml">
+survos_meili:
+    host: '%env(default::MEILI_SERVER)%'
+    apiKey: '%env(default::MEILI_API_KEY)%'
+    searchKey: '%env(default::MEILI_SEARCH_KEY)%'
+    embedders:
+        product:
+            source: 'openAi'
+            model: 'text-embedding-3-large'
+            apiKey: '%env(OPENAI_API_KEY)%'
+            template: 'templates/liquid/product.liquid'
+            examples:
+                - 'cool gifts for a tech executive'
+                - 'things to decorate an apartment'
+  </code></pre>
+  <ul>
+    <li class="fragment fade-in"><strong>source</strong> – who does the embeddings (OpenAI here)</li>
+    <li class="fragment fade-in"><strong>model</strong> – quality and cost trade-off</li>
+    <li class="fragment fade-in"><strong>apiKey</strong> – your OpenAI key</li>
+    <li class="fragment fade-in"><strong>template</strong> – what text is embedded per record</li>
+    <li class="fragment fade-in"><strong>examples</strong> – give the model a feel for typical queries</li>
+  </ul>
+  <p class="dim fragment fade-in">
+    We won’t go deep into Liquid template generation here; that’s fun extra material.
+  </p>
+  <aside class="notes">
+    This is where you acknowledge the need for an API key and cost.  
+    Briefly mention text-embedding-3-small vs large, but do the cost maths on the next slide.
+  </aside>
+</section>
+
+<!-- ========== COST / MEILI:ESTIMATE ========== -->
+<section>
+  <h2>Cost is usually tiny</h2>
+  <ul>
+    <li class="fragment fade-in"><code>text-embedding-3-small</code> ≈ $0.02 per million tokens</li>
+    <li class="fragment fade-in"><code>text-embedding-3-large</code> ≈ $0.13 per million tokens</li>
+    <li class="fragment fade-in">10,000 products × ~100 tokens ≈ 1 million tokens</li>
+    <li class="fragment fade-in">So a full catalog can cost just a few cents to embed.</li>
+  </ul>
+  <p class="fragment fade-in">There is a command to estimate before you commit:</p>
+  <pre><code class="language-bash">
+bin/console meili:estimate Product
+# Estimate token usage and cost for embedding your entities
+  </code></pre>
+  <aside class="notes">
+    This is a nice “aha” moment: semantic isn’t just powerful, it’s cheap.  
+    Point out that meili:estimate gives a sanity check so they can plan budgets.
+  </aside>
+</section>
+
+<!-- ========== SETTINGS + EMBED ========== -->
+<section>
+  <h2>Apply settings and embed</h2>
+  <p>One command to push settings and generate embeddings:</p>
+  <pre><code class="language-bash">
+bin/console meili:settings:update --force --embed
+  </code></pre>
+  <ul>
+    <li class="fragment fade-in">Reads <code>#[MeiliIndex]</code> and <code>#[MeiliField]</code> from your entity.</li>
+    <li class="fragment fade-in">Calls Meili’s settings APIs for searchable, filterable, sortable, etc.</li>
+    <li class="fragment fade-in">Iterates entities, generates embeddings using the configured embedder.</li>
+  </ul>
+  <p class="dim fragment fade-in">
+    After this, your index is ready for semantic and hybrid search.
+  </p>
+  <aside class="notes">
+    This is the “that’s it” slide for semantic setup.  
+    Remind people that the heavy work is in the configuration on the entity; this is just applying it.
+  </aside>
+</section>
+
+<!-- ========== HYBRID SEARCH ========== -->
+<section>
+  <h2>Hybrid search in practice</h2>
+  <ul>
+    <li class="fragment fade-in"><strong>Keyword score</strong> – exact text matches, filters, precision.</li>
+    <li class="fragment fade-in"><strong>Semantic score</strong> – intent and related concepts.</li>
+    <li class="fragment fade-in">
+      Hybrid search blends them:<br>
+      <span class="dim">score = (1 − α) · keyword + α · semantic</span>
+    </li>
+  </ul>
+  <p class="fragment fade-in">In the UI, this becomes a simple slider:</p>
+  <ul class="icon-list">
+    <li class="fragment fade-in"><span class="icon">◀️</span> keyword-only · precise</li>
+    <li class="fragment fade-in"><span class="icon">🔀</span> balanced hybrid</li>
+    <li class="fragment fade-in"><span class="icon">▶️</span> semantic-only · exploratory</li>
+  </ul>
+  <aside class="notes">
+    If you can, quickly show the slider in the demo again here.  
+    Emphasise that users can choose what feels right for them without changing config.
+  </aside>
+</section>
+
+<!-- ========== ASYNC / MESSENGER ========== -->
+<section>
+  <h2>Indexing at scale with Symfony Messenger</h2>
+  <ul>
+    <li class="fragment fade-in">Indexing large datasets should be asynchronous.</li>
+    <li class="fragment fade-in">Meili itself is async: it returns tasks you can poll.</li>
+    <li class="fragment fade-in">On the Symfony side, Messenger is the natural fit.</li>
+  </ul>
+  <p class="fragment fade-in">Typical flow:</p>
+  <ul>
+    <li class="fragment fade-in">Doctrine <code>postFlush</code> or domain event</li>
+    <li class="fragment fade-in">Dispatch a message with the entity id</li>
+    <li class="fragment fade-in">Worker loads the entity, normalizes it and calls Meili</li>
+  </ul>
+  <p class="dim fragment fade-in">
+    Same pattern works for full re-indexes and background embedding refreshes.
+  </p>
+  <aside class="notes">
+    Keep this conceptual; no need to show Messenger config.  
+    The point is: you don’t have to choose between “simple” and “scalable.”
+  </aside>
+</section>
+
+<!-- ========== OPTIONAL: IMPORT PIPELINE ========== -->
+<section>
+  <h2>Optional: from files to entities</h2>
+  <p class="fragment fade-in">
+    If your data starts in CSV, JSON or ZIP, there is a pipeline:
+  </p>
+  <ul>
+    <li class="fragment fade-in"><strong>json:convert</strong> – CSV/JSON → JSONL + profile</li>
+    <li class="fragment fade-in"><strong>json:entity</strong> – profile → Doctrine entity with sensible types</li>
+    <li class="fragment fade-in">Then treat the entity like any other for Meili and API.</li>
+  </ul>
+  <p class="dim fragment fade-in">
+    The tutorial walks through this in detail; today we focus on annotated entities and semantic behaviour.
+  </p>
+  <aside class="notes">
+    Mention that this is how you built some of the demo datasets.  
+    But keep it clearly “bonus” so people don’t feel they must follow these steps to get value.
+  </aside>
+</section>
+
+<!-- ========== EASYADMIN DASHBOARD BONUS ========== -->
+<section>
+  <h2>Bonus: an instant admin dashboard</h2>
+  <p>Once entities and indexes are configured:</p>
+  <pre><code class="language-bash">
+bin/console code:meili:admin --path=/
+  </code></pre>
+  <ul>
+    <li class="fragment fade-in">Generates an EasyAdmin dashboard and CRUD controllers.</li>
+    <li class="fragment fade-in">Uses Meili metadata to drive filters and search fields.</li>
+    <li class="fragment fade-in">Makes a convenient “developer cockpit” for your index.</li>
+  </ul>
+  <div class="demo-actions fragment fade-in">
+    <a href="http://localhost:24900/ins/0" target="_blank" rel="noreferrer" class="action-button">
+      Open Meili admin (Riccox)
+    </a>
+  </div>
+  <aside class="notes">
+    Show a screenshot or a quick click-through if time allows.  
+    Emphasise that this is generated from the same metadata; you didn’t sit down and hand-craft CRUD controllers for the demo.
+  </aside>
+</section>
+
+<!-- ========== BUNDLE STATUS / VENDOR NEUTRAL ========== -->
+<section>
+  <h2>About the bundle and the pattern</h2>
+  <ul>
+    <li class="fragment fade-in">The bundle is used in production on my own sites.</li>
+    <li class="fragment fade-in">It is still under active development; APIs may keep evolving.</li>
+    <li class="fragment fade-in">The core idea is stable and portable:
+      <ul>
+        <li class="fragment fade-in">Use attributes to define your index and semantics.</li>
+        <li class="fragment fade-in">Drive Meili settings from the entity, not from scattered config.</li>
+      </ul>
+    </li>
+    <li class="fragment fade-in">You can reuse the same approach with other Meili/Symfony bundles if they suit you better.</li>
+  </ul>
+  <aside class="notes">
+    This slide is about trust and flexibility.  
+    Make it clear they’re not locked into Survos forever; the metadata pattern is what matters.
+  </aside>
+</section>
+
+<!-- ========== TUTORIAL ========== -->
+<section>
+  <h2>Tutorial: every step documented</h2>
+  <ul>
+    <li class="fragment fade-in">Commands to load each dataset into Meili.</li>
+    <li class="fragment fade-in">CSV/JSON → JSONL → entity generation.</li>
+    <li class="fragment fade-in">Index settings, semantic and hybrid configuration.</li>
+    <li class="fragment fade-in">EasyAdmin dashboard and demo scripts.</li>
+  </ul>
+  <p class="dim fragment fade-in">
+    [Add link or QR to GitHub repo and tutorial page here.]
+  </p>
+  <aside class="notes">
+    Explicitly invite people to try this at home with their own data.  
+    Mention that the tutorial is where you go into “click here, run this, edit that” detail.
+  </aside>
+</section>
+
+<!-- ========== RECAP ========== -->
+<section>
+  <h2>Recap</h2>
+  <ul>
+    <li class="fragment fade-in">Your Doctrine entity can describe
+      <ul>
+        <li class="fragment fade-in">database schema</li>
+        <li class="fragment fade-in">API surface</li>
+        <li class="fragment fade-in">Meili index and facets</li>
+        <li class="fragment fade-in">semantic and hybrid behaviour</li>
+      </ul>
+    </li>
+    <li class="fragment fade-in">Semantic and hybrid search are:
+      <ul>
+        <li class="fragment fade-in">practical for users</li>
+        <li class="fragment fade-in">cheap to run at moderate scale</li>
+        <li class="fragment fade-in">straightforward to configure with attributes</li>
+      </ul>
+    </li>
+    <li class="fragment fade-in">The tutorial and code are available if you want to go deeper.</li>
+  </ul>
+  <aside class="notes">
+    Keep this short; it’s mostly a memory aid for the audience.  
+    Then move quickly to questions.
+  </aside>
+</section>
+
+<!-- ========== QUESTIONS ========== -->
+<section>
+  <h2>Questions</h2>
+  <p>Slides and code:</p>
+  <p class="dim">meili.survos.com · [GitHub link]</p>
+  <aside class="notes">
+    Invite questions about semantics, cost, integration with existing apps.  
+    If someone asks about details of the pipeline, point them to the tutorial and repo.
+  </aside>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.js"></script>
+<script>
+  // Initialize syntax highlighting
+  hljs.highlightAll();
+
+  // Initialize Reveal with notes and a wider layout
+  Reveal.initialize({
+    hash: true,
+    slideNumber: true,
+    transition: 'fade',
+    width: 1400,
+    height: 800,
+    margin: 0.05,
+    plugins: [ RevealNotes ]
+  });
+</script>
+</body>
+</html>
