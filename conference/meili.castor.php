@@ -55,7 +55,6 @@ use Survos\StepBundle\Action\{
     actions: [
         new Bullet(msg: [
             'What is meilisearch',
-            'Tools',
             'Low-level API',
             'PHP library API',
             'Bundle API/Attributes',
@@ -261,7 +260,7 @@ function sdk()
 #[AsTask('bundles', "Attributes for almost everything")]
 #[Step(
     title: 'Attributes!',
-    description: "Doctrine Entity is the Source of Truth",
+    description: "Configure in the Doctrine Entity",
     actions: [
 //        new Bullet([
 //            'meilisearch/search-bundle: official bundle',
