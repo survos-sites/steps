@@ -116,7 +116,7 @@ function install_meili(): void
 /**
  * Live demo entry: open the main demo site.
  */
-#[AsTask(name: 'showtime:demo', description: 'Open main demo (meili.survos.com)')]
+#[AsTask(name: 'demo', description: 'Open main demo (meili.survos.com)')]
 #[Step(
     description: 'A demo of InstantSearch (one use of Meilisearch)',
     actions: [
