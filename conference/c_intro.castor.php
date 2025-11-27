@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php 
+
+declare(strict_types=1);
 
 if (!defined('INPUT_DIR')) {
     define('INPUT_DIR', __DIR__ . '/../inputs'); // absolute path to the 'steps' Symfony app
@@ -61,9 +63,9 @@ function _actions_from_current_taskXX(): array
 /**
  * High-level agenda (today's journey).
  */
-#[AsTask(name: 'showtime:agenda', description: 'SymfonyCon Amsterdam 2025 — talk outline')]
+#[AsTask(name: 'agenda', description: 'SymfonyCon Amsterdam 2025')]
 #[Step(
-    description: "SymfonyCon Amsterdam 2025 · Semantic & hybrid search with MeiliSearch",
+    description: "Semantic & hybrid search with MeiliSearch",
     actions: [
         new Bullet(
             fade: true,
@@ -77,6 +79,36 @@ function _actions_from_current_taskXX(): array
     ]
 )]
 function showtime_agenda(): void
+{
+    RunStep::run(_actions_from_current_task(), context());
+}
+
+#[AsTask('install-meili', null, 'Install meilisearch')]
+#[Step(
+    actions: [
+        new Bash(
+            'docker run -it --rm  -p 7700:7700 \
+  -v $(pwd)/meili_data:/meili_data \
+  getmeili/meilisearch:latest',
+            run: false,
+            note: "run with docker"
+        ),
+        new Bash(
+            'docker run -d \
+  --name meilisearch-ui \
+  --restart on-failure:5 \
+  -e SINGLETON_MODE=true \
+  -e SINGLETON_HOST=http://localhost:7700 \
+  -e SINGLETON_API_KEY=your-api-key \
+  -p 24900:24900 \
+  --network meili_network \
+riccoxie/meilisearch-ui:latest',
+            run: false,
+            note: "run with docker"
+        ),
+    ],
+)]
+function install_meili(): void
 {
     RunStep::run(_actions_from_current_task(), context());
 }

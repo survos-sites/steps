@@ -55,12 +55,16 @@ use Survos\StepBundle\Action\{
     actions: [
         new Bullet(msg: [
             'What is meilisearch',
+            'Tools',
             'Low-level API',
             'PHP library API',
             'Bundle API/Attributes',
             "Command Overview",
             "Production Configuration",
         ]),
+        new BrowserVisit('/', 'http://localhost:7700/', a: 'meili-demo-meili-dash.png'),
+        new BrowserVisit('/', 'http://localhost:24900/ins/0/index/dummy_product/documents', a: 'meili-demo-meili-dash.png'),
+
     ]
 )]
 function agenda(): void
@@ -439,35 +443,6 @@ function meili_overview(): void
 
 ;
 
-#[AsTask('install-meili', null, 'Install meilisearch')]
-#[Step(
-    actions: [
-        new Bash(
-            'docker run -it --rm  -p 7700:7700 \
-  -v $(pwd)/meili_data:/meili_data \
-  getmeili/meilisearch:latest',
-            run: false,
-            note: "run with docker"
-        ),
-        new Bash(
-            'docker run -d \
-  --name meilisearch-ui \
-  --restart on-failure:5 \
-  -e SINGLETON_MODE=true \
-  -e SINGLETON_HOST=http://localhost:7700 \
-  -e SINGLETON_API_KEY=your-api-key \
-  -p 24900:24900 \
-  --network meili_network \
-riccoxie/meilisearch-ui:latest',
-            run: false,
-            note: "run with docker"
-        ),
-    ],
-)]
-function install_meili(): void
-{
-    RunStep::run(_actions_from_current_task(), context());
-}
 
 //#[AsTask('docker-config', null, 'configure docker.yml')]
 //#[Step(
