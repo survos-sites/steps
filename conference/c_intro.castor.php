@@ -138,7 +138,7 @@ function showtime_demo(): void
 /**
  * Dataset gallery: show that multiple datasets share the same pattern.
  */
-#[AsTask(name: 'showtime:datasets', description: 'Datasets on meili.survos.com')]
+#[AsTask(name: 'datasets', description: 'Datasets on meili.survos.com')]
 #[Step(
     description: 'Many datasets, one approach',
     actions: [
@@ -168,7 +168,7 @@ function showtime_datasets(): void
 /**
  * Most attendees already have Doctrine entities.
  */
-#[AsTask(name: 'showtime:entities-intro', description: 'You already have entities')]
+#[AsTask(name: 'entities-intro', description: 'You already have entities')]
 #[Step(
     description: 'What you probably already have',
     actions: [
