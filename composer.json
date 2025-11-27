@@ -26,7 +26,7 @@
         "survos/import-bundle": "^2.0.75",
         "survos/installer": "^2.1.4",
         "survos/jsonl-bundle": "^2.0.75",
-        "survos/step-bundle": "^2.0.76",
+        "survos/step-bundle": "^2.0.77",
         "symfony/asset": "^7.3|^8.0",
         "symfony/asset-mapper": "^7.3.5|^8.0.4",
         "symfony/console": "^7.3.6|^8.0.4",

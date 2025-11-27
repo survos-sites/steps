@@ -49,7 +49,7 @@ use Survos\StepBundle\Action\{
 /**
  * Explain the four search modes conceptually.
  */
-#[AsTask(name: 'showtime:search-modes',
+#[AsTask(name: 'search-modes',
     description: 'Filtered, full-text, semantic, hybrid')]
 #[Step(
     description: 'Four flavours of search',
@@ -73,7 +73,7 @@ function showtime_search_modes(): void
 /**
  * Semantic search intuition – embeddings and examples.
  */
-#[AsTask(name: 'showtime:semantic', description: 'What semantic search does')]
+#[AsTask(name: 'semantic', description: 'What semantic search does')]
 #[Step(
     actions: [
         new Bullet(
@@ -109,7 +109,7 @@ function showtime_semantic(): void
 /**
  * Cost model + meili:estimate.
  */
-#[AsTask(name: 'showtime:cost', description: 'Cost and meili:estimate')]
+#[AsTask(name: 'cost', description: 'Cost and meili:estimate')]
 #[Step(
     description: 'Cost can be surprisingly inexpensive',
     actions: [
@@ -142,7 +142,7 @@ function showtime_cost(): void
 /**
  * Embedder configuration YAML.
  */
-#[AsTask(name: 'showtime:embedder-config', description: 'Configuring Semantic Search is EASY')]
+#[AsTask(name: 'embedder-config', description: 'Configuring Semantic Search is EASY')]
 #[Step(
 
 //    description: 'Configuring an embedder once',
@@ -194,7 +194,7 @@ function showtime_embedder_config(): void
 /**
  * Apply settings and embed.
  */
-#[AsTask(name: 'showtime:settings-embed',
+#[AsTask(name: 'settings-embed',
 //    description: 'Apply settings and generate embeddings'
 )]
 #[Step(

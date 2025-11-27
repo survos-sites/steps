@@ -116,31 +116,23 @@ function install_meili(): void
 /**
  * Live demo entry: open the main demo site.
  */
-#[AsTask(name: 'demo', description: 'Open main demo (meili.survos.com)')]
-#[Step(
-    description: 'A demo of InstantSearch (one use of Meilisearch)',
-    actions: [
-        new Bullet(
-            fade: true,
-            msg: [
-                'Keyword search',
-                'Facets and filters',
-                'Semantic search',
-            ]
-            ),
-    ]
-)]
-function showtime_demo(): void
-{
-    RunStep::run(_actions_from_current_task(), context());
-}
+//#[AsTask(name: 'demo', description: 'Open main demo (meili.survos.com)')]
+//#[Step(
+//    description: 'A demo of InstantSearch (one use of Meilisearch)',
+//    actions: [
+//    ]
+//)]
+//function showtime_demo(): void
+//{
+//    RunStep::run(_actions_from_current_task(), context());
+//}
 
 /**
  * Dataset gallery: show that multiple datasets share the same pattern.
  */
-#[AsTask(name: 'datasets', description: 'Datasets on meili.survos.com')]
+#[AsTask(name: 'Demo', description: 'Datasets on meili.survos.com')]
 #[Step(
-    description: 'Many datasets, one approach',
+    description: 'Many datasets, one approach, keywords + facets',
     actions: [
         new Bullet(
             fade: true,
@@ -157,6 +149,7 @@ function showtime_demo(): void
             style: 'callout',
             msg: 'Each dataset uses the same pattern: Doctrine entity → Meili index → search UI'
         ),
+
         new BrowserVisit('/', 'https://meili.survos.com/meili/search/index/meili_product', a: 'meili-demo.png'),
     ]
 )]

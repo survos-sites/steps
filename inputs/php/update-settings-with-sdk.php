@@ -6,5 +6,4 @@ $task = $this->meiliClient->index('movies')->updateSettings([
     'sortableAttributes' => ['budget'],
 ]);
 
-// version 1 style
 $this->meiliClient->waitForTask($task['taskUid']);

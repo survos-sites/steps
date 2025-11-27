@@ -3,7 +3,7 @@
 /**
  * Hybrid search explanation.
  */
-#[AsTask(name: 'showtime:hybrid', description: 'Hybrid search in practice')]
+#[AsTask(name: 'hybrid', description: 'Hybrid search in practice')]
 #[Step(
     description: 'Hybrid search: best of both worlds',
     actions: [
@@ -25,7 +25,7 @@ function showtime_hybrid(): void
 /**
  * Symfony Messenger and async indexing.
  */
-#[AsTask(name: 'showtime:messenger', description: 'Indexing at scale with Messenger')]
+#[AsTask(name: 'messenger', description: 'Indexing at scale with Messenger')]
 #[Step(
     description: 'Indexing at scale with Symfony Messenger',
     actions: [
@@ -60,7 +60,7 @@ function showtime_messenger(): void
 /**
  * Optional: CSV/JSON → JSONL → entity.
  */
-#[AsTask(name: 'showtime:import-pipeline', description: 'Optional import pipeline')]
+#[AsTask(name: 'import-pipeline', description: 'Optional import pipeline')]
 #[Step(
     description: 'Optional: from files to entities',
     actions: [
@@ -87,7 +87,7 @@ function showtime_import_pipeline(): void
 /**
  * EasyAdmin-based Meili dashboard.
  */
-#[AsTask(name: 'showtime:dashboard', description: 'Bonus: EasyAdmin Meili dashboard')]
+#[AsTask(name: 'dashboard', description: 'Bonus: EasyAdmin Meili dashboard')]
 #[Step(
     description: 'Bonus: an instant admin dashboard',
     actions: [
@@ -118,7 +118,7 @@ function showtime_dashboard(): void
 /**
  * Bundle status and vendor-neutral pattern.
  */
-#[AsTask(name: 'showtime:bundle-status', description: 'Bundle status and pattern')]
+#[AsTask(name: 'bundle-status', description: 'Bundle status and pattern')]
 #[Step(
     description: 'About the bundle and the pattern',
     actions: [
@@ -145,7 +145,7 @@ function showtime_bundle_status(): void
 /**
  * Tutorial slide: step-by-step details available.
  */
-#[AsTask(name: 'showtime:tutorial', description: 'Tutorial and repo')]
+#[AsTask(name: 'tutorial', description: 'Tutorial and repo')]
 #[Step(
     description: 'Tutorial: every step documented',
     actions: [
@@ -172,7 +172,7 @@ function showtime_tutorial(): void
 /**
  * Recap.
  */
-#[AsTask(name: 'showtime:recap', description: 'Recap slide')]
+#[AsTask(name: 'recap', description: 'Recap slide')]
 #[Step(
     description: 'Recap',
     actions: [
