@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "121a133baf1d78ec71dd9ccfe400d076",
+    "content-hash": "08d1a6bbf77be1d273f6e9f99cf9b525",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -4449,16 +4449,16 @@
         },
         {
             "name": "survos/step-bundle",
-            "version": "2.0.75",
+            "version": "2.0.76",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/step-bundle.git",
-                "reference": "8b4b767e7f04ca1a6e96ca544f24ed4903e83402"
+                "reference": "298cbf789d0ef114516888ae92a722f3bd2ea379"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/survos/step-bundle/zipball/8b4b767e7f04ca1a6e96ca544f24ed4903e83402",
-                "reference": "8b4b767e7f04ca1a6e96ca544f24ed4903e83402",
+                "url": "https://api.github.com/repos/survos/step-bundle/zipball/298cbf789d0ef114516888ae92a722f3bd2ea379",
+                "reference": "298cbf789d0ef114516888ae92a722f3bd2ea379",
                 "shasum": ""
             },
             "require": {
@@ -4494,7 +4494,7 @@
             ],
             "support": {
                 "issues": "https://github.com/survos/step-bundle/issues",
-                "source": "https://github.com/survos/step-bundle/tree/2.0.75"
+                "source": "https://github.com/survos/step-bundle/tree/2.0.76"
             },
             "funding": [
                 {
@@ -4502,7 +4502,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-26T16:13:29+00:00"
+            "time": "2025-11-27T10:27:41+00:00"
         },
         {
             "name": "symfony/asset",
