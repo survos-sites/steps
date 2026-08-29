@@ -6,7 +6,7 @@
     "minimum-stability": "RC",
     "prefer-stable": true,
     "require": {
-        "php": "^8.4",
+        "php": "^8.5",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "doctrine/dbal": "^4.4.2",
@@ -113,8 +113,6 @@
         }
     },
     "require-dev": {
-        "roave/security-advisories": "dev-latest"
-        ,
         "dbrekelmans/bdi": "^1.4.1",
         "phpunit/phpunit": "^12.5.14",
         "survos/deployment-bundle": "^2.0.124",
