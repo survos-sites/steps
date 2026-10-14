@@ -27,9 +27,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // });
 });
 
-
-import 'asciinema-player/dist/bundle/asciinema-player.css';
-import * as AsciinemaPlayer from 'asciinema-player';
-AsciinemaPlayer.create('/test.cast', document.getElementById('demo'), {
-    // options here
-});
+// asciinema demo: only load the player on pages that have a #demo element
+const demo = document.getElementById('demo');
+if (demo) {
+    import('asciinema-player/dist/bundle/asciinema-player.css');
+    import('asciinema-player').then((AsciinemaPlayer) => {
+        AsciinemaPlayer.create('/test.cast', demo, {
+            // options here
+        });
+    });
+}
