@@ -1803,6 +1803,25 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     route_prefix?: scalar|Param|null, // URL prefix applied to all routes from this bundle. // Default: ""
  *     locale_prefix?: bool|Param, // Prepend {_locale} (constrained to kernel.enabled_locales) to this bundle's route prefix, e.g. /{_locale}/f instead of /f -- for bundles whose routes are meant to be shared/bookmarked, so the URL itself carries the locale instead of a query param. // Default: false
  * }
+ * @psalm-type SurvosCrawlerConfig = array{
+ *     routes_enabled?: bool|Param, // Set false to manage this bundle's routes manually in your app. Bundles exposing sensitive routes (e.g. running console commands) should default this off. // Default: true
+ *     route_prefix?: scalar|Param|null, // URL prefix applied to all routes from this bundle. // Default: "/crawler"
+ *     locale_prefix?: bool|Param, // Prepend {_locale} (constrained to kernel.enabled_locales) to this bundle's route prefix, e.g. /{_locale}/f instead of /f -- for bundles whose routes are meant to be shared/bookmarked, so the URL itself carries the locale instead of a query param. // Default: false
+ *     users?: list<mixed>,
+ *     routes_to_ignore?: list<mixed>,
+ *     paths_to_ignore?: list<mixed>,
+ *     max_per_route?: scalar|Param|null, // Default: 3
+ *     base_url?: scalar|Param|null, // Default: "https://127.0.0.1:8000"
+ *     initial_path?: scalar|Param|null, // Default: "/"
+ *     user?: scalar|Param|null, // Default: "juan@tt.com"
+ *     login_path?: scalar|Param|null, // Default: "/login"
+ *     username_form_variable?: scalar|Param|null, // Default: "_username"
+ *     password_form_variable?: scalar|Param|null, // Default: "_password"
+ *     plaintext_password?: scalar|Param|null, // Default: "password"
+ *     submit_button?: scalar|Param|null, // Default: ".btn"
+ *     user_class?: scalar|Param|null, // Default: "App\\Entity\\User"
+ *     max_depth?: scalar|Param|null, // Default: 1
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -1891,6 +1910,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         survos_field?: SurvosFieldConfig,
  *         knp_menu?: KnpMenuConfig,
  *         survos_tabler?: SurvosTablerConfig,
+ *         survos_crawler?: SurvosCrawlerConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -1979,6 +1999,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         survos_field?: SurvosFieldConfig,
  *         knp_menu?: KnpMenuConfig,
  *         survos_tabler?: SurvosTablerConfig,
+ *         survos_crawler?: SurvosCrawlerConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,

@@ -1,0 +1,12 @@
+survos_crawler:
+    base_url: 'https://steps.wip'
+    # no login in this app: visitor-only crawl
+    users: []
+    initial_path: '/slideshow/'
+    max_depth: 2
+    max_per_route: 5
+    paths_to_ignore: ['/^_profiler/', '/^_wdt/']
+    routes_to_ignore:
+        - run_castor   # GET that launches `castor foo:bar` as a process
+        - survos_tabler_doc      # /docs: no docs directory in this app, so 404 by design
+        - survos_crawler_data    # the crawler's own results page; disabled unless routes_enabled

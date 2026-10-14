@@ -8922,6 +8922,92 @@
                 },
                 "additionalProperties": false
             },
+            "survos_crawler": {
+                "$ref": "#/$defs/types/object_null",
+                "properties": {
+                    "routes_enabled": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": true,
+                        "description": "Set false to manage this bundle's routes manually in your app. Bundles exposing sensitive routes (e.g. running console commands) should default this off."
+                    },
+                    "route_prefix": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "/crawler",
+                        "description": "URL prefix applied to all routes from this bundle."
+                    },
+                    "locale_prefix": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": false,
+                        "description": "Prepend {_locale} (constrained to kernel.enabled_locales) to this bundle's route prefix, e.g. /{_locale}/f instead of /f -- for bundles whose routes are meant to be shared/bookmarked, so the URL itself carries the locale instead of a query param."
+                    },
+                    "users": {
+                        "$ref": "#/$defs/types/array_null",
+                        "items": {
+                            "$ref": "#/$defs/types/variable"
+                        }
+                    },
+                    "routes_to_ignore": {
+                        "$ref": "#/$defs/types/array_null",
+                        "items": {
+                            "$ref": "#/$defs/types/variable"
+                        }
+                    },
+                    "paths_to_ignore": {
+                        "$ref": "#/$defs/types/array_null",
+                        "items": {
+                            "$ref": "#/$defs/types/variable",
+                            "default": [
+                                "/^_profiler/"
+                            ]
+                        }
+                    },
+                    "max_per_route": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": 3
+                    },
+                    "base_url": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "https://127.0.0.1:8000"
+                    },
+                    "initial_path": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "/"
+                    },
+                    "user": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "juan@tt.com"
+                    },
+                    "login_path": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "/login"
+                    },
+                    "username_form_variable": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "_username"
+                    },
+                    "password_form_variable": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "_password"
+                    },
+                    "plaintext_password": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "password"
+                    },
+                    "submit_button": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": ".btn"
+                    },
+                    "user_class": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "App\\Entity\\User"
+                    },
+                    "max_depth": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": 1
+                    }
+                },
+                "additionalProperties": false
+            },
             "survos_deployment": {
                 "$ref": "#/$defs/types/object_null",
                 "properties": {
@@ -11106,6 +11192,9 @@
                 "survos_core": {
                     "$ref": "#/$defs/nodes/survos_core"
                 },
+                "survos_crawler": {
+                    "$ref": "#/$defs/nodes/survos_crawler"
+                },
                 "survos_deployment": {
                     "$ref": "#/$defs/nodes/survos_deployment"
                 },
@@ -11234,6 +11323,9 @@
                 },
                 "survos_core": {
                     "$ref": "#/$defs/nodes/survos_core"
+                },
+                "survos_crawler": {
+                    "$ref": "#/$defs/nodes/survos_crawler"
                 },
                 "survos_deployment": {
                     "$ref": "#/$defs/nodes/survos_deployment"

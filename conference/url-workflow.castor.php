@@ -35,7 +35,7 @@ function url_ctx(): \Castor\Context
     subtitle: 'Places, transitions, a diagram and a URL fetcher, with survos/workflow-extras-bundle',
     author: 'Tac Tacelosky',
 )]
-function deck(): void
+function deck_url_workflow(): void
 {
 }
 

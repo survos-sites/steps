@@ -76,7 +76,7 @@ function _actions_from_current_taskXX(): array
         'Repo' => 'https://github.com/survos-sites/meili',
     ],
 )]
-function deck(): void
+function deck_c_intro(): void
 {
 }
 

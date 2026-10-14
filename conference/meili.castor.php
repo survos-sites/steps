@@ -59,7 +59,7 @@ use Survos\StepBundle\Action\{
         'Repo' => 'https://github.com/survos-sites/meili',
     ],
 )]
-function deck(): void
+function deck_meili(): void
 {
 }
 
