@@ -377,12 +377,12 @@
         ]
     },
     "symfony/twig-bundle": {
-        "version": "7.3",
+        "version": "8.2",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-            "version": "6.4",
-            "ref": "cab5fd2a13a45c266d45a7d9337e28dee6272877"
+            "version": "8.2",
+            "ref": "baa677c6f88ec4af98fd9bab84039e8835e17019"
         },
         "files": [
             "config/packages/twig.yaml",
