@@ -436,12 +436,12 @@
         ]
     },
     "symfony/validator": {
-        "version": "7.3",
+        "version": "8.2",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-            "version": "7.0",
-            "ref": "8c1c4e28d26a124b0bb273f537ca8ce443472bfd"
+            "version": "8.2",
+            "ref": "d49089c43605829ee424e0c92b60c494ff95aef6"
         },
         "files": [
             "config/packages/validator.yaml"
