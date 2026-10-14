@@ -984,7 +984,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         enabled?: bool|Param, // Default: false
  *     },
  *     intl?: bool|array{
- *         enabled?: bool|Param, // Default: false
+ *         enabled?: bool|Param, // Default: true
  *     },
  *     cssinliner?: bool|array{
  *         enabled?: bool|Param, // Default: false
@@ -993,7 +993,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         enabled?: bool|Param, // Default: false
  *     },
  *     string?: bool|array{
- *         enabled?: bool|Param, // Default: false
+ *         enabled?: bool|Param, // Default: true
  *     },
  *     commonmark?: array{
  *         renderer?: array{ // Array of options for rendering HTML.
@@ -1708,6 +1708,101 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     route_prefix?: scalar|Param|null, // URL prefix applied to all routes from this bundle. // Default: ""
  *     locale_prefix?: bool|Param, // Prepend {_locale} (constrained to kernel.enabled_locales) to this bundle's route prefix, e.g. /{_locale}/f instead of /f -- for bundles whose routes are meant to be shared/bookmarked, so the URL itself carries the locale instead of a query param. // Default: false
  * }
+ * @psalm-type KnpMenuConfig = array{
+ *     providers?: array{
+ *         builder_alias?: bool|Param, // Default: true
+ *     },
+ *     twig?: array{
+ *         template?: scalar|Param|null, // Default: "@KnpMenu/menu.html.twig"
+ *     },
+ *     route_voter?: bool|Param, // Default: true
+ *     default_renderer?: scalar|Param|null, // Default: "twig"
+ * }
+ * @psalm-type SurvosTablerConfig = array{
+ *     icons?: array{
+ *         prefix?: scalar|Param|null, // Default: "tabler"
+ *         aliases?: array<string, scalar|Param|null>,
+ *         presets?: array<string, array{ // Default: []
+ *             icon?: scalar|Param|null,
+ *             class?: scalar|Param|null, // Default: ""
+ *         }>,
+ *     },
+ *     app?: array{
+ *         code?: scalar|Param|null, // Default: "my-project"
+ *         title?: scalar|Param|null, // Default: "My Project"
+ *         description?: scalar|Param|null, // Default: ""
+ *         abbr?: scalar|Param|null, // Default: "my<b>Project</b>"
+ *         logo?: scalar|Param|null, // Default: null
+ *         logo_small?: scalar|Param|null, // Default: null
+ *         homepage_route?: scalar|Param|null, // Default: null
+ *         homepage_url?: scalar|Param|null, // Default: null
+ *         tunnel_host?: scalar|Param|null, // Default: "%env(default::TUNNEL_HOST)%"
+ *         local_host?: scalar|Param|null, // Default: "%env(default::APP_BASE_URL)%"
+ *         links?: array{
+ *             github?: scalar|Param|null, // Default: null
+ *             docs?: scalar|Param|null, // Default: null
+ *             sponsor?: scalar|Param|null, // Default: null
+ *             site?: scalar|Param|null, // Default: null
+ *             contact?: scalar|Param|null, // Default: null
+ *         },
+ *         social?: array<string, scalar|Param|null>,
+ *         meta?: array{
+ *             og_image?: scalar|Param|null, // Default: null
+ *             twitter_site?: scalar|Param|null, // Default: null
+ *             theme_color?: scalar|Param|null, // Default: null
+ *         },
+ *         header?: array{
+ *             locale_switcher?: bool|Param, // Default: true
+ *             layout?: "stacked"|"compact"|Param, // stacked: NAVBAR_MENU gets its own row under the brand. compact: brand, every nav slot and the right-hand tools share one row. // Default: "stacked"
+ *             container?: scalar|Param|null, // Default: "container-fluid"
+ *             auth?: array{
+ *                 enabled?: bool|Param, // Default: true
+ *                 show_login?: bool|Param, // Default: true
+ *                 show_user_menu?: bool|Param, // Default: true
+ *                 routes?: array{
+ *                     login?: scalar|Param|null, // Default: "app_login"
+ *                     logout?: scalar|Param|null, // Default: "app_logout"
+ *                     register?: scalar|Param|null, // Default: "app_register"
+ *                     profile?: scalar|Param|null, // Default: "app_profile"
+ *                 },
+ *             },
+ *         },
+ *     },
+ *     favicon?: array{
+ *         enabled?: bool|Param, // Serve a dynamic SVG favicon at /favicon.svg so apps get a useful icon without a favicon-generator workflow. // Default: true
+ *         text?: scalar|Param|null, // 1-2 characters shown on the icon. Defaults to initials derived from app.code. // Default: null
+ *         background?: scalar|Param|null, // Background fill, e.g. a distinct color per environment (prod/wip/dev/test). // Default: "#206bc4"
+ *         foreground?: scalar|Param|null, // Text color. // Default: "#ffffff"
+ *         shape?: "square"|"rounded"|"circle"|Param, // Default: "rounded"
+ *     },
+ *     routes?: array{
+ *         home?: scalar|Param|null, // Default: "app_homepage"
+ *         login?: scalar|Param|null, // Default: null
+ *         logout?: scalar|Param|null, // Default: null
+ *         register?: scalar|Param|null, // Default: null
+ *         profile?: scalar|Param|null, // Default: null
+ *         settings?: scalar|Param|null, // Default: null
+ *         search?: scalar|Param|null, // Default: null
+ *     },
+ *     debug?: array{
+ *         menu_slots?: bool|Param, // Default: false
+ *         admin_toolbar?: bool|Param, // Render the orange admin menu toolbar (navbar_admin) for admins/debug. Defaults to the TABLER_ADMIN_TOOLBAR env var (1); developers can set TABLER_ADMIN_TOOLBAR=0 in .env.local to hide it. // Default: "%env(bool:TABLER_ADMIN_TOOLBAR)%"
+ *     },
+ *     options?: array{
+ *         theme?: scalar|Param|null, // Default: "tabler"
+ *         layout?: "horizontal"|"dashboard"|"vertical"|"condensed"|Param, // Default: "horizontal"
+ *         dark_mode?: bool|Param, // Default: false
+ *         show_locale_dropdown?: bool|Param, // Default: true
+ *     },
+ *     auto_breadcrumbs?: bool|Param, // Build the BREADCRUMB slot from the page's entities: each object option whose class has a #[RouteMeta(entity:, purpose: Show)] route becomes a crumb. See BreadcrumbMenuSubscriber. // Default: false
+ *     menu_renderer?: "knp"|"survos"|Param, // How tabler_menu() draws menus. knp: KnpMenu templates (@SurvosTabler/menu/*). survos: survos/menu-bundle themes (@SurvosTabler/menu_theme/*); register SurvosMenuBundle first. Same listeners either way. // Default: "knp"
+ *     menu_themes?: array<string, scalar|Param|null>,
+ *     menu_options?: array<string, scalar|Param|null>,
+ *     impersonate?: array<string, scalar|Param|null>,
+ *     routes_enabled?: bool|Param, // Set false to manage this bundle's routes manually in your app. Bundles exposing sensitive routes (e.g. running console commands) should default this off. // Default: true
+ *     route_prefix?: scalar|Param|null, // URL prefix applied to all routes from this bundle. // Default: ""
+ *     locale_prefix?: bool|Param, // Prepend {_locale} (constrained to kernel.enabled_locales) to this bundle's route prefix, e.g. /{_locale}/f instead of /f -- for bundles whose routes are meant to be shared/bookmarked, so the URL itself carries the locale instead of a query param. // Default: false
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -1748,6 +1843,8 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     ux_icons?: UxIconsConfig,
  *     survos_kit?: SurvosKitConfig,
  *     survos_field?: SurvosFieldConfig,
+ *     knp_menu?: KnpMenuConfig,
+ *     survos_tabler?: SurvosTablerConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -1792,6 +1889,8 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         ux_icons?: UxIconsConfig,
  *         survos_kit?: SurvosKitConfig,
  *         survos_field?: SurvosFieldConfig,
+ *         knp_menu?: KnpMenuConfig,
+ *         survos_tabler?: SurvosTablerConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -1833,6 +1932,8 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         ux_icons?: UxIconsConfig,
  *         survos_kit?: SurvosKitConfig,
  *         survos_field?: SurvosFieldConfig,
+ *         knp_menu?: KnpMenuConfig,
+ *         survos_tabler?: SurvosTablerConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -1876,6 +1977,8 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         ux_icons?: UxIconsConfig,
  *         survos_kit?: SurvosKitConfig,
  *         survos_field?: SurvosFieldConfig,
+ *         knp_menu?: KnpMenuConfig,
+ *         survos_tabler?: SurvosTablerConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,

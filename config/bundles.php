@@ -27,4 +27,7 @@ return [
     Survos\AtlasBundle\SurvosAtlasBundle::class => ['all' => true],
     Survos\Kit\SurvosKitBundle::class => ['all' => true],
     Survos\FieldBundle\SurvosFieldBundle::class => ['all' => true],
+    Knp\Bundle\MenuBundle\KnpMenuBundle::class => ['all' => true],
+    Survos\MenuBundle\SurvosMenuBundle::class => ['all' => true],
+    Survos\TablerBundle\SurvosTablerBundle::class => ['all' => true],
 ];

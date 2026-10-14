@@ -1,0 +1,20 @@
+{% extends "@SurvosTabler/layout/base.html.twig" %}
+
+{% set appShortName = 'Steps' %}
+
+{% block logo_mini 'Steps' %}
+{% block logo_large 'Steps' %}
+
+{% block title 'Steps' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block content %}
+    {% block body %}{% endblock %}
+{% endblock %}

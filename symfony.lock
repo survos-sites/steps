@@ -59,6 +59,9 @@
             "config/routes/easyadmin.yaml"
         ]
     },
+    "knplabs/knp-menu-bundle": {
+        "version": "v3.8.0"
+    },
     "meilisearch/search-bundle": {
         "version": "0.15",
         "recipe": {
@@ -143,8 +146,14 @@
     "survos/kit-bundle": {
         "version": "2.41.9"
     },
+    "survos/menu-bundle": {
+        "version": "2.42.7"
+    },
     "survos/step-bundle": {
         "version": "dev-main"
+    },
+    "survos/tabler-bundle": {
+        "version": "2.42.9"
     },
     "symfony/asset-mapper": {
         "version": "8.2",

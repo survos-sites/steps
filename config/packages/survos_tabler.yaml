@@ -1,0 +1,11 @@
+survos_tabler:
+    routes:
+        home: app_home
+    options:
+        theme: tabler
+    app:
+        code: steps
+        title: 'Steps'
+        description: 'Build an application step by step; the steps become the instructions, slides and article.'
+        abbr: 'Steps'
+        homepage_route: app_home
