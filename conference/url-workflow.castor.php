@@ -6,7 +6,7 @@
 declare(strict_types=1);
 
 use Castor\Attribute\AsTask;
-use Survos\StepBundle\Action\{Bash, ComposerRequire, Console, DisplayArtifact, FileWrite};
+use Survos\StepBundle\Action\{Artifact, Bash, ComposerRequire, Console, DisplayArtifact, FileWrite};
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Runtime\RunStep;
 
@@ -45,7 +45,7 @@ function deck_url_workflow(): void
     description: 'The Symfony CLI creates the webapp skeleton on the next development release.',
     bullets: ['--version=next: Symfony 8.2-dev, which has native workflow attributes', '--webapp: Doctrine, Twig, Messenger, the profiler'],
     actions: [
-        new Bash('symfony new --version=next --webapp --no-git --no-interaction --dir=' . __DIR__ . '/../../demo/' . URL_DEMO_NAME),
+        new Bash('symfony new ' . URL_DEMO_NAME . ' --version=next --webapp --no-git --no-interaction', cwd: __DIR__ . '/../../demo'),
     ]
 )]
 function url_new(): void { RunStep::run(_actions_from_current_task(), url_ctx()); }
@@ -209,7 +209,8 @@ function url_workflow(): void { RunStep::run(_actions_from_current_task(), url_c
     bullets: ['bin/console workflow:dump url', 'mermaid for documents, PNG (via Graphviz) for slides'],
     actions: [
         new Console('workflow:dump', ['url', '--dump-format=mermaid'], a: 'url-workflow.mmd', prefer: 'php'),
-        new Bash('bin/console workflow:dump url | dot -Tpng -o ' . __DIR__ . '/../public/artifacts/url-workflow/url-workflow.png'),
+        new Bash('bin/console workflow:dump url | dot -Tpng -o url-workflow.png'),
+        new Artifact('url-workflow.png', 'url-workflow.png', type: 'image/png'),
         new DisplayArtifact('url-workflow.png', note: 'Discovered → Validated → Fetched, or Discovered → Invalid'),
     ]
 )]
@@ -371,6 +372,7 @@ function url_migrate(): void { RunStep::run(_actions_from_current_task(), url_ct
     bullets: ['https://example.com → fetched, with status code and size', 'not-a-url → invalid'],
     actions: [
         new Console('app:load-urls', a: 'load-urls.txt', prefer: 'php'),
+        new DisplayArtifact('load-urls.txt', lang: 'text', note: 'Output'),
     ]
 )]
 function url_run(): void { RunStep::run(_actions_from_current_task(), url_ctx()); }
