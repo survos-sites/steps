@@ -1,2 +1,2 @@
-framework:
-    lock: '%env(LOCK_DSN)%'
+# yaml-language-server: $schema=../schema.json
+lock: '%env(LOCK_DSN)%'
