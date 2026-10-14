@@ -3,6 +3,9 @@
 
 declare(strict_types=1);
 
+// Castor changes into the context's working directory, so getcwd(), fs() and relative paths follow it.
+defined('CASTOR_USE_CHDIR') || define('CASTOR_USE_CHDIR', true);
+
 define('INPUT_DIR', __DIR__ . '/../inputs'); // absolute path to the 'steps' Symfony app
 const CASTOR_NAMESPACE = null;
 
