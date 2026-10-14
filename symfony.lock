@@ -199,12 +199,12 @@
         ]
     },
     "symfony/form": {
-        "version": "7.3",
+        "version": "8.2",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-            "version": "7.2",
-            "ref": "7d86a6723f4a623f59e2bf966b6aad2fc461d36b"
+            "version": "8.2",
+            "ref": "cd90fb049c59d5577f0177bc0badc6d2970eca89"
         },
         "files": [
             "config/packages/csrf.yaml"
