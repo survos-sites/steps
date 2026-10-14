@@ -1,5 +1,5 @@
 <?php
-// file: castor/url-workflow.castor.php
+// file: conference/url-workflow.castor.php
 // Build a Symfony 8.2 app with a native workflow, step by step, from nothing.
 // Run:  CODE=url-workflow castor build        (no server is started)
 

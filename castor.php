@@ -97,9 +97,17 @@ $artifactsDir = $exporter->artifactsDir(project_name());
 // -----------------------------------------------------------------------------
 $castorFileFromEnv = null;
 if (project_name()) {
-    $file = __DIR__ . sprintf("/castor/%s.castor.php", project_name());
-    if (!is_file($file)) {
-        fwrite(STDERR, "Missing deck: {$file}\n");
+    // conference/ is where the slideshow looks for decks; castor/ holds older, build-only decks
+    $file = null;
+    foreach (['conference', 'castor'] as $dir) {
+        $candidate = __DIR__ . sprintf("/%s/%s.castor.php", $dir, project_name());
+        if (is_file($candidate)) {
+            $file = $candidate;
+            break;
+        }
+    }
+    if (null === $file) {
+        fwrite(STDERR, sprintf("Missing deck: %s.castor.php in conference/ or castor/\n", project_name()));
         exit(1);
     }
     $castorFileFromEnv = $file;
