@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../schema.json
 doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
@@ -10,7 +11,7 @@ doctrine:
         profiling_collect_backtrace: '%kernel.debug%'
     orm:
         validate_xml_mapping: true
-        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        naming_strategy: doctrine.orm.naming_strategy.underscore
         identity_generation_preferences:
             Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
         auto_mapping: true
@@ -21,8 +22,6 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
-        controller_resolver:
-            auto_mapping: false
 
 when@test:
     doctrine:
@@ -40,10 +39,9 @@ when@prod:
                 type: pool
                 pool: doctrine.result_cache_pool
 
-    framework:
-        cache:
-            pools:
-                doctrine.result_cache_pool:
-                    adapter: cache.app
-                doctrine.system_cache_pool:
-                    adapter: cache.system
+    cache:
+        pools:
+            doctrine.result_cache_pool:
+                adapter: cache.app
+            doctrine.system_cache_pool:
+                adapter: cache.system
