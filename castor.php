@@ -83,7 +83,8 @@ if (is_file($listenerFilename)) {
 }
 
 //function artifacts_dir(): string { return CastorStepExporter::artifactsDir(project_name()); }
-function artifacts_dir(): string { return CastorStepExporter::ARTIFACT_ROOT . project_name() . '/'; }
+// absolute, in this (slideshow) app: builds run in the demo app's directory, but the slideshow reads artifacts from here
+function artifacts_dir(): string { return STEPS_PROJECT_DIR . '/' . CastorStepExporter::ARTIFACT_ROOT . project_name() . '/'; }
 function artifact_path(string $path): string { return artifacts_dir() .  $path; }
 function artifact(string $path): string { return file_get_contents(artifact_path($path)); }
 
