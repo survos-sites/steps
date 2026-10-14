@@ -448,12 +448,12 @@
         ]
     },
     "symfony/web-profiler-bundle": {
-        "version": "7.3",
+        "version": "8.2",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-            "version": "7.3",
-            "ref": "a363460c1b0b4a4d0242f2ce1a843ca0f6ac9026"
+            "version": "8.2",
+            "ref": "90b638a9d099592feea4d14ad2a654e4f45b71dd"
         },
         "files": [
             "config/packages/web_profiler.yaml",

@@ -1,11 +1,20 @@
+# yaml-language-server: $schema=../schema.json
 when@dev:
     web_profiler:
         toolbar: false
 
     framework:
         profiler:
-            collect_serializer_data: true
+            collect: true
+            excluded_paths:
+                - '^/\.well-known/'
+                - '^/favicon\.ico$'
 
 when@test:
     framework:
+<<<<<<< ours
         profiler: { collect: false }
+=======
+        profiler:
+            collect: false
+>>>>>>> theirs
