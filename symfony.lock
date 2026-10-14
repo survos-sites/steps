@@ -311,12 +311,12 @@
         }
     },
     "symfony/property-info": {
-        "version": "7.3",
+        "version": "8.2",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-            "version": "7.3",
-            "ref": "dae70df71978ae9226ae915ffd5fad817f5ca1f7"
+            "version": "8.2",
+            "ref": "d2be7c7db8a2baaeee79138b20cacc54850cd974"
         },
         "files": [
             "config/packages/property_info.yaml"
