@@ -199,7 +199,7 @@ function url_workflow(): void { RunStep::run(_actions_from_current_task(), url_c
     description: 'Symfony can draw any workflow it has registered. The same definition we just wrote produces this.',
     bullets: ['bin/console workflow:dump url', 'mermaid for documents, PNG (via Graphviz) for slides'],
     actions: [
-        new Console('workflow:dump', ['url', '--dump-format=mermaid'], a: 'url-workflow.mmd'),
+        new Console('workflow:dump', ['url', '--dump-format=mermaid'], a: 'url-workflow.mmd', prefer: 'php'),
         new Bash('bin/console workflow:dump url | dot -Tpng -o ' . __DIR__ . '/../public/artifacts/url-workflow/url-workflow.png'),
     ]
 )]
@@ -348,8 +348,8 @@ function url_page(): void { RunStep::run(_actions_from_current_task(), url_ctx()
     'The database',
     description: 'A migration for the Url table, then run it.',
     actions: [
-        new Console('make:migration'),
-        new Console('doctrine:migrations:migrate'),
+        new Console('make:migration', ['-n'], prefer: 'php'),
+        new Console('doctrine:migrations:migrate', ['-n'], prefer: 'php'),
     ]
 )]
 function url_migrate(): void { RunStep::run(_actions_from_current_task(), url_ctx()); }
@@ -360,7 +360,7 @@ function url_migrate(): void { RunStep::run(_actions_from_current_task(), url_ct
     description: 'One valid URL and one that is not. Each ends in the place its transitions led to.',
     bullets: ['https://example.com → fetched, with status code and size', 'not-a-url → invalid'],
     actions: [
-        new Console('app:load-urls', a: 'load-urls.txt'),
+        new Console('app:load-urls', a: 'load-urls.txt', prefer: 'php'),
     ]
 )]
 function url_run(): void { RunStep::run(_actions_from_current_task(), url_ctx()); }
