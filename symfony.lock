@@ -266,12 +266,12 @@
         }
     },
     "symfony/messenger": {
-        "version": "7.3",
+        "version": "8.2",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-            "version": "6.0",
-            "ref": "ba1ac4e919baba5644d31b57a3284d6ba12d52ee"
+            "version": "8.2",
+            "ref": "bb8fb21d3a358ce86776af1fa8edf1c494b458c2"
         },
         "files": [
             "config/packages/messenger.yaml"
