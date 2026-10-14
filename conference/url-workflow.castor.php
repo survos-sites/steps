@@ -6,7 +6,7 @@
 declare(strict_types=1);
 
 use Castor\Attribute\AsTask;
-use Survos\StepBundle\Action\{Bash, ComposerRequire, Console, FileWrite};
+use Survos\StepBundle\Action\{Bash, ComposerRequire, Console, DisplayArtifact, FileWrite};
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Runtime\RunStep;
 
@@ -201,6 +201,7 @@ function url_workflow(): void { RunStep::run(_actions_from_current_task(), url_c
     actions: [
         new Console('workflow:dump', ['url', '--dump-format=mermaid'], a: 'url-workflow.mmd', prefer: 'php'),
         new Bash('bin/console workflow:dump url | dot -Tpng -o ' . __DIR__ . '/../public/artifacts/url-workflow/url-workflow.png'),
+        new DisplayArtifact('url-workflow.png', note: 'Discovered → Validated → Fetched, or Discovered → Invalid'),
     ]
 )]
 function url_diagram(): void { RunStep::run(_actions_from_current_task(), url_ctx()); }
@@ -348,8 +349,8 @@ function url_page(): void { RunStep::run(_actions_from_current_task(), url_ctx()
     'The database',
     description: 'A migration for the Url table, then run it.',
     actions: [
-        new Console('make:migration', ['-n'], prefer: 'php'),
-        new Console('doctrine:migrations:migrate', ['-n'], prefer: 'php'),
+        new Console('make:migration', prefer: 'php'),
+        new Console('doctrine:migrations:migrate', prefer: 'php'),
     ]
 )]
 function url_migrate(): void { RunStep::run(_actions_from_current_task(), url_ctx()); }
