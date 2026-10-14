@@ -110,6 +110,9 @@
             "config/packages/ansi_to_html.yaml"
         ]
     },
+    "survos/atlas-bundle": {
+        "version": "2.41.9"
+    },
     "survos/barcode-bundle": {
         "version": "2.0",
         "recipe": {
@@ -128,11 +131,17 @@
     "survos/deployment-bundle": {
         "version": "2.0.25"
     },
+    "survos/field-bundle": {
+        "version": "2.41.9"
+    },
     "survos/import-bundle": {
         "version": "2.0.27"
     },
     "survos/jsonl-bundle": {
         "version": "dev-main"
+    },
+    "survos/kit-bundle": {
+        "version": "2.41.9"
     },
     "survos/step-bundle": {
         "version": "dev-main"

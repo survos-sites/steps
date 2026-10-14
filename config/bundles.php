@@ -24,4 +24,7 @@ return [
     Survos\JsonlBundle\SurvosJsonlBundle::class => ['all' => true],
     Survos\ImportBundle\SurvosImportBundle::class => ['all' => true],
     Symfony\UX\Icons\UXIconsBundle::class => ['all' => true],
+    Survos\AtlasBundle\SurvosAtlasBundle::class => ['all' => true],
+    Survos\Kit\SurvosKitBundle::class => ['all' => true],
+    Survos\FieldBundle\SurvosFieldBundle::class => ['all' => true],
 ];
