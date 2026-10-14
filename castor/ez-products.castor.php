@@ -29,10 +29,8 @@ use Survos\StepBundle\Action\{
 };
 
 const PRODUCT_SKELETON_PATH = 'vendor/survos/ez-bundle/app';
-const PRODUCT_DEMO_DIR = '../demos/products';
-
-#[AsContext(name: 'ezp')]
-function ctx_ezp(): Context { return new Context(workingDirectory: PRODUCT_DEMO_DIR); }
+const PRODUCT_DEMO_NAME = 'ez-products-demo';
+define('PRODUCT_DEMO_DIR', dirname(__DIR__, 2) . '/demo/' . PRODUCT_DEMO_NAME); // absolute: must match demo_name() in castor.php
 
 #[AsTask('new', namespace: 'ezp', description: 'Create Symfony project using the Symfony CLI')]
 #[Step(
@@ -40,7 +38,7 @@ function ctx_ezp(): Context { return new Context(workingDirectory: PRODUCT_DEMO_
         '--webapp install common packages'
     ],
     actions: [
-        new Bash('symfony new --webapp --dir=' . PRODUCT_DEMO_DIR)
+        new Bash('symfony new --webapp --dir=' . __DIR__ . '/../../demo/' . PRODUCT_DEMO_NAME)
     ]
 )]
 function ezp_new(): void { RunStep::run(_actions_from_current_task(), context()); }
@@ -48,19 +46,17 @@ function ezp_new(): void { RunStep::run(_actions_from_current_task(), context())
 /**
  * setup — require bundles, create dirs, start server
  */
-#[AsTask('setup', description: 'Setup bundles and directories, start server')]
+#[AsTask('setup', description: 'Setup bundles and directories')]
 #[Step(
     'Install packages & prepare folders',
-    description: 'Require needed bundles, ensure src/* folders exist, and start the Symfony server.',
+    description: 'Require needed bundles and ensure src/* folders exist.',
     bullets: [
         'require bundles:  qr-code, ez, easyadmin, ux_icons',
         'Create src/{Command,Entity,Repository} and templates/',
-        'Start the local server in the background',
     ],
     actions: [
         new ComposerRequire(['endroid/qr-code-bundle','survos/ez-bundle']),
         new ComposerRequire(['easycorp/easyadmin-bundle','symfony/ux-icons']),
-        new Bash('symfony server:start -d'),
     ]
 )]
 function setup(): void { RunStep::run(_actions_from_current_task(), context()); }
