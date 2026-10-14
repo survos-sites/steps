@@ -30,6 +30,15 @@ function url_ctx(): \Castor\Context
     return context()->withWorkingDirectory($dir);
 }
 
+#[\Survos\StepBundle\Metadata\Deck(
+    title: 'A native Symfony workflow, from nothing',
+    subtitle: 'Places, transitions, a diagram and a URL fetcher, with survos/workflow-extras-bundle',
+    author: 'Tac Tacelosky',
+)]
+function deck(): void
+{
+}
+
 #[AsTask('new', description: 'Create the Symfony project')]
 #[Step(
     'A fresh Symfony 8.2 application',

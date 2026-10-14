@@ -46,6 +46,23 @@ use Survos\StepBundle\Action\{
     BrowserVisit
 };
 
+#[\Survos\StepBundle\Metadata\Deck(
+    title: 'Keyword, Facet and Semantic Searching with Meilisearch and Symfony',
+    author: 'Tac Tacelosky',
+    logo: 'sfcon_logo.svg',
+    closing: 'THANK YOU',
+    contact: [
+        'SymfonyConnect' => '@tacman',
+        'Slack' => '@Tac',
+        'Email' => 'tacman@gmail.com',
+        'Demo' => 'https://meili.survos.com',
+        'Repo' => 'https://github.com/survos-sites/meili',
+    ],
+)]
+function deck(): void
+{
+}
+
 #[AsTask(name: 'agenda', description: "The nitty gritty")]
 #[Step(
 //    description: 'The next 30 minutes...',

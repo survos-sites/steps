@@ -63,6 +63,23 @@ function _actions_from_current_taskXX(): array
 /**
  * High-level agenda (today's journey).
  */
+#[\Survos\StepBundle\Metadata\Deck(
+    title: 'Keyword, Facet and Semantic Searching with Meilisearch and Symfony',
+    author: 'Tac Tacelosky',
+    logo: 'sfcon_logo.svg',
+    closing: 'THANK YOU',
+    contact: [
+        'SymfonyConnect' => '@tacman',
+        'Slack' => '@Tac',
+        'Email' => 'tacman@gmail.com',
+        'Demo' => 'https://meili.survos.com',
+        'Repo' => 'https://github.com/survos-sites/meili',
+    ],
+)]
+function deck(): void
+{
+}
+
 #[AsTask(name: 'agenda', description: 'SymfonyCon Amsterdam 2025')]
 #[Step(
     description: "Semantic & hybrid search with MeiliSearch",
