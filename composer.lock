@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4b14b1208e19d93d734d63667b5951dd",
+    "content-hash": "ffbbf7edf43bb6fda1a3b39572071a7a",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -4828,71 +4828,6 @@
                 }
             ],
             "time": "2026-10-13T13:10:00+00:00"
-        },
-        {
-            "name": "survos/installer",
-            "version": "2.1.7",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/survos/installer.git",
-                "reference": "22921903ef6ba41e749da1dad23ef8d1e564550c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/survos/installer/zipball/22921903ef6ba41e749da1dad23ef8d1e564550c",
-                "reference": "22921903ef6ba41e749da1dad23ef8d1e564550c",
-                "shasum": ""
-            },
-            "require": {
-                "composer-plugin-api": "^2.0",
-                "php": "^8.4",
-                "symfony/finder": "^7.4|^8.0",
-                "symfony/yaml": "^7.4|^8.0"
-            },
-            "require-dev": {
-                "composer/composer": "^2.0",
-                "roave/security-advisories": "dev-latest"
-            },
-            "suggest": {
-                "roave/security-advisories": "Avoids installation of package versions with vulnerabilities"
-            },
-            "type": "composer-plugin",
-            "extra": {
-                "class": "Survos\\Installer\\Installer",
-                "symfony": {
-                    "require": "^7.4|^8.0"
-                },
-                "branch-alias": {
-                    "dev-main": "1.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Survos\\Installer\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Tac Tacelosky",
-                    "email": "tacman@gmail.com"
-                }
-            ],
-            "description": "Composer plugin for installing configuration files and updating .env and .gitignore, based on survos/installer",
-            "support": {
-                "source": "https://github.com/survos/installer/tree/2.1.7"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/kbond",
-                    "type": "github"
-                }
-            ],
-            "abandoned": true,
-            "time": "2025-12-09T15:18:29+00:00"
         },
         {
             "name": "survos/jsonl-bundle",

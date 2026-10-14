@@ -25,7 +25,6 @@
         "survos/barcode-bundle": "^2.0.117",
         "survos/core-bundle": "^2.0.124",
         "survos/import-bundle": "^2.0.124",
-        "survos/installer": "^2.1.7",
         "survos/jsonl-bundle": "^2.0.124",
         "survos/step-bundle": "^2.0.83",
         "symfony/asset": "^7.4|^8.0.6",
@@ -64,7 +63,6 @@
     "config": {
         "allow-plugins": {
             "php-http/discovery": true,
-            "survos/installer": true,
             "symfony/flex": true,
             "symfony/runtime": true
         },
