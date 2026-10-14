@@ -12,9 +12,5 @@ when@dev:
 
 when@test:
     framework:
-<<<<<<< ours
-        profiler: { collect: false }
-=======
         profiler:
             collect: false
->>>>>>> theirs
