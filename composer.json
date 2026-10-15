@@ -16,6 +16,7 @@
         "doctrine/orm": "^3.6.2",
         "easycorp/easyadmin-bundle": "^5.0",
         "jolicode/castor": "dev-main",
+        "league/commonmark": "^2.10",
         "league/csv": "^9.28.0",
         "meilisearch/search-bundle": "dev-main",
         "nyholm/psr7": "^1.8",

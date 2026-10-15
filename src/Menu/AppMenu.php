@@ -33,6 +33,7 @@ final class AppMenu
         foreach ($this->exporter->listSlideshows() as $deck) {
             $code = $deck['code'];
             $project = $this->addSubmenu($projects, $code, translationDomain: false);
+            $this->add($project, 'survos_step_article', ['code' => $code], label: 'Article', translationDomain: false);
             $this->add($project, 'survos_step_slideshow', ['code' => $code], label: 'Slideshow', translationDomain: false);
             $this->add($project, 'survos_step_slides', ['code' => $code], label: 'Overview', translationDomain: false);
             $this->add($project, 'survos_step_markdown', ['code' => $code], label: 'Markdown', translationDomain: false);
