@@ -5220,16 +5220,16 @@
         },
         {
             "name": "survos/step-bundle",
-            "version": "2.41.9",
+            "version": "2.42.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/step-bundle.git",
-                "reference": "2f1bcb04ba94bc3df673ab1117df58a24cb5ec40"
+                "reference": "73e437e7f89e14a8b850ca068d78632aeb7e79f0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/survos/step-bundle/zipball/2f1bcb04ba94bc3df673ab1117df58a24cb5ec40",
-                "reference": "2f1bcb04ba94bc3df673ab1117df58a24cb5ec40",
+                "url": "https://api.github.com/repos/survos/step-bundle/zipball/73e437e7f89e14a8b850ca068d78632aeb7e79f0",
+                "reference": "73e437e7f89e14a8b850ca068d78632aeb7e79f0",
                 "shasum": ""
             },
             "require": {
@@ -5264,7 +5264,7 @@
             ],
             "support": {
                 "issues": "https://github.com/survos/step-bundle/issues",
-                "source": "https://github.com/survos/step-bundle/tree/2.41.9"
+                "source": "https://github.com/survos/step-bundle/tree/2.42.12"
             },
             "funding": [
                 {
@@ -5272,7 +5272,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-13T13:10:25+00:00"
+            "time": "2026-10-14T19:20:46+00:00"
         },
         {
             "name": "survos/tabler-bundle",
@@ -14418,16 +14418,16 @@
         },
         {
             "name": "survos/crawler-bundle",
-            "version": "2.41.9",
+            "version": "2.42.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/crawler-bundle.git",
-                "reference": "b0591cf6d66ab43e69b9d16b77b79e58c66fefa6"
+                "reference": "617350cb28633cbb258e66f972df34e13a64816f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/survos/crawler-bundle/zipball/b0591cf6d66ab43e69b9d16b77b79e58c66fefa6",
-                "reference": "b0591cf6d66ab43e69b9d16b77b79e58c66fefa6",
+                "url": "https://api.github.com/repos/survos/crawler-bundle/zipball/617350cb28633cbb258e66f972df34e13a64816f",
+                "reference": "617350cb28633cbb258e66f972df34e13a64816f",
                 "shasum": ""
             },
             "require": {
@@ -14485,7 +14485,7 @@
             ],
             "support": {
                 "issues": "https://github.com/survos/crawler-bundle/issues",
-                "source": "https://github.com/survos/crawler-bundle/tree/2.41.9"
+                "source": "https://github.com/survos/crawler-bundle/tree/2.42.11"
             },
             "funding": [
                 {
@@ -14493,7 +14493,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-13T13:10:15+00:00"
+            "time": "2026-10-14T19:18:58+00:00"
         },
         {
             "name": "survos/deployment-bundle",

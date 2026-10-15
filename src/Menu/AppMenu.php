@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Menu;
 
+use Survos\MenuBundle\Attribute\AsMenuListener;
+use Survos\MenuBundle\Event\MenuEvent;
 use Survos\MenuBundle\MenuSlot;
 use Survos\StepBundle\Service\CastorStepExporter;
-use Survos\TablerBundle\Event\MenuEvent;
 use Survos\TablerBundle\Menu\MenuBuilderTrait;
-use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
 /**
  * The top menu: one entry per project (a deck, as the slideshow calls it), then the tools.
@@ -22,7 +22,7 @@ final class AppMenu
     ) {
     }
 
-    #[AsEventListener(event: MenuSlot::NAVBAR_MENU)]
+    #[AsMenuListener(MenuSlot::NAVBAR_MENU)]
     public function navbarMenu(MenuEvent $event): void
     {
         $menu = $event->menu;
