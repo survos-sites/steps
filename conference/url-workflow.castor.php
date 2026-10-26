@@ -377,11 +377,59 @@ function url_migrate(): void { RunStep::run(_actions_from_current_task(), url_ct
 )]
 function url_run(): void { RunStep::run(_actions_from_current_task(), url_ctx()); }
 
+#[AsTask('browser', description: 'A browser test, and a screenshot')]
+#[Step(
+    'A browser test, and a screenshot',
+    description: 'A real browser looks at the page. No web server runs: the browser\'s requests are answered by the application\'s own kernel, so the test sees exactly what the app serves.',
+    bullets: [
+        'zenstruck/browser drives Playwright; playwright-symfony routes its requests into the kernel',
+        'The test environment points at the same SQLite file, so the table has the rows we loaded',
+        'takeScreenshot() saves the page as an image',
+    ],
+    actions: [
+        new ComposerRequire(['zenstruck/browser', 'playwright-php/playwright-symfony'], dev: true),
+        new Bash('vendor/bin/playwright-install chromium', note: 'Downloads Chromium for Playwright (about 600 MB, once per machine).'),
+        new FileWrite('.env.test.local', <<<'END'
+DATABASE_URL="sqlite:///%kernel.project_dir%/var/url-demo.db"
+END, a: 'env.test.local'),
+        new FileWrite('tests/HomeTest.php', <<<'END'
+<?php
+
+namespace App\Tests;
+
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Zenstruck\Browser\Test\HasBrowser;
+
+final class HomeTest extends KernelTestCase
+{
+    use HasBrowser;
+
+    public function testTheUrlTable(): void
+    {
+        // A real browser, but no web server: its requests are answered by this app's own kernel.
+        $this->playwrightBrowser()
+            ->visit('/')
+            ->assertSeeIn('h1', 'URL workflow')
+            ->assertSee('https://example.com')
+            ->assertSee('fetched')
+            ->assertSee('invalid')
+            ->takeScreenshot('home.png')
+        ;
+    }
+}
+END, a: 'HomeTest.php'),
+        new Bash('php bin/phpunit tests/HomeTest.php'),
+        new Artifact('var/browser/screenshots/home.png', 'home.png', type: 'image/png'),
+        new DisplayArtifact('var/browser/screenshots/home.png', note: 'The page, as the browser saw it'),
+    ]
+)]
+function url_browser(): void { RunStep::run(_actions_from_current_task(), url_ctx()); }
+
 #[AsTask('build', description: 'Build the whole demo (no server)')]
 #[Step(
     'One-shot build',
     description: 'Every step in order.',
-    bullets: ['new → require → entity → places → workflow → diagram → continuation → command → page → migrate → run'],
+    bullets: ['new → require → entity → places → workflow → diagram → continuation → command → page → migrate → run → browser'],
 )]
 function url_build(): void
 {
@@ -396,4 +444,5 @@ function url_build(): void
     url_page();
     url_migrate();
     url_run();
+    url_browser();
 }
