@@ -25,7 +25,6 @@ use Survos\StepBundle\Action\{
     Bash,
     CopyFile,
     DisplayCode,
-    BrowserVisit
 };
 
 const PRODUCT_SKELETON_PATH = 'vendor/survos/ez-bundle/app';
@@ -170,7 +169,7 @@ function load_data(): void { RunStep::run(_actions_from_current_task(), context(
     description: 'Launch the app at the requested path using the Symfony CLI.',
     actions: [
         new Bash('symfony open:local --path=${path}'),
-        new BrowserVisit('${path}', host: 'http://127.0.0.1:8000'),
+        new Bash('open http://127.0.0.1:8000${path}', run: false),
     ]
 )]
 function open(#[AsArgument] string $path = '/'): void { RunStep::run(_actions_from_current_task(), context()); }

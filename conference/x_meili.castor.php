@@ -43,7 +43,6 @@ use Survos\StepBundle\Action\{
     ImportmapRequire,
     CopyFile,
     DisplayCode,
-    BrowserVisit
 };
 
 /**
@@ -115,7 +114,7 @@ function showtime_search_modes(): void
             style: 'callout',
             msg: 'These are ideas, not exact keywords'
         ),
-        new BrowserVisit(path: '/', host: 'https://meili.survos.com/meili/search/embedder/meili_product/product')
+        new Bash('open https://meili.survos.com/meili/search/embedder/meili_product/product', run: false)
     ]
 )]
 function showtime_semantic(): void

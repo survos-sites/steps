@@ -43,7 +43,6 @@ use Survos\StepBundle\Action\{
     ImportmapRequire,
     CopyFile,
     DisplayCode,
-    BrowserVisit
 };
 
 #[\Survos\StepBundle\Metadata\Deck(
@@ -78,8 +77,8 @@ function deck_meili(): void
             "Command Overview",
             "Production Configuration",
         ]),
-        new BrowserVisit('/', 'http://localhost:7700/', a: 'meili-demo-meili-dash.png'),
-        new BrowserVisit('/', 'http://localhost:24900/ins/0/index/dummy_product/documents', a: 'meili-demo-meili-dash.png'),
+        new Bash('open http://localhost:7700/', run: false),
+        new Bash('open http://localhost:24900/ins/0/index/dummy_product/documents', run: false),
 
     ]
 )]

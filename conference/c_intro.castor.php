@@ -46,7 +46,6 @@ use Survos\StepBundle\Action\{
     ImportmapRequire,
     CopyFile,
     DisplayCode,
-    BrowserVisit
 };
 
 /**
@@ -167,7 +166,7 @@ function install_meili(): void
             msg: 'Each dataset uses the same pattern: Doctrine entity → Meili index → search UI'
         ),
 
-        new BrowserVisit('/', 'https://meili.survos.com/meili/search/index/meili_product', a: 'meili-demo.png'),
+        new Bash('open https://meili.survos.com/meili/search/index/meili_product', run: false),
     ]
 )]
 function showtime_datasets(): void
