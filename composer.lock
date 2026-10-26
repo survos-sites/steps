@@ -5642,19 +5642,20 @@
         },
         {
             "name": "survos/step-bundle",
-            "version": "2.42.12",
+            "version": "2.42.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/step-bundle.git",
-                "reference": "73e437e7f89e14a8b850ca068d78632aeb7e79f0"
+                "reference": "f10cd2d27f6cd00597922cd5057bc6710b5bb9fb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/survos/step-bundle/zipball/73e437e7f89e14a8b850ca068d78632aeb7e79f0",
-                "reference": "73e437e7f89e14a8b850ca068d78632aeb7e79f0",
+                "url": "https://api.github.com/repos/survos/step-bundle/zipball/f10cd2d27f6cd00597922cd5057bc6710b5bb9fb",
+                "reference": "f10cd2d27f6cd00597922cd5057bc6710b5bb9fb",
                 "shasum": ""
             },
             "require": {
+                "league/commonmark": "^2.7",
                 "php": "^8.5",
                 "survos/jsonl-bundle": "^2.5",
                 "survos/kit-bundle": "^2.5",
@@ -5686,7 +5687,7 @@
             ],
             "support": {
                 "issues": "https://github.com/survos/step-bundle/issues",
-                "source": "https://github.com/survos/step-bundle/tree/2.42.12"
+                "source": "https://github.com/survos/step-bundle/tree/2.42.14"
             },
             "funding": [
                 {
@@ -5694,7 +5695,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-14T19:20:46+00:00"
+            "time": "2026-10-15T09:29:50+00:00"
         },
         {
             "name": "survos/tabler-bundle",
