@@ -341,7 +341,7 @@ END, a: 'HomeController.php'),
 {% block title %}URL workflow{% endblock %}
 {% block body %}
 <h1>URL workflow</h1>
-<p>Discovered → Validated → Fetched, or Discovered → Invalid. All transitions run synchronously.</p>
+<p>Discovered → Validated → Fetched, or Discovered → Invalid. Validation happens at once; the fetch is a separate step.</p>
 <table cellpadding="10">
     <thead><tr><th>URL</th><th>Place</th><th>Status</th><th>Bytes</th><th>Error</th></tr></thead>
     <tbody>{% for url in urls %}
@@ -376,6 +376,103 @@ function url_migrate(): void { RunStep::run(_actions_from_current_task(), url_ct
     ]
 )]
 function url_run(): void { RunStep::run(_actions_from_current_task(), url_ctx()); }
+
+#[AsTask('messenger', description: 'Install workflow-messenger')]
+#[Step(
+    'Run some transitions in a worker',
+    description: 'So far every transition ran inside the request or command that started it. A fetch can be slow or fail, so it belongs in a queue. workflow-messenger-bundle lets a transition be queued: your listeners are unchanged, but a Messenger worker runs them.',
+    bullets: [
+        'validate and reject stay synchronous: they are cheap and decide where the URL goes next',
+        'fetch becomes a queued transition handled by a worker',
+        'the webapp skeleton already has an async Doctrine transport, so there is nothing to provision',
+    ],
+    actions: [
+        new ComposerRequire(['survos/workflow-messenger-bundle']),
+    ]
+)]
+function url_messenger(): void { RunStep::run(_actions_from_current_task(), url_ctx()); }
+
+#[AsTask('async', description: 'Queue the fetch')]
+#[Step(
+    'Queue the fetch',
+    description: 'Two lines change in the workflow: the messenger bundle\'s Transition attribute (imported as AsyncTransition, because it is async by default) on the fetch transition, with the transport to use. The listener that does the fetching is exactly as before.',
+    bullets: [
+        'use ...\\Attribute\\Transition as AsyncTransition',
+        '#[AsyncTransition(..., transport: \'async\')] on FETCH',
+    ],
+    actions: [
+        new FileWrite('src/Workflow/UrlWorkflow.php', <<<'END'
+<?php
+namespace App\Workflow;
+
+use App\Entity\Url;
+use Survos\WorkflowExtrasBundle\Attribute\AsWorkflow;
+use Survos\WorkflowExtrasBundle\Attribute\Transition;
+use Survos\WorkflowMessengerBundle\Attribute\Transition as AsyncTransition;
+use Symfony\Component\Workflow\Attribute\AsTransitionListener;
+use Symfony\Component\Workflow\Event\TransitionEvent;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+
+#[AsWorkflow(supports: [Url::class], name: self::NAME, places: UrlPlace::class)]
+final class UrlWorkflow
+{
+    public const NAME = 'url';
+
+    #[Transition(UrlPlace::Discovered, UrlPlace::Validated, guard: 'subject.isValid()')]
+    public const VALIDATE = 'validate';
+
+    #[Transition(UrlPlace::Discovered, UrlPlace::Invalid, guard: '!subject.isValid()')]
+    public const REJECT = 'reject';
+
+    #[AsyncTransition(UrlPlace::Validated, UrlPlace::Fetched, 'Fetch in a worker, recording HTTP status and response bytes', transport: 'async')]
+    public const FETCH = 'fetch';
+
+    public function __construct(private HttpClientInterface $client) {}
+
+    #[AsTransitionListener(self::NAME, self::REJECT)]
+    public function reject(TransitionEvent $event): void
+    {
+        $event->getSubject()->error = 'Expected a valid HTTP or HTTPS URL.';
+    }
+
+    #[AsTransitionListener(self::NAME, self::FETCH)]
+    public function fetch(TransitionEvent $event): void
+    {
+        $url = $event->getSubject();
+        try {
+            $response = $this->client->request('GET', $url->address, ['timeout' => 10, 'max_duration' => 20]);
+            $url->statusCode = $response->getStatusCode();
+            // false retains bodies for HTTP errors (404, 500, ...).
+            $url->bytes = strlen($response->getContent(false));
+        } catch (TransportExceptionInterface $exception) {
+            $url->error = $exception->getMessage();
+        }
+    }
+}
+END, a: 'UrlWorkflow-async.php'),
+    ]
+)]
+function url_async(): void { RunStep::run(_actions_from_current_task(), url_ctx()); }
+
+#[AsTask('worker', description: 'Run a worker')]
+#[Step(
+    'Run a worker',
+    description: 'Load two more URLs. Validation runs at once, so the invalid one is already settled and the valid one waits at "validated". A worker then takes the queued fetch, runs the same listener, and the URL becomes "fetched".',
+    bullets: [
+        'app:load-urls only inserts the rows; the workflow queues the fetch',
+        'messenger:consume async handles one message here; in production a supervisor keeps it running',
+    ],
+    actions: [
+        new Console('app:load-urls', ['https://example.org', 'not-a-url-either'], a: 'load-urls-async.txt', prefer: 'php'),
+        new DisplayArtifact('load-urls-async.txt', lang: 'text', note: 'Before the worker: the valid URL is waiting in the queue'),
+        new Console('messenger:consume', ['async', '--limit=1', '--time-limit=30', '-v'], a: 'consume.txt', prefer: 'php'),
+        new DisplayArtifact('consume.txt', lang: 'text', note: 'The worker receives the request and handles it'),
+        new Console('dbal:run-sql', ['select address, marking, status_code, bytes from url order by id'], a: 'urls-after-worker.txt', prefer: 'php'),
+        new DisplayArtifact('urls-after-worker.txt', lang: 'text', note: 'After the worker: everything has settled'),
+    ]
+)]
+function url_worker(): void { RunStep::run(_actions_from_current_task(), url_ctx()); }
 
 #[AsTask('browser', description: 'A browser test, and a screenshot')]
 #[Step(
@@ -429,7 +526,7 @@ function url_browser(): void { RunStep::run(_actions_from_current_task(), url_ct
 #[Step(
     'One-shot build',
     description: 'Every step in order.',
-    bullets: ['new → require → entity → places → workflow → diagram → continuation → command → page → migrate → run → browser'],
+    bullets: ['new → require → entity → places → workflow → diagram → continuation → command → page → migrate → run → messenger → async → worker → browser'],
 )]
 function url_build(): void
 {
@@ -444,5 +541,8 @@ function url_build(): void
     url_page();
     url_migrate();
     url_run();
+    url_messenger();
+    url_async();
+    url_worker();
     url_browser();
 }
