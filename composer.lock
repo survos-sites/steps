@@ -5644,16 +5644,16 @@
         },
         {
             "name": "survos/step-bundle",
-            "version": "2.43.22",
+            "version": "2.44.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/survos/step-bundle.git",
-                "reference": "bbcf4c49c93981088083cd9839128047d7adb961"
+                "reference": "1e8da3c0da7575224457e1c55f7bdb244cfdd628"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/survos/step-bundle/zipball/bbcf4c49c93981088083cd9839128047d7adb961",
-                "reference": "bbcf4c49c93981088083cd9839128047d7adb961",
+                "url": "https://api.github.com/repos/survos/step-bundle/zipball/1e8da3c0da7575224457e1c55f7bdb244cfdd628",
+                "reference": "1e8da3c0da7575224457e1c55f7bdb244cfdd628",
                 "shasum": ""
             },
             "require": {
@@ -5666,9 +5666,6 @@
                 "symfony/dependency-injection": "^8.1",
                 "symfony/framework-bundle": "^8.1",
                 "symfony/http-kernel": "^8.1"
-            },
-            "require-dev": {
-                "symfony/panther": "^2.2"
             },
             "type": "symfony-bundle",
             "autoload": {
@@ -5689,7 +5686,7 @@
             ],
             "support": {
                 "issues": "https://github.com/survos/step-bundle/issues",
-                "source": "https://github.com/survos/step-bundle/tree/2.43.22"
+                "source": "https://github.com/survos/step-bundle/tree/2.44.0"
             },
             "funding": [
                 {
@@ -5697,7 +5694,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-26T15:21:01+00:00"
+            "time": "2026-10-26T16:09:44+00:00"
         },
         {
             "name": "survos/tabler-bundle",

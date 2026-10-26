@@ -466,7 +466,7 @@ function url_async(): void { RunStep::run(_actions_from_current_task(), url_ctx(
     actions: [
         new Console('app:load-urls', ['https://example.org', 'not-a-url-either'], a: 'load-urls-async.txt', prefer: 'php'),
         new DisplayArtifact('load-urls-async.txt', lang: 'text', note: 'Before the worker: the valid URL is waiting in the queue'),
-        new Console('messenger:consume', ['async', '--limit=1', '--time-limit=30', '-v'], a: 'consume.txt', prefer: 'php'),
+        new Console('messenger:consume', ['async', '--limit=1', '--time-limit=30', '-vv'], a: 'consume.txt', prefer: 'php'),
         new DisplayArtifact('consume.txt', lang: 'text', note: 'The worker receives the request and handles it'),
         new Console('dbal:run-sql', ['select address, marking, status_code, bytes from url order by id'], a: 'urls-after-worker.txt', prefer: 'php'),
         new DisplayArtifact('urls-after-worker.txt', lang: 'text', note: 'After the worker: everything has settled'),
